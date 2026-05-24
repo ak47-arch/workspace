@@ -1,0 +1,25 @@
+# Exclude all project folders from root-level workspace repo
+/feed_analyser/
+/forthechemicals/
+/fruits_dataset/
+/survival-infrastructure/
+/emotional_architecture/
+/hermes/
+/backup-tool/
+/.claude
+/llm/
+
+# Python virtual environments and caches
+.venv/
+venv/
+__pycache__/
+*.pyc
+
+# Test/runtime artifacts
+.pytest_cache/
+.coverage
+coverage.xml
+
+# OS/editor noise
+.DS_Store
+*.swp
