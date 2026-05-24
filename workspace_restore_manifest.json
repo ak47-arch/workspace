@@ -1,0 +1,73 @@
+{
+  "snapshot": {
+    "remote": "workspace:workspace-critical-snapshot",
+    "artifact_prefix": "workspace_critical_snapshot_",
+    "extract_root": "workspace-critical-snapshot"
+  },
+  "repos": [
+    {
+      "path": ".",
+      "primary_remote": "origin",
+      "clone_url": "https://github.com/ak47-arch/workspace.git",
+      "branch": "master",
+      "extra_remotes": {}
+    },
+    {
+      "path": "backup-tool",
+      "primary_remote": "origin",
+      "clone_url": "https://github.com/ak47-arch/backup-tool.git",
+      "branch": "master",
+      "extra_remotes": {}
+    },
+    {
+      "path": "emotional_architecture",
+      "primary_remote": "origin",
+      "clone_url": "https://github.com/ak47-arch/emotional_architecture.git",
+      "branch": "master",
+      "extra_remotes": {}
+    },
+    {
+      "path": "feed_analyser",
+      "primary_remote": "origin",
+      "clone_url": "https://github.com/forthechemicals/forthechemicals_agentic_social_media.git",
+      "branch": "master",
+      "extra_remotes": {}
+    },
+    {
+      "path": "hermes",
+      "primary_remote": "origin",
+      "clone_url": "https://github.com/ak47-arch/hermes.git",
+      "branch": "main",
+      "extra_remotes": {
+        "upstream": "https://github.com/NousResearch/hermes-agent.git"
+      }
+    },
+    {
+      "path": "llm",
+      "primary_remote": "origin",
+      "clone_url": "https://github.com/ak47-arch/llamacpp_inference_server.git",
+      "branch": "master",
+      "extra_remotes": {}
+    },
+    {
+      "path": "survival-infrastructure",
+      "primary_remote": "incident-remote",
+      "clone_url": "https://github.com/ak47-arch/survival-infrastructure.git",
+      "branch": "master",
+      "extra_remotes": {}
+    }
+  ],
+  "restore_paths": [
+    "survival-infrastructure/data",
+    "survival-infrastructure/data-prod",
+    "survival-infrastructure/data_prod_copy",
+    "survival-infrastructure/data_prod_backups",
+    "survival-infrastructure/data_prod_copy_backups",
+    "survival-infrastructure/.runtime-data",
+    "survival-infrastructure/.env",
+    "feed_analyser/backend/data.db",
+    "feed_analyser/backend/raw_data",
+    "feed_analyser/backend/archive",
+    "hermes/.hermes-data"
+  ]
+}
