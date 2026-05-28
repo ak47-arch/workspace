@@ -2,6 +2,7 @@
 
 Date: 2026-05-24
 Workspace root: `/home/anupam/Desktop/workspace`
+Skill location: `/home/anupam/Desktop/workspace/.pi/skills/workspace-backup-recovery`
 
 This document describes the current backup and recovery setup for the workspace.
 
@@ -46,6 +47,10 @@ Snapshot creation script:
 
 - `create_workspace_critical_snapshot.sh`
 
+Preferred wrapper:
+
+- `create-snapshot.sh`
+
 What it does:
 
 1. stages the critical local-only data into a temporary snapshot directory
@@ -84,29 +89,35 @@ The snapshot script currently uploads to:
 
 This is the currently configured `rclone` Google Drive remote.
 
-## Snapshot command
+## Snapshot commands
 
-Run from anywhere:
+Run from the skill directory:
 
 ```bash
-/home/anupam/Desktop/workspace/create_workspace_critical_snapshot.sh
+./create-snapshot.sh
+```
+
+Or call the bundled implementation directly:
+
+```bash
+./create_workspace_critical_snapshot.sh
 ```
 
 Useful variants:
 
 ```bash
 # Create local snapshot only, skip Drive upload
-UPLOAD_TO_DRIVE=false /home/anupam/Desktop/workspace/create_workspace_critical_snapshot.sh
+UPLOAD_TO_DRIVE=false ./create-snapshot.sh
 ```
 
 ```bash
 # Use a different rclone remote/path
-RCLONE_REMOTE='workspace:workspace-critical-snapshot' /home/anupam/Desktop/workspace/create_workspace_critical_snapshot.sh
+RCLONE_REMOTE='workspace:workspace-critical-snapshot' ./create-snapshot.sh
 ```
 
 ```bash
 # Dry-run
-UPLOAD_TO_DRIVE=false /home/anupam/Desktop/workspace/create_workspace_critical_snapshot.sh --dry-run
+UPLOAD_TO_DRIVE=false ./create-snapshot.sh --dry-run
 ```
 
 ## Recovery
@@ -114,6 +125,10 @@ UPLOAD_TO_DRIVE=false /home/anupam/Desktop/workspace/create_workspace_critical_s
 Recovery script:
 
 - `restore_workspace.py`
+
+Preferred wrapper:
+
+- `restore-workspace.sh`
 
 Restore manifest:
 
@@ -132,13 +147,13 @@ What recovery does:
 ### Restore command
 
 ```bash
-python3 /home/anupam/Desktop/workspace/restore_workspace.py /path/to/restored-workspace
+./restore-workspace.sh /path/to/restored-workspace
 ```
 
 ### Restore a specific snapshot
 
 ```bash
-python3 /home/anupam/Desktop/workspace/restore_workspace.py \
+./restore-workspace.sh \
   /path/to/restored-workspace \
   --artifact workspace_critical_snapshot_20260524_213956.tar.gz
 ```
@@ -146,10 +161,16 @@ python3 /home/anupam/Desktop/workspace/restore_workspace.py \
 ### Restore from an already downloaded local tar
 
 ```bash
-python3 /home/anupam/Desktop/workspace/restore_workspace.py \
+./restore-workspace.sh \
   /path/to/restored-workspace \
   --skip-download \
   --local-artifact /home/anupam/Desktop/backup_data/workspace-critical-snapshot/workspace_critical_snapshot_20260524_213956.tar.gz
+```
+
+### Run the Python restore script directly
+
+```bash
+python3 ./restore_workspace.py /path/to/restored-workspace
 ```
 
 ## Recovery assumptions
@@ -182,10 +203,13 @@ The current cloud remote is plain Google Drive remote `workspace:`.
 That means Drive-side storage is not additionally encrypted by `rclone crypt`.
 Since the snapshot contains `.env`, cookies, state files, and local databases, moving later to an encrypted `crypt` remote would be preferable.
 
-## Files added for this backup/recovery system
+## Bundled files in this skill
 
+- `SKILL.md`
 - `WORKSPACE_BACKUP_AUDIT.md`
 - `WORKSPACE_BACKUP_RECOVERY.md`
+- `create-snapshot.sh`
+- `restore-workspace.sh`
 - `create_workspace_critical_snapshot.sh`
 - `restore_workspace.py`
 - `workspace_restore_manifest.json`

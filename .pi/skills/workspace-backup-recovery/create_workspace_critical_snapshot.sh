@@ -2,7 +2,8 @@
 
 set -euo pipefail
 
-WORKSPACE_ROOT="/home/anupam/Desktop/workspace"
+SKILL_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+WORKSPACE_ROOT="$(cd "$SKILL_DIR/../../.." && pwd)"
 BACKUP_SCRIPT="$WORKSPACE_ROOT/backup-tool/backup.sh"
 TARGET_DIR="/home/anupam/Desktop/backup_data/workspace-critical-snapshot"
 JOB_NAME="workspace_critical_snapshot"

@@ -20,7 +20,7 @@ Method used:
 
 ## Current implementation status
 
-This audit has now been turned into an active backup/recovery workflow:
+This audit has now been turned into an active backup/recovery workflow bundled in the skill directory `.pi/skills/workspace-backup-recovery/`:
 
 - critical local-only workspace data is captured by `create_workspace_critical_snapshot.sh`
 - the snapshot is stored locally as a **single tar.gz** plus `.sha256`
