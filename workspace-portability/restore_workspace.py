@@ -33,7 +33,10 @@ def ensure_repo(repo, dest: Path):
     if not target.exists():
         run(["git", "clone", clone_url, str(target)])
     elif not (target / ".git").exists():
-        raise SystemExit(f"Destination exists but is not a git repo: {target}")
+        if target.is_dir() and not any(target.iterdir()):
+            run(["git", "init"], cwd=target)
+        else:
+            raise SystemExit(f"Destination exists but is not a git repo: {target}")
 
     existing_remotes = {
         line.split()[0]
