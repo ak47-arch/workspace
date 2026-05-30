@@ -10,6 +10,7 @@
 /backup-tool/
 /.claude
 /llm/
+/agent-browser/
 
 # Python virtual environments and caches
 .venv/
