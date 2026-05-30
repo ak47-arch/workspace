@@ -2,4 +2,5 @@
 set -euo pipefail
 
 SKILL_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-exec python3 "$SKILL_DIR/restore_workspace.py" "$@"
+WORKSPACE_ROOT="$(cd "$SKILL_DIR/../../.." && pwd)"
+exec "$WORKSPACE_ROOT/workspace-portability/restore-workspace.sh" "$@"

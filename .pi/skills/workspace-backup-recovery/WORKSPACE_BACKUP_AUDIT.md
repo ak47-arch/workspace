@@ -21,14 +21,14 @@ Method used:
 
 ## Current implementation status
 
-This audit has now been turned into an active backup/recovery workflow bundled in the skill directory `.pi/skills/workspace-backup-recovery/`:
+This audit has now been turned into an active backup/recovery workflow with canonical scripts in `workspace-portability/` and compatibility wrappers in `.pi/skills/workspace-backup-recovery/`:
 
-- critical local-only workspace data is captured by `create_workspace_critical_snapshot.sh`
+- critical local-only workspace data is captured by `workspace-portability/create_workspace_critical_snapshot.sh`
 - the snapshot is stored locally as a **single tar.gz** plus `.sha256`
 - the latest snapshot is uploaded to Google Drive via `rclone`
-- full workspace recovery is handled by `restore_workspace.py`
-- repo remotes/branches and restore paths are defined in `workspace_restore_manifest.json`
-- operational details are documented in `WORKSPACE_BACKUP_RECOVERY.md`
+- full workspace recovery is handled by `workspace-portability/restore_workspace.py`
+- repo remotes/branches and restore paths are defined in `workspace-portability/workspace_restore_manifest.json`
+- operational details are documented in `workspace-portability/README.md` and `WORKSPACE_BACKUP_RECOVERY.md`
 
 ## Important top-level observation
 

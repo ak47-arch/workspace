@@ -7,14 +7,20 @@ description: Create, inspect, and restore the workspace-critical snapshot using 
 
 Use this skill for the workspace-level backup and restore workflow.
 
-This skill is fully self-contained. The backup scripts, restore script, manifest, and documentation are bundled in this skill directory rather than the project root.
+The canonical backup/recovery implementation now lives in the project root at `workspace-portability/`.
+
+This skill remains as an operator-friendly wrapper around those standalone scripts so recovery does not depend on pi.
 
 ## What this workflow does
 
-The workspace recovery strategy has two parts:
+The canonical portability workflow now covers:
 
 1. restore source code from git remotes
-2. restore critical local-only ignored data from a single snapshot tarball
+2. restore critical local-only ignored data from a critical snapshot tarball
+3. restore large runtime assets from a dedicated large-assets snapshot
+4. materialize required secret files and startup-time env inputs
+5. install repo dependencies
+6. optionally start canonical runtime services and verify them
 
 The snapshot currently includes:
 
@@ -30,40 +36,49 @@ The snapshot currently includes:
 
 The restore flow recreates repos from `workspace_restore_manifest.json`, then restores those local-only paths from the snapshot.
 
-## Bundled files
+## Canonical files
 
-The skill directory contains:
+The canonical implementation lives in:
 
-- `create-snapshot.sh`
-- `restore-workspace.sh`
-- `create_workspace_critical_snapshot.sh`
-- `restore_workspace.py`
-- `workspace_restore_manifest.json`
-- `WORKSPACE_BACKUP_AUDIT.md`
-- `WORKSPACE_BACKUP_RECOVERY.md`
+- `workspace-portability/bootstrap-host.sh`
+- `workspace-portability/create-snapshot.sh`
+- `workspace-portability/create-large-assets-snapshot.sh`
+- `workspace-portability/create-all-snapshots.sh`
+- `workspace-portability/restore-workspace.sh`
+- `workspace-portability/materialize-secrets.sh`
+- `workspace-portability/hydrate-large-assets.sh`
+- `workspace-portability/setup-workspace.sh`
+- `workspace-portability/start-services.sh`
+- `workspace-portability/full-restore.sh`
+- `workspace-portability/verify-workspace.sh`
+- `workspace-portability/test-restore.sh`
+- `workspace-portability/workspace_restore_manifest.json`
+- `workspace-portability/README.md`
+- `workspace-portability/PORTABILITY_PLAN.md`
+
+The skill directory keeps thin compatibility wrappers plus the audit/recovery notes.
 
 ## Preferred skill entrypoints
 
-Create a snapshot:
+Create the critical snapshot:
 
 ```bash
 ./create-snapshot.sh
 ```
 
-Restore a workspace:
+Restore repos + critical state:
 
 ```bash
 ./restore-workspace.sh /path/to/restored-workspace
 ```
 
-The wrappers call the bundled implementations in this same directory:
+For the full canonical flow, run the project-root scripts directly from `workspace-portability/`, especially `./full-restore.sh`.
 
-- `./create_workspace_critical_snapshot.sh`
-- `./restore_workspace.py`
+The skill wrappers delegate to the canonical standalone scripts under `workspace-portability/`.
 
 ## Common commands
 
-Create a local snapshot and upload it to Drive:
+Create the critical snapshot and upload it to Drive:
 
 ```bash
 ./create-snapshot.sh
@@ -106,9 +121,9 @@ Restore from an already-downloaded local tarball:
 
 ## Operational expectations
 
-- The bundled scripts operate on the current workspace root resolved relative to this skill directory.
+- The canonical scripts operate from `workspace-portability/` in the workspace root.
 - Snapshot creation uses `backup-tool/backup.sh` from the workspace.
-- Restore uses the bundled `workspace_restore_manifest.json` by default.
+- Restore uses `workspace-portability/workspace_restore_manifest.json` by default.
 - The snapshot currently uploads to `workspace:workspace-critical-snapshot` using `rclone`.
 - The latest local snapshot is stored under `/home/anupam/Desktop/backup_data/workspace-critical-snapshot/`.
 
@@ -117,7 +132,8 @@ Restore from an already-downloaded local tarball:
 - `restore_workspace.py` is for disaster recovery / workspace replication.
 - It fetches/clones repos, checks out the configured branch, and hard-resets to the configured remote branch.
 - It may overwrite existing restored data paths.
-- It does **not** restore `.venv`, `node_modules`, caches, or GGUF model files.
+- Environment rebuild, startup, and verification are available via the canonical scripts in `workspace-portability/`.
+- Full setup still avoids restoring rebuildable directories like `.venv`, `node_modules`, caches, and logs from the critical snapshot; those are recreated by `setup-workspace.sh`.
 
 ## When to inspect the bundled references
 
@@ -139,4 +155,4 @@ Important references:
 
 ## Security note
 
-The current Drive remote is documented as plain Google Drive, not `rclone crypt`, so treat uploaded snapshots as sensitive.
+The current Drive remote is still plain Google Drive, not `rclone crypt`, but the canonical snapshot scripts now support optional `age` encryption for offsite uploads. If encryption is not enabled, treat uploaded snapshots as sensitive.

@@ -6,28 +6,35 @@ Skill location: `/home/anupam/Desktop/workspace/.pi/skills/workspace-backup-reco
 
 This document describes the current backup and recovery setup for the workspace.
 
+Canonical standalone scripts now live in `/home/anupam/Desktop/workspace/workspace-portability`.
+The skill wrappers in `.pi/skills/workspace-backup-recovery/` delegate to that directory.
+
 ## What is backed up
 
-The workspace backup does **not** try to archive every repo checkout artifact. It focuses on:
+The canonical portability bundle now uses three restore inputs:
 
-1. source code recoverable from git remotes
-2. critical local-only data that is ignored by git and would otherwise be lost
+1. source code recovered from git remotes
+2. critical local-only data recovered from the critical snapshot
+3. large runtime assets recovered from a separate large-assets snapshot
 
 ### Recovered from git remotes
 
 These repositories are restored from git during recovery:
 
 - workspace root repo
+- `agent-browser`
 - `backup-tool`
 - `emotional_architecture`
 - `feed_analyser`
 - `hermes`
 - `llm`
+- `pi-mono`
+- `skills`
 - `survival-infrastructure`
 
-### Recovered from the snapshot tar
+### Recovered from the critical snapshot tar
 
-These local-only paths are restored from the snapshot:
+These local-only paths are restored from the critical snapshot:
 
 - `survival-infrastructure/data`
 - `survival-infrastructure/data-prod`
@@ -41,13 +48,23 @@ These local-only paths are restored from the snapshot:
 
 ## Snapshot creation
 
-Snapshot creation script:
+Canonical critical snapshot creation script:
 
-- `create_workspace_critical_snapshot.sh`
+- `workspace-portability/create_workspace_critical_snapshot.sh`
 
-Preferred wrapper:
+Canonical critical snapshot wrapper:
 
-- `create-snapshot.sh`
+- `workspace-portability/create-snapshot.sh`
+
+Canonical large-assets snapshot wrapper:
+
+- `workspace-portability/create-large-assets-snapshot.sh`
+
+Canonical combined wrapper:
+
+- `workspace-portability/create-all-snapshots.sh`
+
+The skill wrappers forward to the critical snapshot scripts.
 
 What it does:
 
@@ -79,27 +96,28 @@ Current behavior:
 - one local tar retained
 - one matching `.sha256` retained
 
-### Cloud upload location
+### Cloud upload locations
 
-The snapshot script currently uploads to:
+The critical snapshot currently uploads to:
 
 - `workspace:workspace-critical-snapshot`
 
-This is the currently configured `rclone` Google Drive remote.
+The large-assets snapshot currently uploads to:
+
+- `workspace:workspace-large-assets`
+
+These are the currently configured `rclone` Google Drive remote paths.
 
 ## Snapshot commands
 
-Run from the skill directory:
+Run from the canonical directory:
 
 ```bash
+cd /home/anupam/Desktop/workspace/workspace-portability
 ./create-snapshot.sh
 ```
 
-Or call the bundled implementation directly:
-
-```bash
-./create_workspace_critical_snapshot.sh
-```
+Or use the skill wrapper, which delegates to the same implementation.
 
 Useful variants:
 
@@ -120,17 +138,26 @@ UPLOAD_TO_DRIVE=false ./create-snapshot.sh --dry-run
 
 ## Recovery
 
-Recovery script:
+Canonical repo + critical-state recovery script:
 
-- `restore_workspace.py`
+- `workspace-portability/restore_workspace.py`
 
-Preferred wrapper:
+Canonical wrapper:
 
-- `restore-workspace.sh`
+- `workspace-portability/restore-workspace.sh`
+
+Additional canonical orchestration scripts:
+
+- `workspace-portability/materialize-secrets.sh`
+- `workspace-portability/hydrate-large-assets.sh`
+- `workspace-portability/setup-workspace.sh`
+- `workspace-portability/start-services.sh`
+- `workspace-portability/full-restore.sh`
+- `workspace-portability/test-restore.sh`
 
 Restore manifest:
 
-- `workspace_restore_manifest.json`
+- `workspace-portability/workspace_restore_manifest.json`
 
 What recovery does:
 
@@ -145,7 +172,15 @@ What recovery does:
 ### Restore command
 
 ```bash
+cd /home/anupam/Desktop/workspace/workspace-portability
 ./restore-workspace.sh /path/to/restored-workspace
+```
+
+### Full portable restore
+
+```bash
+cd /home/anupam/Desktop/workspace/workspace-portability
+./full-restore.sh /path/to/restored-workspace --start
 ```
 
 ### Restore a specific snapshot
@@ -199,7 +234,7 @@ Those are expected to be recreated or restored separately if needed.
 
 The current cloud remote is plain Google Drive remote `workspace:`.
 That means Drive-side storage is not additionally encrypted by `rclone crypt`.
-Since the snapshot contains `.env`, cookies, state files, and local databases, moving later to an encrypted `crypt` remote would be preferable.
+The canonical snapshot scripts now support optional `age` encryption for uploaded artifacts, but the remote itself is still not an encrypted `crypt` backend.
 
 ## Bundled files in this skill
 
