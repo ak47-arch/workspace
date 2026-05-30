@@ -11,7 +11,7 @@
 /.claude
 /llm/
 /agent-browser/
-
+/.vscode/
 # Python virtual environments and caches
 .venv/
 venv/
