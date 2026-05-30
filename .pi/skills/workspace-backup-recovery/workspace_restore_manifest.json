@@ -13,6 +13,13 @@
       "extra_remotes": {}
     },
     {
+      "path": "agent-browser",
+      "primary_remote": "origin",
+      "clone_url": "https://github.com/vercel-labs/agent-browser.git",
+      "branch": "main",
+      "extra_remotes": {}
+    },
+    {
       "path": "backup-tool",
       "primary_remote": "origin",
       "clone_url": "https://github.com/ak47-arch/backup-tool.git",
@@ -46,14 +53,32 @@
       "path": "llm",
       "primary_remote": "origin",
       "clone_url": "https://github.com/ak47-arch/llamacpp_inference_server.git",
-      "branch": "master",
+      "branch": "pi_master",
       "extra_remotes": {}
+    },
+    {
+      "path": "pi-mono",
+      "primary_remote": "origin",
+      "clone_url": "https://github.com/ak47-arch/pi-mono.git",
+      "branch": "main",
+      "extra_remotes": {
+        "upstream": "https://github.com/earendil-works/pi.git"
+      }
+    },
+    {
+      "path": "skills",
+      "primary_remote": "origin",
+      "clone_url": "https://github.com/ak47-arch/skills.git",
+      "branch": "main",
+      "extra_remotes": {
+        "upstream": "https://github.com/mattpocock/skills.git"
+      }
     },
     {
       "path": "survival-infrastructure",
       "primary_remote": "incident-remote",
       "clone_url": "https://github.com/ak47-arch/survival-infrastructure.git",
-      "branch": "master",
+      "branch": "pi_master",
       "extra_remotes": {}
     }
   ],
