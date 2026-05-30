@@ -15,6 +15,9 @@ This skill remains as an operator-friendly wrapper around those standalone scrip
 
 The canonical portability workflow now covers:
 
+> Note: after Spec 048 removed the obsolete in-repo `survival-infrastructure/llm/` directory, the large-assets flow now backs up only the standalone `llm/gemma` model directory. Any older references to `survival-infrastructure/llm/gemma` are stale unless explicitly marked historical.
+
+
 1. restore source code from git remotes
 2. restore critical local-only ignored data from a critical snapshot tarball
 3. restore large runtime assets from a dedicated large-assets snapshot
@@ -22,7 +25,7 @@ The canonical portability workflow now covers:
 5. install repo dependencies
 6. optionally start canonical runtime services and verify them
 
-The snapshot currently includes:
+The critical snapshot currently includes:
 
 - `survival-infrastructure/data`
 - `survival-infrastructure/data-prod`

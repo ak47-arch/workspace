@@ -14,7 +14,7 @@ Recreate the workspace on a fresh machine with deterministic shell/Python entryp
 - `./create-all-snapshots.sh` — create both snapshots
 - `./restore-workspace.sh /path/to/workspace` — restore repos from git and critical local-only state from the snapshot
 - `./materialize-secrets.sh /path/to/workspace` — verify/materialize required secret files and startup env inputs
-- `./hydrate-large-assets.sh /path/to/workspace` — restore large assets such as model directories
+- `./hydrate-large-assets.sh /path/to/workspace` — restore large assets such as standalone model directories
 - `./setup-workspace.sh /path/to/workspace` — install repo dependencies deterministically
 - `./start-services.sh /path/to/workspace` — start the canonical runtime targets
 - `./verify-workspace.sh /path/to/workspace` — verify repos, restore paths, large assets, secrets, and optionally services
@@ -42,7 +42,6 @@ Small, high-priority local-only state:
 Expensive runtime payloads:
 
 - `llm/gemma`
-- `survival-infrastructure/llm/gemma`
 
 ## Security / encryption
 

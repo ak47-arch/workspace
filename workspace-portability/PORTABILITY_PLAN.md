@@ -77,7 +77,6 @@ Implemented via:
 Current large assets:
 
 - `llm/gemma`
-- `survival-infrastructure/llm/gemma`
 
 ### Phase 6 — Restore drills
 

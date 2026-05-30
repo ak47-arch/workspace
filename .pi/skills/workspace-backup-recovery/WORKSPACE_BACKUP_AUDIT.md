@@ -251,6 +251,8 @@ This repo's main ignored payload is large model weight data. It may not be uniqu
 
 ## 7) survival-infrastructure
 
+> Historical note: this audit captured the repository before Spec 048 removed the obsolete in-repo `survival-infrastructure/llm/` directory. Any older references in this document to `survival-infrastructure/llm/gemma` should be read as historical only; the current large-asset path is the standalone `llm/gemma` directory.
+
 ### Ignore sources
 - `survival-infrastructure/.gitignore`
 
@@ -328,8 +330,9 @@ Back these up first:
 ## Medium priority: expensive local assets
 
 - `llm/gemma/*.gguf`
-- `survival-infrastructure/llm/gemma/`
 - possibly `survival-infrastructure/vendors/`
+
+Historical note: earlier versions of this audit also listed `survival-infrastructure/llm/gemma/`, but that path was removed with the app-local `llm/` cleanup.
 
 ## Lowest priority: reproducible local environments / builds
 

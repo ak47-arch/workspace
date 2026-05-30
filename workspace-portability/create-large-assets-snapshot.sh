@@ -17,7 +17,6 @@ source "$SCRIPT_DIR/snapshot_common.sh"
 
 INCLUDE_PATHS=(
   "llm/gemma"
-  "survival-infrastructure/llm/gemma"
 )
 
 cleanup() {

@@ -6,6 +6,8 @@ Skill location: `/home/anupam/Desktop/workspace/.pi/skills/workspace-backup-reco
 
 This document describes the current backup and recovery setup for the workspace.
 
+> Note: after Spec 048 removed the obsolete in-repo `survival-infrastructure/llm/` directory, the large-assets flow now backs up only the standalone `llm/gemma` model directory.
+
 Canonical standalone scripts now live in `/home/anupam/Desktop/workspace/workspace-portability`.
 The skill wrappers in `.pi/skills/workspace-backup-recovery/` delegate to that directory.
 

@@ -125,14 +125,7 @@
       "path": "llm/gemma",
       "snapshot_path": "llm/gemma",
       "required": true,
-      "description": "Standalone LLM model directory required by llm/docker-compose.yml"
-    },
-    {
-      "name": "survival-gemma-models",
-      "path": "survival-infrastructure/llm/gemma",
-      "snapshot_path": "survival-infrastructure/llm/gemma",
-      "required": true,
-      "description": "Survival infrastructure model directory mounted by local compose workflows"
+      "description": "Standalone LLM model directory required by the standalone llm repo/runtime"
     }
   ],
   "secrets": [
