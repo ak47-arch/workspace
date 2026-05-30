@@ -12,6 +12,7 @@ This document summarizes:
 3. Which ignored data should be treated as **must-back-up**, versus which ignored data is mostly **rebuildable**.
 
 Method used:
+
 - inspected all top-level git repositories in the workspace
 - read repository `.gitignore` files
 - checked `.git/info/exclude` where relevant
