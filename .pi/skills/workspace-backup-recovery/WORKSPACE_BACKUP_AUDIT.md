@@ -277,8 +277,6 @@ This repo's main ignored payload is large model weight data. It may not be uniqu
     - `data/instructions/uploads/` 3 files
 - `data-prod/` (~228K, 42 files)
 - `data_prod_copy/` (~640K, 84 files)
-- `data_prod_backups/` (~268K)
-- `data_prod_copy_backups/` (~148K)
 - `.runtime-data/` (~400K)
 - `.env` (~4K)
 - `.app.log` (~8K)
@@ -291,8 +289,6 @@ This repo's main ignored payload is large model weight data. It may not be uniqu
 - `data/`
 - `data-prod/`
 - `data_prod_copy/`
-- `data_prod_backups/`
-- `data_prod_copy_backups/`
 - `.runtime-data/`
 - `.env` (securely)
 - any local model files in `llm/gemma/` if those exact local weights matter
@@ -325,8 +321,6 @@ Back these up first:
 - `survival-infrastructure/data/`
 - `survival-infrastructure/data-prod/`
 - `survival-infrastructure/data_prod_copy/`
-- `survival-infrastructure/data_prod_backups/`
-- `survival-infrastructure/data_prod_copy_backups/`
 - `survival-infrastructure/.runtime-data/`
 - all `.env` files and local config files containing secrets
 
@@ -362,8 +356,6 @@ If the goal is to preserve everything that is both local and valuable, the pract
 - `survival-infrastructure/data/`
 - `survival-infrastructure/data-prod/`
 - `survival-infrastructure/data_prod_copy/`
-- `survival-infrastructure/data_prod_backups/`
-- `survival-infrastructure/data_prod_copy_backups/`
 - `survival-infrastructure/.runtime-data/`
 - `survival-infrastructure/.env`
 - any other `.env`, cookie, key, or local config files in ignored paths

@@ -32,8 +32,6 @@ These local-only paths are restored from the snapshot:
 - `survival-infrastructure/data`
 - `survival-infrastructure/data-prod`
 - `survival-infrastructure/data_prod_copy`
-- `survival-infrastructure/data_prod_backups`
-- `survival-infrastructure/data_prod_copy_backups`
 - `survival-infrastructure/.runtime-data`
 - `survival-infrastructure/.env`
 - `feed_analyser/backend/data.db`
