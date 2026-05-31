@@ -11,6 +11,8 @@
 /.claude
 /llm/
 /agent-browser/
+/pi-mono/
+/skills/
 /.vscode/
 /workspace-skills/
 # Python virtual environments and caches
