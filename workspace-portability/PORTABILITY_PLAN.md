@@ -45,6 +45,8 @@ Current steps cover:
 - `pi-mono` npm deps
 - `survival-infrastructure` Python deps
 
+`workspace-skills` is also restored from git via the manifest, but it currently has no deterministic dependency setup step.
+
 ### Phase 3 — Service startup orchestration
 
 Implemented via `start-services.sh`.

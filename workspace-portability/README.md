@@ -151,7 +151,7 @@ Requires:
 
 `workspace_restore_manifest.json` is the single source of truth for:
 
-- repos and branches
+- repos and branches, including the standalone `workspace-skills` repo
 - critical restore paths
 - large assets
 - secrets expectations

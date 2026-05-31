@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "host_dependencies": {
     "restore_only": {
       "commands": ["git", "python3", "tar", "rclone"],
@@ -99,6 +99,13 @@
       "extra_remotes": {
         "upstream": "https://github.com/mattpocock/skills.git"
       }
+    },
+    {
+      "path": "workspace-skills",
+      "primary_remote": "origin",
+      "clone_url": "https://github.com/ak47-arch/workspace-skills.git",
+      "branch": "main",
+      "extra_remotes": {}
     },
     {
       "path": "survival-infrastructure",
