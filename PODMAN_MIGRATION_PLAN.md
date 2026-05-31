@@ -1,10 +1,87 @@
 # Docker → Podman Migration Plan
 
-Last updated: 2026-05-28
+Last updated: 2026-05-31
 
 ## Goal
 
 Migrate the workspace containerized applications from Docker-first operation to Podman-first operation with the smallest practical amount of application churn, while preserving current local-dev workflows.
+
+## Status note
+
+Current implemented scope:
+- `llm/` is validated on Podman
+- `survival-infrastructure/` is validated on Podman for `app-dev`, `app-prod`, and `app-prod-copy`
+- Podman is the default runtime path and Docker remains an explicit fallback
+- Hermes has been removed from the active `survival-infrastructure/` runtime path
+- legacy in-repo local-LLM mode has been removed from `survival-infrastructure/`
+
+## Focused Checklist for Phases 0–2
+
+Runtime policy:
+- [x] Podman is the default runtime path
+- [x] Docker remains available as an explicit fallback
+- [x] Scripts use `podman compose` / `docker compose`, not `docker-compose`
+
+### Phase 0 — Prerequisites and baseline
+- [x] Replace the current Podman compose delegation to Docker Compose with a real Podman-backed compose path
+- [x] Validate `podman compose` on a trivial test stack without invoking Docker
+- [x] Create `workspace-shared-llm-network` in Podman
+- [x] Capture baseline checks for `llm/` and `survival-infrastructure/` ports, mounts, env vars, and health endpoints
+- [x] Make runtime selection explicit in shared startup scripts (`CONTAINER_RUNTIME`, default `podman`)
+
+### Phase 1 — `llm/`
+- [x] Start `llm-inference-server` with Podman on `workspace-shared-llm-network`
+- [x] Verify `LLAMA_CPP_DIR` mount, `/models` mount, and healthchecks under Podman
+- [x] Verify `GET /health`, `GET /ready`, `GET /v1/models`, and one inference smoke test
+- [x] Update `llm/README.md` to document Podman-first and Docker fallback commands
+
+### Phase 2 — `survival-infrastructure/`
+- [x] Refactor `start_stack.sh` to default to Podman and allow `CONTAINER_RUNTIME=docker`
+- [x] Replace Docker-hardcoded network/container/compose commands with runtime-aware helpers
+- [x] Default `SURVIVAL_LLM_BASE_URL` to `http://llm-inference-server:8012`
+- [x] Remove Docker-only default reliance on `host.docker.internal`
+- [x] Validate `app-dev`, then `app-prod`, then `app-prod-copy` against `/` and `/api/captures`
+
+## Baseline Snapshot for Phases 0–2
+
+### `llm/`
+- Compose file: `llm/docker-compose.yml`
+- Container name: `llm-inference-server`
+- Host port: `8012:8012`
+- Required mounts:
+  - `./gemma:/models:ro`
+  - `${LLAMA_CPP_DIR}:/opt/llama-cpp:ro`
+- Key env vars:
+  - `LLM_SERVER_HOST=0.0.0.0`
+  - `LLM_SERVER_PORT=8012`
+  - `LLM_SERVER_CONFIG_FILE=/app/llm/service_models.yaml`
+- Shared network: `workspace-shared-llm-network` (external)
+- Health/smoke endpoints:
+  - `GET /health`
+  - `GET /ready`
+  - `GET /v1/models`
+  - `POST /v1/chat/completions`
+
+### `survival-infrastructure/`
+- Compose file: `survival-infrastructure/docker-compose.yml`
+- App containers:
+  - `survival-app-dev` → `5151:5051` → data mount `./data:/app/data`
+  - `survival-app-prod` → `5152:5051` → data mount `./data-prod:/app/data-prod`
+  - `survival-app-prod-copy` → `5153:5051` → data mount `./data_prod_copy:/app/data_prod_copy`
+- Key env vars:
+  - `SURVIVAL_HOST=0.0.0.0`
+  - `SURVIVAL_PORT=5051`
+  - `SURVIVAL_LLM_BASE_URL=http://llm-inference-server:8012` (default)
+- Shared network: `workspace-shared-llm-network` (external)
+- Health/smoke endpoints:
+  - `GET /`
+  - `GET /api/captures`
+- Primary startup entrypoint: `survival-infrastructure/start_stack.sh`
+
+## Execution Notes from Phase 0–2
+
+- `llm/` needed a `.dockerignore` to keep large local assets (`gemma/`, `.git/`, `.venv/`, `tmp/`) out of the image build context. Without that, the Podman build failed at `COPY . /app/llm` with `no space left on device`.
+- Existing Docker-era root-owned runtime log files in `survival-infrastructure/data_prod_copy/runtime/` (`access.jsonl`, `audit.jsonl`) caused `app-prod-copy` to return HTTP 500 under rootless Podman because the container could not append to them. Moving those stale files aside allowed the app to recreate writable copies as the host user.
 
 ## Scope
 
@@ -14,6 +91,9 @@ Applications reviewed in this workspace:
 - `llm/`
 - `hermes/`
 - `feed_analyser/`
+
+Note:
+- Hermes is still a workspace application, but it is no longer part of the active `survival-infrastructure/` runtime path.
 
 Key files reviewed:
 
@@ -31,20 +111,23 @@ Key files reviewed:
 
 Currently running under Docker:
 
-- `survival-app-dev`
-- `llm-inference-server`
+- none observed during the Podman validation pass
 
 Currently running under Podman:
 
-- none
+- `llm-inference-server`
+- `survival-app-dev`
+- `survival-app-prod`
+- `survival-app-prod-copy`
 
 ### Tooling state observed
 
 - Docker installed: `Docker version 29.1.3`
 - Podman installed: `podman version 4.9.3`
-- `podman compose` currently delegates to external provider `/home/anupam/.local/bin/docker-compose`
+- `podman compose` is configured to use a Podman-native external provider via user `containers.conf`
+- Podman shared network created: `workspace-shared-llm-network`
 
-That last point matters: in the current environment, `podman compose` is **not yet a true Docker-free compose path**. Fixing that is phase 0.
+The original compose-provider blocker from phase 0 has been resolved.
 
 ## Assumptions
 
