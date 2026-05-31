@@ -1,0 +1,1 @@
+../../.pi/extensions/confirm-directory-delete.ts

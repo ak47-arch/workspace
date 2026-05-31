@@ -12,6 +12,7 @@
 /llm/
 /agent-browser/
 /.vscode/
+/workspace-skills/
 # Python virtual environments and caches
 .venv/
 venv/
