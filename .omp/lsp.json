@@ -1,0 +1,41 @@
+{
+  "idleTimeoutMs": 300000,
+  "servers": {
+    "typescript-language-server": {
+      "command": "typescript-language-server",
+      "rootMarkers": [".git"]
+    },
+    "biome": {
+      "command": "biome",
+      "rootMarkers": [".git"]
+    },
+    "basedpyright": {
+      "command": "basedpyright-langserver",
+      "rootMarkers": [".git"]
+    },
+    "bashls": {
+      "command": "bash-language-server",
+      "rootMarkers": [".git"]
+    },
+    "yamlls": {
+      "command": "yaml-language-server",
+      "rootMarkers": [".git"]
+    },
+    "dockerls": {
+      "command": "docker-langserver",
+      "rootMarkers": [".git"]
+    },
+    "vscode-json-language-server": {
+      "command": "vscode-json-language-server",
+      "rootMarkers": [".git"]
+    },
+    "vscode-html-language-server": {
+      "command": "vscode-html-language-server",
+      "rootMarkers": [".git"]
+    },
+    "vscode-css-language-server": {
+      "command": "vscode-css-language-server",
+      "rootMarkers": [".git"]
+    }
+  }
+}
