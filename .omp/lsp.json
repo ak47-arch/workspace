@@ -11,7 +11,7 @@
     },
     "basedpyright": {
       "command": "basedpyright-langserver",
-      "rootMarkers": [".git"]
+      "rootMarkers": ["service_models.yaml", "requirements.txt", "pytest.ini", ".git"]
     },
     "bashls": {
       "command": "bash-language-server",
@@ -19,11 +19,11 @@
     },
     "yamlls": {
       "command": "yaml-language-server",
-      "rootMarkers": [".git"]
+      "rootMarkers": ["service_models.yaml", "docker-compose.yml", ".env.example", ".git"]
     },
     "dockerls": {
       "command": "docker-langserver",
-      "rootMarkers": [".git"]
+      "rootMarkers": ["docker-compose.yml", "Dockerfile", ".git"]
     },
     "vscode-json-language-server": {
       "command": "vscode-json-language-server",
