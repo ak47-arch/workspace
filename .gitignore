@@ -16,6 +16,7 @@
 /.vscode/
 /workspace-skills/
 /workspace-portability/
+/resume/
 # Python virtual environments and caches
 .venv/
 venv/
