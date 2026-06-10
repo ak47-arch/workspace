@@ -14,6 +14,8 @@ Current implemented scope:
 - Podman is the default runtime path and Docker remains an explicit fallback
 - Hermes has been removed from the active `survival-infrastructure/` runtime path
 - legacy in-repo local-LLM mode has been removed from `survival-infrastructure/`
+- **Hermes (`hermes/`)**: marked out of scope — no migration work planned
+- **Feed Analyser (`feed_analyser/`)**: top priority for migration
 
 ## Focused Checklist for Phases 0–2
 
@@ -152,17 +154,17 @@ This avoids rewriting all startup scripts and compose files at once.
 
 ### Migrate in this order
 
-1. `llm/`
-2. `survival-infrastructure/`
-3. `hermes/`
-4. `feed_analyser/`
+1. `llm/` — ✅ done
+2. `survival-infrastructure/` — ✅ done
+3. `feed_analyser/` — **next priority, highest risk**
+4. `hermes/` — **out of scope**
 
 ### Why this order
 
 - `llm/` is the smallest, cleanest standalone service and is already health-checked.
 - `survival-infrastructure/` depends operationally on the LLM and has a Docker-specific startup script.
-- `hermes/` is simple but uses `network_mode: host`, which needs explicit Podman validation.
 - `feed_analyser/` is highest risk because it mounts `/var/run/docker.sock`, uses Docker-oriented monitoring, and describes runner-container management from inside the backend.
+- `hermes/` is out of scope — no migration work planned.
 
 ## Application Inventory and Risk Assessment
 
@@ -228,7 +230,7 @@ In `survival-infrastructure/docker-compose.yml`:
 - `GET /` and `GET /api/captures` on port `5151` succeed
 - LLM dependency resolution works without relying on Docker-only host aliases
 
-## 3. `hermes/`
+## 3. `hermes/`  — 🚫 OUT OF SCOPE
 
 ### Current Docker-specific assumptions
 
@@ -239,20 +241,15 @@ In `survival-infrastructure/docker-compose.yml`:
 
 ### Risk
 
-**Medium**
+N/A — no migration work planned for this application.
 
 ### Main migration concerns
 
-- Need to validate `network_mode: host` behavior under the chosen Podman mode.
-- Rootless Podman networking behavior must be verified before declaring success.
-- Need to confirm file ownership behavior remains correct with the UID/GID mapping workflow.
+N/A
 
 ### Acceptance criteria
 
-- `gateway` starts under Podman
-- `dashboard` starts under Podman
-- host-bound networking behavior matches current expectations
-- files created in `~/.hermes` remain readable/writable by the host user
+N/A
 
 ## 4. `feed_analyser/`
 
@@ -366,26 +363,11 @@ Replace Docker-hardcoded orchestration with runtime-agnostic or Podman-native or
 - app containers reach LLM reliably
 - no Docker-only command remains in the critical startup path
 
-## Phase 3 — Migrate `hermes/`
+## Phase 3 — `hermes/` 🚫 OUT OF SCOPE
 
-### Objective
+Migration of Hermes is not planned. All references to Hermes in this document are retained for historical documentation only; no action is required.
 
-Prove host-network and persistent-user-data workflows under Podman.
-
-### Tasks
-
-1. Run Hermes under Podman using the existing compose definition if possible.
-2. Validate `network_mode: host` behavior.
-3. If host networking is unreliable under the chosen Podman mode, switch to explicit port bindings.
-4. Validate `~/.hermes` permissions with `HERMES_UID` / `HERMES_GID`.
-5. Update `hermes/docker-compose.yml` comments/docs if any Podman-specific caveats are needed.
-
-### Exit criteria
-
-- Hermes gateway and dashboard both run correctly under Podman
-- no file permission regression in `~/.hermes`
-
-## Phase 4 — Migrate `feed_analyser/`
+## Phase 4 — Migrate `feed_analyser/` ✅ COMPLETE
 
 ### Objective
 
@@ -393,22 +375,26 @@ Handle the highest-risk app last, after Podman networking and compose patterns a
 
 ### Tasks
 
-1. Confirm whether backend truly requires container orchestration via socket.
-   - If no: remove the socket mount.
-   - If yes: switch to Podman socket compatibility and test the backend behavior explicitly.
-2. Replace or reconfigure Dozzle.
-   - Option A: validate Dozzle against Podman-compatible socket access.
-   - Option B: replace with a Podman-friendly log workflow.
-3. Validate `app-net` and `sandbox-net` behavior under Podman.
-4. Verify internal network isolation still blocks outbound internet from the sandbox.
-5. Verify warm sandbox container approach still behaves as intended.
-6. Update `feed_analyser/README.md` to remove Docker-only setup steps.
+1. ✅ **Socket audit**: confirmed backend does **not** use `/var/run/docker.sock` — it was dead code. Socket mount removed.
+2. ✅ **Dozzle removed**: replaced with `podman compose logs -f` / `./start.sh logs`.
+3. ✅ **Networks validated**: `app-net` (bridge) and `sandbox-net` (internal) both work under Podman.
+4. ✅ **Sandbox isolation verified**: `ping 8.8.8.8` from runner-sandbox returns "Network unreachable".
+5. ✅ **Warm sandbox container** starts correctly under Podman.
+6. ✅ **README updated**: Podman-first instructions with Docker fallback, env var reference added.
+
+### Additional changes made during implementation
+
+- **`start.sh`** created: runtime-agnostic startup with `CONTAINER_RUNTIME` (default `podman`).
+- **`backend/github_scout.py`**: `OLLAMA_URL` now reads from `OLLAMA_BASE_URL` env var instead of hardcoded `localhost:11434`.
+- **`backend/Dockerfile`**: added non-root `appuser` for rootless Podman file ownership.
+- **`docker-compose.yml`**: removed socket mounts, removed Dozzle, added `OLLAMA_BASE_URL`, `user:` mapping, and `CHOKIDAR_USEPOLLING`.
 
 ### Exit criteria
 
-- full stack starts on Podman
-- backend sandbox workflow still works
-- monitoring/logging approach is agreed and documented
+- ✅ full stack starts on Podman
+- ✅ backend sandbox workflow preserved (sandbox container runs, isolation intact)
+- ✅ monitoring/logging replaced with `podman compose logs -f`
+- ✅ Docker fallback path retained (`CONTAINER_RUNTIME=docker`)
 
 ## Cross-Cutting Technical Changes
 
@@ -495,11 +481,7 @@ For each migrated app:
 - capture write persists to mounted data dir
 - app reaches LLM over the intended network path
 
-### `hermes/`
-
-- gateway process stays up
-- dashboard reachable on expected host interface
-- writes to `~/.hermes` preserve host ownership expectations
+### `hermes/` — 🚫 out of scope
 
 ### `feed_analyser/`
 
@@ -524,22 +506,26 @@ Important: do not remove Docker assets globally until all four apps have passed 
 
 ## Suggested Delivery Schedule
 
-## Wave 1
+## Wave 1 — ✅ done
 
 - Phase 0
 - Phase 1 (`llm/`)
 
-## Wave 2
+## Wave 2 — ✅ done
 
 - Phase 2 (`survival-infrastructure/`)
 
-## Wave 3
+## Wave 3 — 🚫 cancelled
 
-- Phase 3 (`hermes/`)
+- Phase 3 (`hermes/`) — out of scope
 
-## Wave 4
+## Wave 4 — ✅ complete
 
-- Phase 4 (`feed_analyser/`)
+- Phase 4 (`feed_analyser/`) — done
+
+---
+
+**All in-scope apps migrated.** Docker is optional fallback. See the Definition of Done below.
 
 ## Definition of Done
 
@@ -552,9 +538,16 @@ The migration is complete when all of the following are true:
 5. App docs and startup scripts reflect the Podman path.
 6. Docker is optional fallback only, not a hidden dependency.
 
-## Immediate Next Actions
+## Immediate Next Actions 🎉 ALL DONE
 
-1. Fix phase 0 first: make `podman compose` stop delegating to Docker if full migration is the goal.
-2. Run the first pilot on `llm/`.
-3. After `llm/` passes, update `survival-infrastructure/start_stack.sh` to support Podman.
-4. Leave `feed_analyser/` for last because socket/orchestration behavior is the biggest unknown.
+1. ✅ Phase 0 — done
+2. ✅ Phase 1 (`llm/`) — done
+3. ✅ Phase 2 (`survival-infrastructure/`) — done
+4. ✅ **Phase 4 (`feed_analyser/`) — done**
+   - ✅ Socket audit: dead code, removed
+   - ✅ Dozzle replaced with `podman compose logs -f`
+   - ✅ `app-net` and `sandbox-net` validated under Podman
+   - ✅ Sandbox network isolation verified
+   - ✅ `feed_analyser/README.md` updated for Podman-first setup
+
+**The Podman migration for all in-scope workspace apps is complete.**
