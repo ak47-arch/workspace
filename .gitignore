@@ -12,6 +12,8 @@
 /llm/
 /agent-browser/
 /pi-mono/
+/headroom/
+/.headroom-venv/
 /skills/
 /.vscode/
 /workspace-skills/
