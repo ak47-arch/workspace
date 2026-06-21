@@ -16,6 +16,7 @@
 /.headroom-venv/
 /headroom-pi/
 /skills/
+/graphify-out/
 /.vscode/
 /workspace-skills/
 /workspace-portability/
