@@ -1,6 +1,6 @@
 ---
 name: ssh-themistocles
-description: Connect to the second system over SSH using the saved LAN target and verify session identity.
+description: Connect to the second system over SSH using the saved LAN target. Commands survive SSH drops via persistent tmux session.
 ---
 
 # SSH Themistocles
@@ -9,70 +9,70 @@ Use this skill when asked to:
 
 - connect to the second system
 - run commands on the Debian host at `192.168.0.122`
-- avoid re-providing SSH target details each time
+- run long or critical remote commands that must survive SSH disconnections
 
 ## Saved target
 
 - user: `anupam`
 - host: `192.168.0.122`
+- SSH alias: `themistocles-lan`
 - expected remote hostname: `themistocles`
 - observed distro banner: Debian GNU/Linux (kernel `6.12.86+deb13-amd64`)
 
-## Auth status (configured)
+## Auth status
 
-- passwordless SSH is enabled via local key: `~/.ssh/id_ed25519`
+- passwordless SSH via local key: `~/.ssh/id_ed25519`
 - public key installed on remote user: `anupam@192.168.0.122`
-- login verified with batch mode (no password fallback):
+
+## Resilient remote commands (survives SSH drops)
+
+For long-running or critical commands, run them inside a persistent tmux session on the remote. The session survives any SSH disconnection — commands keep running and output is captured when you reconnect.
+
+### One-time setup (run once per agent session)
 
 ```bash
-ssh -o BatchMode=yes -o PasswordAuthentication=no anupam@192.168.0.122 "hostname && whoami"
+ssh themistocles-lan "tmux new -d -s pi-session 2>/dev/null || true"
 ```
 
-Expected output:
+### Sending a command
 
-- hostname: `themistocles`
-- user: `anupam`
-
-## Preferred command
+Use `tmux send-keys` to type the command into the persistent session. The `===END_rc=N===` marker captures the exit code.
 
 ```bash
-ssh anupam@192.168.0.122
+ssh themistocles-lan \
+  'tmux send-keys -t pi-session "YOUR_COMMAND; echo ===END_rc=\$?===" Enter'
+```
+
+### Waiting and reading output
+
+```bash
+# Poll until end marker appears on last line
+while ! ssh themistocles-lan "tmux capture-pane -pS - -t pi-session | grep -q '===END_rc='" 2>/dev/null; do
+  sleep 2
+done
+
+# Read full output (exit code is in last ===END_rc=N=== line)
+ssh themistocles-lan "tmux capture-pane -pS - -t pi-session"
+```
+
+### When to use which
+
+| Scenario | Use |
+|---|---|
+| Short commands (< 10s) | Plain `ssh themistocles-lan "cmd"` |
+| Long commands (> 10s) | tmux session |
+| Network is unstable | tmux session |
+| Commands that must not be interrupted | tmux session |
+
+### Cleanup (optional)
+
+```bash
+ssh themistocles-lan "tmux kill-session -t pi-session 2>/dev/null || true"
 ```
 
 ## Operating rules
 
 - do not store or print passwords
 - if prompted for a password, let the user type it directly in terminal
-- after connecting, verify identity quickly with:
-
-```bash
-hostname && whoami && pwd
-```
-
+- after connecting, verify identity quickly with `hostname && whoami && pwd`
 - if host key changes, stop and ask before accepting a new fingerprint
-
-## Optional convenience (user-approved)
-
-If the user asks to avoid typing the full SSH command each time, or asks for an SSH alias or config entry, suggest adding the following block to `~/.ssh/config`:
-
-Before suggesting the config block, note that the user should check whether a `Host themistocles-lan` entry already exists in `~/.ssh/config` (for example: `grep -A5 "themistocles-lan" ~/.ssh/config`). If it exists with different values, instruct the user to edit the existing entry rather than append a duplicate `Host` block.
-
-```sshconfig
-Host themistocles-lan
-  HostName 192.168.0.122
-  User anupam
-  IdentityFile ~/.ssh/id_ed25519
-  IdentitiesOnly yes
-```
-
-Then connect with:
-
-```bash
-ssh themistocles-lan
-```
-
-Validate alias is passwordless:
-
-```bash
-ssh -o BatchMode=yes themistocles-lan "hostname && whoami"
-```
