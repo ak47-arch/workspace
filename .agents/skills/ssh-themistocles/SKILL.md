@@ -73,7 +73,7 @@ ssh themistocles-lan "tmux kill-session -t pi-session 2>/dev/null || true"
 ## Proven achievement: remote workspace restore
 
 On **2026-06-25**, this tmux persistence workflow was proven in production:
-a full Phase 1 workspace restore (13 repos + 13MB critical snapshot) was
+a full Phase 1 workspace restore (14 repos + 13MB critical snapshot) was
 run on `themistocles` over a fragile WiFi link (3.6s latency spikes,
 frequent SSH drops). The restore took ~2+ hours and survived multiple
 complete SSH disconnections without interruption.
@@ -82,7 +82,7 @@ complete SSH disconnections without interruption.
 
 | Category | Details |
 |---|---|
-| Git repos | 13 repos cloned (`agent-browser` through `workspace-skills`) |
+| Git repos | 14 repos cloned (including `resume`) |
 | Critical snapshot | SQLite DBs, hermes session state, graphify-out dirs, runtime data |
 | Source | GitHub Release (`snapshot-critical` tag) |
 
