@@ -112,6 +112,75 @@ Piping commands via SSH stdin (`echo "cmd" | ssh host`) does NOT survive
 drops — the remote shell receives SIGHUP when the pipe breaks.
 `tmux send-keys` decouples command execution from the SSH session entirely.
 
+## Health check — diagnose a stuck or hanging session
+
+If `pi-session` seems unresponsive or a command never finishes, run these
+checks before escalating.
+
+### 1. Is tmux itself alive?
+
+```bash
+ssh themistocles-lan 'tmux list-sessions'
+```
+
+Expected output shows `pi-session: 1 windows (created ...)`. If the session
+doesn't appear, it was killed — start a new one with `tmux new -d -s pi-session`.
+
+### 2. What's in the scrollback?
+
+```bash
+ssh themistocles-lan 'tmux capture-pane -pS -10 -t pi-session'
+```
+
+Shows the last 10 lines. If it looks stale (same output as minutes ago), the
+shell inside may be blocked.
+
+### 3. What processes are running inside the session?
+
+Inject a `ps` command to see the process tree:
+
+```bash
+ssh themistocles-lan 'tmux send-keys -t pi-session "ps -o pid,ppid,state,cmd --forest | head -20" Enter'
+sleep 2
+ssh themistocles-lan 'tmux capture-pane -pS -30 -t pi-session'
+```
+
+Look for:
+- `D` (uninterruptible sleep) or `T` (stopped) — likely stuck
+- `R` running for many minutes — may be in an infinite loop
+- `Z` (zombie) — parent hasn't reaped it
+
+### 4. Quick resource scan
+
+```bash
+ssh themistocles-lan 'ps aux --sort=-%cpu | head -5; echo "---"; free -h | head -2'
+```
+
+### How to fix common problems
+
+| Problem | Fix |
+|---|---|
+| Process unresponsive (hanging on network) | `kill <PID>` — kills just the child, shell resumes |
+| Shell frozen, won't read input | `tmux send-keys -t pi-session C-c` — sends Ctrl+C |
+| Shell completely dead | `tmux send-keys -t pi-session C-d` — closes the shell, window exits |
+| Everything broken | `tmux kill-session -t pi-session` then `tmux new -d -s pi-session` |
+| Process stuck due to `subprocess.run()` with no timeout | Add `timeout=60` to the call (known issue: `sync_repos.py` `git fetch --all --prune` has no timeout) |
+
+### Prevention — add timeouts to remote commands
+
+When sending commands into tmux, wrap long-running operations with `timeout`
+so they don't hang forever if the network stalls:
+
+```bash
+# Good — gives up after 60 seconds
+ssh themistocles-lan 'tmux send-keys -t pi-session \
+  "timeout 60 git fetch origin main && echo DONE || echo TIMEOUT" Enter'
+
+# Bad — can hang indefinitely
+ssh themistocles-lan 'tmux send-keys -t pi-session \
+  "git fetch origin main && echo DONE" Enter'
+```
+
 ## Operating rules
 
 - do not store or print passwords
