@@ -1,0 +1,7 @@
+tasks:
+    - common llm api
+    - modualarising all apps
+    - through testing
+    - agent containerisation
+    - work on apps
+    
