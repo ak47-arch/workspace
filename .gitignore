@@ -34,6 +34,7 @@ __pycache__/
 /.omp/lsp-tools/.npm/
 /node_modules/
 /node_modules
+/.pi-subagents/*
 
 # Test/runtime artifacts
 .pytest_cache/
