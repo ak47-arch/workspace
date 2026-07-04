@@ -28,7 +28,6 @@ __pycache__/
 *.pyc
 # /.agent/
 # /.agents/
-/.pi/
 /.github/
 /.omp/lsp-tools/node_modules/
 /.omp/lsp-tools/.npm/
