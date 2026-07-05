@@ -42,7 +42,7 @@ tool calls. It fell back to writing text like `"bash\nls -la"`.
 
 ## Secondary Fix: `api_kwargs["tool_choice"] = "auto"`
 
-**File:** `~/.hermes/hermes-agent/agent/transports/chat_completions.py`
+**File:** `agent/transports/chat_completions.py`
 
 The `chat_completions` transport did not set `tool_choice` when tools were
 provided. The `codex_responses` transport (Responses API) already had
@@ -56,6 +56,93 @@ text-only mode even when tool definitions are present.
 ```python
 api_kwargs["tools"] = tools
 api_kwargs["tool_choice"] = "auto"    # ← added
+```
+
+Lines 320 and 505 in the fork (`~/Desktop/workspace/hermes/agent/transports/chat_completions.py`).
+
+---
+
+## Tertiary Fix: `Bash` → `terminal` alias in repair function
+
+**File:** `agent/agent_runtime_helpers.py`
+
+Some models (like deepseek-v4-flash) are trained to emit `Bash` as the
+shell execution tool name instead of `terminal`. The `_repair_tool_call`
+function normalizes tool names (lowercase, CamelCase, strip `_tool` suffix,
+fuzzy match) but `bash` → `terminal` has too low a similarity score for
+fuzzy matching (0.7 cutoff).
+
+Added a manual alias map at the start of `repair_tool_call()`:
+
+```python
+_TOOL_NAME_ALIASES = {
+    "bash": "terminal",
+}
+alias_target = _TOOL_NAME_ALIASES.get(tool_name.lower())
+if alias_target and alias_target in agent.valid_tool_names:
+    return alias_target
+```
+
+This is a safety net — the primary fix (`tool_choice` + correct
+`disabled_toolsets`) ensures tools are sent to the model with the right
+names, so this alias only triggers if the model hallucinates despite
+correct tool definitions.
+
+---
+
+## Additional Issue: Docker volume mount for workspace access
+
+**File:** `~/.hermes/config.yaml`
+
+The Docker container sandbox didn't have access to the host filesystem
+where the resume project lives. Added a volume mount:
+
+```yaml
+docker_volumes:
+    - /home/anupam/Desktop/workspace/resume:/workspace/resume
+```
+
+When changing this, old Docker containers must be killed (`docker rm -f`)
+so Hermes spawns a new container with the mount. Verify with:
+
+```bash
+docker inspect <container-id> --format '{{json .Mounts}}' | python3 -m json.tool
+```
+
+---
+
+## Install Locations
+
+There are two copies of the codebase:
+
+| Location | Installed via | Status |
+|----------|--------------|--------|
+| `~/.hermes/hermes-agent/` | `curl -fsSL https://hermes-agent.nousresearch.com/install.sh \| bash` | **Active install** (has all fixes) |
+| `~/Desktop/workspace/hermes/` | Local fork / source clone | **Source fork** (patches ready — see below) |
+
+### Fixes applied to the fork (`~/Desktop/workspace/hermes/`)
+
+These are ready for when you install from the fork:
+
+| Fix | File | Change | git diff |
+|-----|------|--------|----------|
+| `tool_choice: "auto"` | `agent/transports/chat_completions.py` | Added `api_kwargs["tool_choice"] = "auto"` after `api_kwargs["tools"] = tools` on both code paths (lines 320, 505) | +2 |
+| `Bash` → `terminal` alias | `agent/agent_runtime_helpers.py` | Added `_TOOL_NAME_ALIASES` dict at start of `repair_tool_call()` | +10 |
+| Remove `coding` from disabled | `~/.hermes/config.yaml` *(not in source)* | Set at install time during `hermes setup` | N/A |
+
+Verify the fixes are applied:
+
+```bash
+grep -n "tool_choice" ~/Desktop/workspace/hermes/agent/transports/chat_completions.py
+# Expected output:
+# 320:            api_kwargs["tool_choice"] = "auto"
+# 505:            api_kwargs["tool_choice"] = "auto"
+
+grep -A4 "TOOL_NAME_ALIASES" ~/Desktop/workspace/hermes/agent/agent_runtime_helpers.py
+# Expected output:
+#     _TOOL_NAME_ALIASES = {
+#         "bash": "terminal",
+#     }
 ```
 
 ---
@@ -82,7 +169,7 @@ curl -s "https://openrouter.ai/api/v1/chat/completions" \
        "tools":[{...}],
        "tool_choice":"auto"}'
 ```
-Response: `finish_reason: tool_calls` with `terminal` tool.  
+Response: `finish_reason: tool_calls` with `terminal` tool.
 **Conclusion:** Model + API support tool calling fine.
 
 ### Step 4: Added debug logging to trace the code path
@@ -135,16 +222,31 @@ The model immediately generated proper `tool_calls` with `terminal`.
 | 23:56 | Added extensive debug logging to trace empty tools |
 | 00:18 | **Found `coding` in `disabled_toolsets` causing 0 tools** |
 | 00:25 | Fixed config → tools loaded = 24, tool calls working |
+| 00:45 | Added Docker volume mount for workspace access |
+| 01:00 | Applied all fixes to the fork (`~/Desktop/workspace/hermes/`) |
 
 ---
 
 ## Files Modified
 
+### Active install (`~/.hermes/hermes-agent/`)
 | File | Change | Critical? |
 |------|--------|-----------|
 | `~/.hermes/config.yaml` | Removed `coding` from `disabled_toolsets` | **Yes — root cause** |
-| `~/.hermes/hermes-agent/agent/transports/chat_completions.py` | Added `tool_choice: "auto"` | Yes — safety net |
-| `~/.hermes/hermes-agent/agent/agent_runtime_helpers.py` | Added `Bash → terminal` alias | Nice-to-have |
+| `~/.hermes/config.yaml` | Added `docker_volumes` mount for resume workspace | Yes |
+| `agent/transports/chat_completions.py` | Added `tool_choice: "auto"` | Yes — safety net |
+
+### Fork (`~/Desktop/workspace/hermes/`)
+| File | Change | Critical? |
+|------|--------|-----------|
+| `agent/transports/chat_completions.py` | Added `tool_choice: "auto"` (lines 320, 505) | **Yes** |
+| `agent/agent_runtime_helpers.py` | Added `Bash → terminal` alias in `repair_tool_call()` | Nice-to-have |
+
+### Config (apply after fork install)
+| File | Change | Critical? |
+|------|--------|-----------|
+| `~/.hermes/config.yaml` | Remove `coding` from `disabled_toolsets` | **Yes** |
+| `~/.hermes/config.yaml` | Add `docker_volumes` if using Docker backend | As needed |
 
 ---
 
@@ -155,3 +257,4 @@ The model immediately generated proper `tool_calls` with `terminal`.
 3. **Check `tools_loaded`** — Add a log at `agent_init.py` line 1065 to see the tool count
 4. **Check `disabled_toolsets`** — Verify no composite toolset (like `coding`) is in the disabled list
 5. **Check `tool_choice`** — Verify `api_kwargs["tool_choice"] = "auto"` is set in the transport
+6. **Check the system prompt** — Ensure it tells the model which tools to use and how to call them
