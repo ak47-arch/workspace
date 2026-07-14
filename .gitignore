@@ -43,3 +43,5 @@ coverage.xml
 # OS/editor noise
 .DS_Store
 *.swp
+
+/mission-control
