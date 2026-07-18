@@ -3,10 +3,9 @@ tasks:
     - modularising all apps
     - thorough testing
     - agent containerisation
-    - work on apps
     - think about survival infrastructure extension
     - extend feed analyser with youtube, gmail and gdrive
-    - clean up the project root. move open sourcce projects in a seperate directory and update workspace portability
+    - clean up the project root. move open source projects in a seperate directory and update workspace portability
     - build the shared context infrastructure with open wiki
     - set up langfuse
     
