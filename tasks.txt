@@ -8,4 +8,4 @@ tasks:
     - clean up the project root. move open source projects in a seperate directory and update workspace portability
     - build the shared context infrastructure with open wiki
     - set up langfuse
-    
+    - implement github browser authentication flow for project restore     
