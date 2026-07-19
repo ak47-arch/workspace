@@ -46,4 +46,5 @@ coverage.xml
 
 /mission-control
 /timesheetViewer
-/opensource/
+.env.*
+
