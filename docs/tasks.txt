@@ -5,10 +5,11 @@ tasks:
     - agent containerisation
     - think about survival infrastructure extension
     - extend feed analyser with youtube, gmail and gdrive
-    - clean up the project root. move open source projects in a seperate directory and update workspace portability
     - build the shared context infrastructure with open wiki
-    - set up langfuse
+    - set up langfuse (fix the langfuse-tracing.ts extension)
     - implement github browser authentication flow for project restore
     - this laptop is hitting its limits. set up thermisticles and run everything on that
-    - work on headroom-pi and get that working reliably and run eval 
-    - (complete)create a skill to summarise the content and most important learnings from a session and attach a link to the actual context window of that session so we can save our knowledge and build on it and not lose it at the end of each session close     
+    - work on headroom-pi and get that working reliably and run evals
+    
+    - (complete)create a skill to summarise the content and most important learnings from a session and attach a link to the actual context window of that session so we can save our knowledge and build on it and not lose it at the end of each session close 
+    - (complete) clean up the project root. move open source projects in a seperate directory and update workspace portability    
