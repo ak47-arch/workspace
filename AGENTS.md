@@ -4,6 +4,9 @@ Code is the source of truth. When you need deeper context, consult OpenWiki
 documentation. The knowledge base is the last resort — only contains manually
 curated entries from past sessions about design decisions and issues.
 
+For a full inventory of projects, tasks, issues, and documentation, see
+`docs/factory-context.md`.
+
 <!-- OPENWIKI:START -->
 
 ## OpenWiki
