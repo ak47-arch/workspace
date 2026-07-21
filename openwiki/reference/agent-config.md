@@ -57,6 +57,9 @@ These are agent-facing instruction files that direct coding agents to use the Op
 | `question-suggestions.ts` | Suggests follow-up questions during agent sessions |
 | `confirm-directory-delete.ts` | Asks for confirmation before deleting directories |
 | `confirm-git-push.ts` | Asks for confirmation before git push operations |
+| `database-write-guard.ts` | Guards against unintended database writes |
+| `herdr-agent-state.ts` | Tracks agent state via herdr integration |
+| `langfuse-tracing.ts` | Langfuse observability integration |
 
 ### Skills (`/.pi/skills/`)
 
@@ -92,22 +95,38 @@ Complete operations guide for the [survival-infrastructure](/openwiki/projects/s
 
 **Usage:** When asked to start/stop/rebuild/debug the survival-infrastructure stack, reference this skill.
 
+### save-knowledge (`/.agents/skills/save-knowledge/SKILL.md`)
+
+Captures the current session's key decisions, architectural rationale, issues, or learnings into the knowledge base at `/docs/knowledge/`.
+
+- Finds the active pi session via `ls -t ~/.pi/agent/sessions/--*--/*.jsonl | head -1`
+- Infers a title and topic from the conversation
+- Summarises into a freeform markdown file with date prefix
+- Copies the full session JSONL alongside the summary
+- Appends an index link to `/docs/knowledge/index.md`
+- Idempotent: re-running on the same session UUID overwrites the existing entry
+
+**Usage:** When the user wants to preserve session learnings, design decisions, or tool evaluations for future reference. The skill creates a durable, searchable knowledge entry with full context.
+
 ## Planning & Tasks
 
 ### tasks.txt
 
-High-level task list at root level:
+High-level task list from `/docs/tasks.txt`:
 
-1. Common LLM API (completed via llm_client migration)
-2. Modularising all apps
-3. Thorough testing
-4. Agent containerisation
-5. Work on apps
-6. Think about survival infrastructure extension
-7. Extend feed analyser with YouTube, Gmail, GDrive
-8. Clean up the project root — move open-source projects to `opensource/` directory and update workspace-portability
-9. Build the shared context infrastructure with OpenWiki
-10. Set up langfuse
+1. **Common LLM API** — Completed via `llm_client` migration
+2. **Modularising all apps** — Extract independent concerns into reusable packages
+3. **Thorough testing** — Expand test coverage across all projects
+4. **Agent containerisation** — Containerise coding agent workflows
+5. **Think about survival infrastructure extension** — Extend pipeline stages
+6. **Extend feed analyser with YouTube, Gmail, GDrive** — Add new ingestion sources
+7. **Clean up the project root** — Move open-source projects to `opensource/` directory and update workspace-portability — ✅ **Done**
+8. **Build the shared context infrastructure with OpenWiki** — In progress
+9. **Set up langfuse** — Observability/tracing platform
+10. **Implement GitHub browser authentication flow** — For project restore
+11. **Set up themistocles (secondary Debian host)** — Offload compute from laptop
+12. **Work on headroom-pi** — Get it working reliably and run eval
+13. **Create save-knowledge skill** — Summarise session learnings and attach context window link — ✅ **Done**
 
 ### PLAN_shared_llm_client.md
 
@@ -162,8 +181,8 @@ Recent commits cleaned up several legacy files:
 | `/.pi/extensions/` | Pi extensions directory |
 | `/.pi/skills/` | Pi skills directory |
 | `/.agents/skills/` | Agent skills directory |
-| `/tasks.txt` | High-level task list |
-| `/PLAN_shared_llm_client.md` | LLM client migration plan |
-| `/KNOWN_ISSUES.md` | Post-migration technical debt |
-| `/HEADROOM-PI-PLAN.md` | Headroom integration plan |
+| `/docs/tasks.txt` | High-level task list |
+| `/llm/PLAN_shared_llm_client.md` | LLM client migration plan |
+| `/docs/KNOWN_ISSUES.md` | Post-migration technical debt |
+| `/headroom-pi/HEADROOM-PI-PLAN.md` | Headroom integration plan |
 | `/package.json` | Workspace package metadata ("workspace-omp-local-tools") |
