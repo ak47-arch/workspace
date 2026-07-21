@@ -20,6 +20,9 @@
 /.vscode/
 /workspace-skills/
 /workspace-portability/
+/opensource/agent-skills/
+/opensource/docetl/
+/opensource/pi-agent-browser-native/
 /resume/
 # Python virtual environments and caches
 .venv/
