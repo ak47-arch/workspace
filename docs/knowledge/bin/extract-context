@@ -1,0 +1,70 @@
+#!/usr/bin/env node
+/**
+ * extract-context — Reconstruct the LLM context window from a saved session file.
+ *
+ * Uses pi's own context-building logic (imported from the pi-mono source repo).
+ *
+ * Usage:
+ *   node docs/knowledge/bin/extract-context <session.jsonl> [leaf-id]
+ *
+ * Outputs JSON lines — one message per line.
+ */
+
+import { resolve, join, dirname } from "path";
+import { fileURLToPath } from "url";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+// Resolve pi-mono source relative to the repo root (two levels up from docs/knowledge/bin)
+const PI_MONO_DIR = resolve(__dirname, "../../../opensource/pi-mono");
+
+async function main() {
+  const args = process.argv.slice(2);
+  if (args.length < 1) {
+    console.error("Usage: extract-context <session.jsonl> [leaf-id]");
+    process.exit(1);
+  }
+
+  const filePath = resolve(args[0]);
+  const targetLeafId = args[1] || null;
+
+  // Import pi's own modules from the source repo (ESM, full path)
+  const { loadEntriesFromFile, buildSessionContext } = await import(
+    join(PI_MONO_DIR, "packages/coding-agent/dist/core/session-manager.js")
+  );
+  const { convertToLlm } = await import(
+    join(PI_MONO_DIR, "packages/coding-agent/dist/core/messages.js")
+  );
+
+  // Load entries using pi's own parser
+  const entries = loadEntriesFromFile(filePath);
+  if (entries.length === 0) {
+    console.error("No entries found in session file");
+    process.exit(1);
+  }
+
+  // Build id → entry map (required by buildSessionContext)
+  const byId = new Map();
+  for (const entry of entries) {
+    byId.set(entry.id, entry);
+  }
+
+  // Determine leaf ID: use the specified one, or the last entry in the file
+  const leafId = targetLeafId || entries[entries.length - 1].id;
+
+  // Build the context window using pi's own logic (tree walk + compaction)
+  const context = buildSessionContext(entries, leafId, byId);
+
+  // Convert to LLM-compatible format using pi's own converter
+  const llmMessages = convertToLlm(context.messages);
+
+  // Output as JSON lines
+  for (const msg of llmMessages) {
+    console.log(JSON.stringify(msg));
+  }
+}
+
+main().catch((err) => {
+  console.error("Error:", err.message);
+  process.exit(1);
+});
