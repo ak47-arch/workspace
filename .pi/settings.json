@@ -1,4 +1,4 @@
 {
-  "extensions": [],
+  "extensions": ["langfuse-tracing"],
   "enableSkillCommands": true
 }
