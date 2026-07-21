@@ -1,6 +1,6 @@
 Software factory:
     components:
-        - knowledge_base: Queryable knowledge base/Context engine
+        - knowledge_base: Queryable knowledge base/Context engine. Memory layer to support all stages of SDLC.
         - assembly_line: CI/CD, agents, sandboxes, worktrees, code review, testing
         - project_management: Prioritisation, integrates with [assembly_line]
         - product/architecture: User Layer, integrates with [knowledge_base]
