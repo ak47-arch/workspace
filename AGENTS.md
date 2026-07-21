@@ -12,6 +12,11 @@ This repository uses OpenWiki for recurring code documentation. Start with `open
 
 The scheduled OpenWiki GitHub Actions workflow refreshes the repository wiki. Do not hand-edit generated OpenWiki pages unless explicitly asked; prefer updating source code/docs and letting OpenWiki regenerate.
 
+### Project-level OpenWiki instances
+
+The following projects each have their own OpenWiki documentation under `<project>/openwiki/`:
+`survival-infrastructure/`, `feed_analyser/`, `resume/`, `llm/`, `headroom-pi/`, and `mission-control/`. Reference those for project-specific documentation.
+
 <!-- OPENWIKI:END -->
 
 ## Knowledge Base (Last Resort)
