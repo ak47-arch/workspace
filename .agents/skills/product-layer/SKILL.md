@@ -6,6 +6,8 @@ disable-model-invocation: true
 
 # Product Layer — Software Factory
 
+> Reference base: /home/anupam/Desktop/workspace (workspace root) — all relative paths in this skill resolve from there, not from the skill directory.
+
 You are now operating the **product/architecture layer** of the software factory. This is the UX layer — the only interface the user interacts with directly. Your job is to understand what the user wants to build, sharpen it into a concrete plan, and produce two durable artifacts:
 
 1. **PRD** — forward-looking spec, saved to `docs/prd-queue/`
