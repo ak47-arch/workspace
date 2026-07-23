@@ -1,13 +1,13 @@
 ---
 name: save-knowledge
-description: Save a knowledge entry from the current session into the knowledge base. Use when the user wants to preserve design decisions, architectural rationale, issues, or other organisation-worthy knowledge.
+description: Capture a structured decision record from the session. Use when preserving design intent or when a significant decision emerges that should be recorded.
 ---
 
 # Save Knowledge
 
 ## Summary
 
-Read the current session, infer a title and topic from the conversation, summarise the key decisions/issues/learnings into a freeform markdown file, copy the session file alongside it, and append a link to `docs/knowledge/index.md`.
+Read the current session, infer a title for the decision, append it as a new structured entry under `docs/knowledge/sessions/<uuid>/decisions/`, and add a link to `docs/knowledge/index.md`. Multiple decisions from the same session accumulate in the same session directory — each independently addressable in the index.
 
 ## Finding the current session
 
@@ -19,32 +19,70 @@ This picks the most recently modified `.jsonl` across all session directories �
 
 ## Re-running on the same session
 
-If the skill is run multiple times in the same session, the last run wins. Check if this session UUID (`"id":"<uuid>"` from the first line) already exists in any `session.jsonl` under `docs/knowledge/`. If found, **overwrite** that entry's `summary.md` and `session.jsonl` instead of creating a new one. The index.md link stays the same.
+Multiple saves from the same session add new decision files to the same session directory. The session directory is keyed by UUID, so subsequent saves always find it. Each decision gets its own sequence number — no overwrites.
 
 ## Workflow
 
 1. **Find the current session file** using the command above. Read the first line to get the session UUID.
 
-2. **Check for a previous save** — search all `session.jsonl` files under `docs/knowledge/` for the same UUID. If found, reuse that entry's directory path for the rest of the workflow (overwrite mode).
+2. **Create or reuse the session directory**:
+   ```
+   docs/knowledge/sessions/<uuid>/
+   ```
+   Create it if it doesn't exist. Then **always copy** the session file into it as `session.jsonl`, overwriting any previous copy. The session file grows as the conversation progresses — each save gets the freshest snapshot, which is a strict superset of any earlier one.
 
 3. **Read the session entries** — the file is JSONL. Walk the tree from leaf to root via `parentId` to get the active path. Skip entries that are excluded by compaction (a compaction entry with `firstKeptEntryId` replaces everything before that point).
 
-4. **Infer a title and topic** from the conversation. The title should be short and descriptive (e.g. "Payment Flow Architecture Decision"). The topic is a directory name like `architecture`, `payments`, `infrastructure` — pick something that groups related entries.
+4. **Infer a title** from the conversation. The title should be short and descriptive (e.g. "Payment Flow Architecture Decision"). Also derive a slug from the title for the filename.
 
-5. **Summarise** — write a plain markdown summary covering what was decided, why, alternatives considered, and any caveats or open questions. Start with the current date on its own line. Then freeform prose. No template, no frontmatter. Focus on what would be valuable months from now.
+5. **Determine the next sequence number** — list files in `docs/knowledge/sessions/<uuid>/decisions/`. If the directory doesn't exist yet, start at `01`. Otherwise, find the highest existing numeric prefix and increment by one.
 
-6. **Create the entry directory** (or reuse the existing one if overwriting):
+6. **Capture the decision** — write a new file at:
    ```
-   docs/knowledge/<topic>/<date>-<slug>/
+   docs/knowledge/sessions/<uuid>/decisions/<sequence>-<slug>.md
    ```
-   Use today's date and a slug derived from the title. If overwriting, reuse the existing path from step 2.
+   Use the structured format below. Every field matters. The **revision triggers** field is especially important — it tells a future agent when to stop trusting this entry.
 
-7. **Write `summary.md`** into that directory.
-
-8. **Copy the session file** into that directory as `session.jsonl`.
-
-9. **Append to `docs/knowledge/index.md`** — add one line (skip if overwriting, since the link already exists):
+7. **Append to `docs/knowledge/index.md`** — add one line:
    ```markdown
-   - [<title>](<topic>/<date>-<slug>/summary.md)
+   - [<title>](sessions/<uuid>/decisions/<sequence>-<slug>.md)
    ```
    Create `index.md` with a `# Knowledge Base` heading if it doesn't exist.
+
+## Structured format
+
+```markdown
+## Decision: <title>
+
+**Status**: proposed | accepted | deprecated | superseded
+**Date**: <yyyy-mm-dd>
+**Session**: sessions/<uuid>/session.jsonl
+
+### Context
+
+What was happening in the workspace that framed this decision.
+
+### Problem
+
+The specific tension or requirement being addressed.
+
+### Alternatives
+
+What else was considered and why each was rejected or deferred.
+
+### Decision
+
+What was chosen.
+
+### Rationale
+
+Why this path, acknowledging trade-offs.
+
+### Consequences
+
+What changes — things that become easier, harder, or deprecated.
+
+### Revision triggers
+
+Conditions that would make this decision worth re-examining.
+```
