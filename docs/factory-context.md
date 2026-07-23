@@ -18,6 +18,18 @@ This is where everything is. If you need anything just follow the trail.
 
 Each first-party project has its own `openwiki/` for project-specific documentation.
 
+### Vision / Design Intent
+
+When you need to understand **why** something was built or why it works a particular way, consult each project's vision or design doc:
+
+| Project | Vision / Design Doc |
+|---------|--------------------|
+| `survival-infrastructure/` | [`docs/technical/VISION.md`](../survival-infrastructure/docs/technical/VISION.md) — stakeholder vision, three-layer model, end goal |
+| `feed_analyser/` | [`vision.md`](../feed_analyser/vision.md) — problem statement, core pillars, phased direction |
+| `mission-control/` | [`MISSION_CONTROL_PRD.md`](../mission-control/MISSION_CONTROL_PRD.md) — product requirements, architecture, design decisions |
+
+These give you the bigger picture of what each project is about and where it's headed. Read the relevant one when you need context about purpose or direction before making changes.
+
 ## Tasks → [docs/tasks.txt](tasks.txt)
 ## Known Issues → [docs/KNOWN_ISSUES.md](KNOWN_ISSUES.md)
 ## Knowledge Base → [docs/knowledge/index.md](knowledge/index.md)
