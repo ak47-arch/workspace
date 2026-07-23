@@ -1,12 +1,10 @@
 tasks:
     - common llm api
-    - modularising all apps
     - thorough testing
     - agent containerisation
     - think about survival infrastructure extension
     - extend feed analyser with youtube, gmail and gdrive
     - build the shared context infrastructure with open wiki
-    - set up langfuse (fix the langfuse-tracing.ts extension)
     - implement github browser authentication flow for project restore
     - this laptop is hitting its limits. set up thermisticles and run everything on that
     - work on headroom-pi and get that working reliably and run evals
@@ -14,7 +12,9 @@ tasks:
     - in survival-infrastructure work on the people profiles
     - standardise documentation structure across all apps
     - work on vision, functional and technical documentation across projects making them factory ready
+    - plan the modularisation of all apps. it would be better if all projects follow same structure
     
     
     - (complete)create a skill to summarise the content and most important learnings from a session and attach a link to the actual context window of that session so we can save our knowledge and build on it and not lose it at the end of each session close 
-    - (complete) clean up the project root. move open source projects in a seperate directory and update workspace portability    
+    - (complete) clean up the project root. move open source projects in a seperate directory and update workspace portability 
+    - (complete) set up langfuse (fix the langfuse-tracing.ts extension)   
