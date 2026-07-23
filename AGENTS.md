@@ -1,5 +1,7 @@
 # Agent Instructions
 
+This workspace is developed and maintained under a **software factory** paradigm. See `docs/factory.txt` for the full model.
+
 Code is the source of truth. When you need deeper context, consult OpenWiki
 documentation. The knowledge base is the last resort — only contains manually
 curated entries from past sessions about design decisions and issues.

@@ -1,8 +1,102 @@
 Software factory:
+    objective:
+        - Constrain/work towards constraining user engagement with the factory to the [product/architecture] level
+
     components:
         - knowledge_base: Queryable knowledge base/Context engine. Memory layer to support all stages of SDLC.
         - assembly_line: CI/CD, agents, sandboxes, worktrees, code review, testing
         - project_management: Prioritisation, integrates with [assembly_line]
         - product/architecture: User Layer, integrates with [knowledge_base]
-    objective:
-        - Constrain/work towards constraining user engagement with the factory to the [product/architecture] level
+
+---
+
+## Knowledge Base — Deep Dive
+
+### What It Is
+
+The knowledge base is the spinal cord of the software factory. It gives the agent (or any LLM working in this workspace) just-in-time, just-enough context about what exists, how it works, and why it was built that way — without overwhelming the context window.
+
+It is not a dumping ground for all information. It is a **progressive disclosure system**: the agent starts with lightweight pointers, and drills deeper only when needed. This keeps the initial context footprint small (~2,500 tokens) while making the full depth of workspace knowledge accessible on demand.
+
+### Core Problem It Solves
+
+An LLM working on a large multi-project workspace needs three kinds of knowledge:
+
+1. **What exists** — projects, files, structure
+2. **How it works** — architecture, code, APIs, operations
+3. **Why it was done that way** — design intent, vision, decisions, constraints
+
+The first two are easy (code + READMEs + OpenWiki). The third is hard: it lives in the developer's head, in past conversations, in rejected alternatives. Without it, the agent makes changes that conflict with the intended direction, breaks undocumented constraints, or duplicates past work.
+
+### Architecture — The Progressive Disclosure Chain
+
+```
+AGENTS.md (~250 tokens)
+    │  "Code is truth. Start here for pointers."
+    ▼
+docs/factory-context.md (~3KB)
+    │  "Here's every project, its status, its docs, and where to find the 'why'."
+    ▼
+┌──────────────────────────────────────────────────────┐
+│                  Discovery Layer                      │
+│                                                       │
+│  openwiki/         Per-project code docs (what/how)   │
+│  VISION docs       Stakeholder vision, end goals      │
+│  PRDs / DESIGN     Product requirements, architecture  │
+│  project READMEs   Operational guides                  │
+│  .agents/skills/    Operational playbooks               │
+└──────────────────────────────────────────────────────┘
+    │
+    ▼ (when design intent is needed)
+┌──────────────────────────────────────────────────────┐
+│                  Why Layer                            │
+│                                                       │
+│  docs/knowledge/   Curated design decisions & issues   │
+│  session.jsonl     Full session traces for deep context │
+└──────────────────────────────────────────────────────┘
+```
+
+Key principle: each layer is discovered on demand. The agent never loads everything — it follows pointers from the previous layer.
+
+### What Has Been Done (Current State)
+
+**Navigation layer — complete:**
+- `AGENTS.md` serves as the entry point, pointing to `docs/factory-context.md`
+- `docs/factory-context.md` inventories all projects, their status, docs links, and now includes a Vision / Design Intent section that tells the agent where to find the "why"
+
+**What/how layer — complete:**
+- OpenWiki documentation for every project (auto-generated, refreshed by GitHub Actions)
+- Operational skills for SSH, pipeline ops, web search, backup
+- Project READMEs covering usage, configuration, and API
+
+**Why layer — partial:**
+- Vision/PRD docs exist for 3/5 core projects:
+    - `survival-infrastructure/docs/technical/VISION.md` — three-layer model, decision loop, guiding principles
+    - `survival-infrastructure/docs/technical/TECHNICAL_VISION.md` — technical roadmap, phased implementation
+    - `feed_analyser/vision.md` — problem statement, core pillars, phased direction
+    - `mission-control/MISSION_CONTROL_PRD.md` — product requirements, architecture, design decisions
+    - `mission-control/DESIGN.md` — architectural decisions and implementation summary
+- Missing: `llm/` and `resume/` have no vision/design docs
+- Knowledge base entries: only one (browser automation eval). The `save-knowledge` skill exists but is underused.
+
+**Context engineering — initial pass done:**
+- AGENTS.md is lean (~250 tokens) — pure navigation, no duplication
+- `docs/factory-context.md` now points to vision docs for "why" context
+- Total initial context ~2,500 tokens (system prompt + AGENTS.md + skills + subagent tool description)
+
+### What Still Needs Work
+
+- Fill missing vision docs for `llm/` and `resume/`
+- Touch up stale vision docs (version references, current status)
+- Build the habit of capturing design decisions via `save-knowledge` skill
+- Optionally prune the subagent tool description (largest single context item at ~1,500 tokens)
+- Iterate on the knowledge base system with better technology as needs grow
+
+### Relationship to Other Factory Components
+
+The knowledge base feeds every other component:
+- **assembly_line** uses it so agents understand context before writing code
+- **project_management** uses it to understand priorities and constraints
+- **product/architecture** integrates with it to present intent to the user
+
+Without the knowledge base, downstream components operate blind — they see code but not intent. With it, the entire factory has a shared understanding of what exists, how it works, and why.
