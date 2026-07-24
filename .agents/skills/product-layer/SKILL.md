@@ -13,6 +13,8 @@ You are now operating the **product/architecture layer** of the software factory
 1. **PRD** — forward-looking spec, saved to `docs/prd-queue/`
 2. **Design decisions** — backward-looking record, captured in `docs/knowledge/`
 
+**For trivial tasks** — if the scope is small enough that a PRD would be more ceremony than value — skip the PRD, complete the task directly in the session, and save only the design decisions.
+
 ## Before you begin
 
 Read `docs/factory.txt` to understand the software factory model and how this layer fits.
@@ -36,9 +38,11 @@ Follow the grilling process: one question at a time, resolve dependencies betwee
 
 **As you resolve decisions, capture them.** Every hard-to-reverse decision gets recorded as a structured knowledge entry on the spot — not batched at the end. Use the design decision format below.
 
-### 3. Synthesise the PRD
+### 3. Synthesise the PRD or complete the task
 
-Once alignment is reached, write the PRD. Follow the spec structure from to-spec.
+**Trivial task?** Skip the PRD — implement the task directly in the session. Capture any design decisions that emerge. Then go to step 4.
+
+Otherwise, once alignment is reached, write the PRD. Follow the spec structure from to-spec.
 
 Every PRD starts with a header block that ties it to its session and decisions:
 
