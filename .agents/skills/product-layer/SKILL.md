@@ -38,7 +38,23 @@ Follow the grilling process: one question at a time, resolve dependencies betwee
 
 ### 3. Synthesise the PRD
 
-Once alignment is reached, write the PRD. Follow the spec structure from to-spec:
+Once alignment is reached, write the PRD. Follow the spec structure from to-spec.
+
+Every PRD starts with a header block that ties it to its session and decisions:
+
+```
+**Date**: <yyyy-mm-dd>
+**Status**: Draft | Review | Final
+**Owner**: <team or initiative>
+**Session**: `docs/knowledge/sessions/<session-uuid>/session.jsonl`
+**Decisions**:
+  - `docs/knowledge/sessions/<session-uuid>/decisions/<sequence>-<slug>.md`
+  - ... (list each decision file)
+```
+
+The Decisions field lists the individual decision files so downstream processes can trace each settled choice back to its full record.
+
+Body sections:
 
 - **Problem statement** — what is broken or missing, and why it's worth solving
 - **Solution overview** — the shape of the fix at a high level

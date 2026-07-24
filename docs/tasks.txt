@@ -1,20 +1,21 @@
 tasks:
-    - common llm api
-    - thorough testing
-    - agent containerisation
-    - think about survival infrastructure extension
-    - extend feed analyser with youtube, gmail and gdrive
-    - build the shared context infrastructure with open wiki
-    - implement github browser authentication flow for project restore
-    - this laptop is hitting its limits. set up thermisticles and run everything on that
-    - work on headroom-pi and get that working reliably and run evals
-    - think about how entire monitoring can be automated
-    - in survival-infrastructure work on the people profiles
-    - standardise documentation structure across all apps
-    - work on vision, functional and technical documentation across projects making them factory ready
-    - plan the modularisation of all apps. it would be better if all projects follow same structure
+    - common llm api (llm)
+    - thorough testing (all)
+    - agent containerisation (all)
+    - think about survival infrastructure extension (survival-infrastructure)
+    - extend feed analyser with youtube, gmail and gdrive (feed_analyser)
+    - build the shared context infrastructure with open wiki (software_factory)
+    - implement github browser authentication flow for project restore (workspace-portability)
+    - this laptop is hitting its limits. set up thermisticles and run everything on that (second system)
+    - work on headroom-pi and get that working reliably and run evals (headroom-pi)
+    - think about how entire monitoring can be automated (software_factory)
+    - in survival-infrastructure work on the people profiles (survival-infrastructure)
+    - standardise documentation structure across all apps (all)
+    - work on vision, functional and technical documentation across projects making them factory ready (all)
+    - plan the modularisation of all apps. it would be better if all projects follow same structure (all)
+    - update workspace portability with latest opensource projects (workspace-portability)
     
     
-    - (complete)create a skill to summarise the content and most important learnings from a session and attach a link to the actual context window of that session so we can save our knowledge and build on it and not lose it at the end of each session close 
-    - (complete) clean up the project root. move open source projects in a seperate directory and update workspace portability 
-    - (complete) set up langfuse (fix the langfuse-tracing.ts extension)   
+    - (complete)create a skill to summarise the content and most important learnings from a session and attach a link to the actual context window of that session so we can save our knowledge and build on it and not lose it at the end of each session close (software_factory)
+    - (complete) clean up the project root. move open source projects in a seperate directory 
+    - (complete) set up langfuse (fix the langfuse-tracing.ts extension) (langfuse)  
