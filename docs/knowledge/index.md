@@ -14,3 +14,6 @@
 - [Extension Platform and UX](sessions/019f9487-9ea0-7905-8ae6-eaa2aff6bbdd/decisions/02-extension-platform-and-ux.md)
 - [Artefact Data Model and Storage](sessions/019f9487-9ea0-7905-8ae6-eaa2aff6bbdd/decisions/03-artefact-data-model-and-storage.md)
 - [Legacy Feed Analyser Archiving](sessions/019f9487-9ea0-7905-8ae6-eaa2aff6bbdd/decisions/04-legacy-feed-analyser-archiving.md)
+- [GDrive Integration Model and Source Type](sessions/019f9a16-9363-7e5a-a9a7-f696fc32e4c6/decisions/01-gdrive-integration-model.md)
+- [GDrive Auth and Configuration Approach](sessions/019f9a16-9363-7e5a-a9a7-f696fc32e4c6/decisions/02-gdrive-auth-and-configuration.md)
+- [GDrive File Export, Dedup, and Metadata Strategy](sessions/019f9a16-9363-7e5a-a9a7-f696fc32e4c6/decisions/03-gdrive-file-export-and-storage.md)
