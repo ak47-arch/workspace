@@ -18,7 +18,7 @@ tasks:
     - extend the software_factory architecture based on the learnings in this https://github.com/humanlayer/advanced-context-engineering-for-coding-agents/blob/main/wsff.md
     - extend survival-infrastructure with gmail and gdrive(survival-infrastructure)
     - deprecate the spec driven process for all projects (all)
-    - see how opensource/cognee caan be intgrated into our ecosystem and what benefits it might provide and evaluate the benefits
+    - see how opensource/cognee caan be intgrated into our ecosystem and what benefits it might provide and evaluate the benefits(software_factory)
     
     - (complete)create a skill to summarise the content and most important learnings from a session and attach a link to the actual context window of that session so we can save our knowledge and build on it and not lose it at the end of each session close (software_factory)
     - (complete) clean up the project root. move open source projects in a seperate directory 
