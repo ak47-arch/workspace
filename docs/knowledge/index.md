@@ -10,3 +10,7 @@
 - [Skills as Packaging with disable-model-invocation](sessions/019f8faf-c8f2-7612-a79d-10e18e6f78cf/decisions/01-factory-architecture-decisions.md#7-skills-as-packaging-layer-with-disable-model-invocation)
 - [GitHub Browser Auth Flow for Workspace Restore](sessions/019f937c-9afe-731e-a70d-c88d4eb9d675/decisions/01-github-browser-auth-flow.md)
 - [Parallel Repo Clone](sessions/019f93aa-ee32-7014-b963-8bec75928d5d/decisions/01-parallel-repo-clone.md)
+- [Capture Instrument Architecture](sessions/019f9487-9ea0-7905-8ae6-eaa2aff6bbdd/decisions/01-capture-instrument-architecture.md)
+- [Extension Platform and UX](sessions/019f9487-9ea0-7905-8ae6-eaa2aff6bbdd/decisions/02-extension-platform-and-ux.md)
+- [Artefact Data Model and Storage](sessions/019f9487-9ea0-7905-8ae6-eaa2aff6bbdd/decisions/03-artefact-data-model-and-storage.md)
+- [Legacy Feed Analyser Archiving](sessions/019f9487-9ea0-7905-8ae6-eaa2aff6bbdd/decisions/04-legacy-feed-analyser-archiving.md)
