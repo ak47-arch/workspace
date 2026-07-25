@@ -3,7 +3,7 @@ tasks:
     - thorough testing (all)
     - agent containerisation (all)
     - think about survival infrastructure extension (survival-infrastructure)
-    - extend feed analyser with youtube, gmail and gdrive (feed_analyser)
+    - extend feed analyser with youtube (feed_analyser)
     - build the shared context infrastructure with open wiki (software_factory)
     - implement github browser authentication flow for project restore (workspace-portability) (in prd queue)
     - this laptop is hitting its limits. set up thermisticles and run everything on that (workspace-portability)
@@ -16,6 +16,7 @@ tasks:
     - update workspace portability with latest opensource projects (workspace-portability)
     - integrate langfuse with all applications (all)
     - extend the software_factory architecture based on the learnings in this https://github.com/humanlayer/advanced-context-engineering-for-coding-agents/blob/main/wsff.md
+    - extend survival-infrastructure with gmail and gdrive(survival-infrastructure)
     
     
     - (complete)create a skill to summarise the content and most important learnings from a session and attach a link to the actual context window of that session so we can save our knowledge and build on it and not lose it at the end of each session close (software_factory)
