@@ -21,7 +21,7 @@ tasks:
     - improve the shared context infrastructure and add architecture design step (software_factory)
     - clearly define the projects so the context infrastructure is is more efficient. the projects are survival-infrastructure, feed_analyser, llm, resume, mission_control, workspace-portability, headroom-pi, software_factory (software_factory)
     - make feed_analyser and survival_infrastructure private repos with current opensource repos (workspace_portability)
-    - add script to update workspace_portability with latest opensource repos (workspace_portability)
+    - (complete) add script to update workspace_portability with latest opensource repos (workspace_portability)
 
 
     - (complete)create a skill to summarise the content and most important learnings from a session and attach a link to the actual context window of that session so we can save our knowledge and build on it and not lose it at the end of each session close (software_factory)
