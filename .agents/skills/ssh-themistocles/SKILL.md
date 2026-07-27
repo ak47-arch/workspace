@@ -1,6 +1,7 @@
 ---
 name: ssh-themistocles
 description: Connect to the second system over SSH using the saved LAN target. Commands survive SSH drops via persistent tmux session.
+disable-model-invocation: true
 ---
 
 # SSH Themistocles

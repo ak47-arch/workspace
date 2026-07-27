@@ -1,6 +1,7 @@
 ---
 name: workspace-backup
 description: Perform a round of backup for the workspace using the critical snapshot pipeline.
+disable-model-invocation: true
 ---
 
 # Workspace Backup

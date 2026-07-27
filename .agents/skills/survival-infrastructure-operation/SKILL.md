@@ -1,6 +1,7 @@
 ---
 name: survival-infrastructure-operation
 description: Operate the survival-infrastructure personal intelligence system — a pipeline that captures raw narrative events, extracts structured data via LLM, stores markdown-native people/event nodes, and synthesizes wiki pages about people and topics. Use when the user wants to start/stop/rebuild the stack, check container status, tail logs, run the Flask app locally, or debug any part of the system.
+disable-model-invocation: true
 ---
 
 # Survival Infrastructure Operation
