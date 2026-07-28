@@ -1,45 +1,43 @@
----
-name: manifest-add-repo
-description: Register a newly cloned opensource repo in the workspace-portability manifest so it gets backed up and restored.
-disable-model-invocation: true
----
-
 # Manifest Add Repo
 
 ## Summary
 
-After cloning a new repo under `opensource/`, run this script to register it in
-`workspace-portability/workspace_restore_manifest.json`. Without this, the new
-repo won't be picked up by backup/restore operations.
+Deterministically scans `opensource/` for git repos, compares them against
+`workspace-portability/workspace_restore_manifest.json`, and adds any repos
+that exist on disk but are missing from the manifest.
 
-The script is deterministic — it checks the repo, extracts git metadata, and
-appends an entry to the manifest. It does nothing if the repo is already
-registered.
+Without this, newly cloned repos under `opensource/` won't be picked up by
+backup/restore operations.
 
 ## Usage
 
 ```bash
-# From workspace root
-python3 .agents/skills/manifest-add-repo/add-repo.py opensource/new-repo
+# From workspace root — auto-discovers missing repos
+python3 .agents/skills/manifest-add-repo/add-repo.py
+
+# With explicit manifest path
+python3 .agents/skills/manifest-add-repo/add-repo.py --manifest /path/to/workspace_restore_manifest.json
 ```
+
+No arguments needed — the script reads the manifest, scans `opensource/`, and
+adds whatever is missing.
 
 ## What it does
 
-1. Verifies the path exists and is a git repository
-2. Reads the current branch, primary remote URL, and any extra remotes
-3. Checks the manifest (`workspace-portability/workspace_restore_manifest.json`)
-   for an existing entry at the same path
-4. If not found, appends a new entry to `additional_repos` and saves
-5. Sorts the entries alphabetically by path
+1. Loads the manifest (`workspace-portability/workspace_restore_manifest.json`)
+2. Scans every subdirectory under `opensource/` that contains a `.git` directory
+3. For each repo not already registered (in `repos` or `additional_repos`),
+   reads its git metadata: current branch, primary remote URL, and extra remotes
+4. Appends a new entry to `additional_repos` for each missing repo
+5. Sorts `additional_repos` alphabetically by path and saves
 
 ## Example
 
 ```bash
 $ git clone https://github.com/someone/awesome-tool.git opensource/awesome-tool
-$ python3 .agents/skills/manifest-add-repo/add-repo.py opensource/awesome-tool
-✓ Added 'opensource/awesome-tool' to workspace-portability/workspace_restore_manifest.json
-  Entry:
-    path:             opensource/awesome-tool
+$ python3 .agents/skills/manifest-add-repo/add-repo.py
+✓ Added 1 missing repo(s) to workspace-portability/workspace_restore_manifest.json
+  - opensource/awesome-tool
     primary_remote:   origin
     clone_url:        https://github.com/someone/awesome-tool.git
     branch:           main
