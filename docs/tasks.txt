@@ -24,7 +24,7 @@ tasks:
     - add more clarity to the knowledge base by connecting the vision to the tasks and the end to end tracing of everything (software_factory)(top priority)
     - deprecate mission_control (mission_control)
     - integrate official langfuse skill (langfuse)
-
+    - add audio event ingestion using whisper.cpp (survival_infrastructure)
 
     
 
