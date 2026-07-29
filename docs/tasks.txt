@@ -20,9 +20,16 @@ tasks:
     - make feed_analyser and survival_infrastructure private repos with current opensource repos (workspace_portability)
     - create personal website and blog add the toTweet, toBlog, toVideo pipeline (resume) 
     - set up langfuse use and operation agentically (langfuse)
+    - implement end to end tracaebility for each task from picked up to completed (software_factory)
+
+
+    
 
     - (queued) pivot feed analyser to X capture instrument (feed_analyser)
     - (queued) extend survival-infrastructure with gmail and gdrive (survival-infrastructure)
+
+
+    
 
     - (complete) add script to update workspace_portability with latest opensource repos (workspace_portability)
     - (complete)create a skill to summarise the content and most important learnings from a session and attach a link to the actual context window of that session so we can save our knowledge and build on it and not lose it at the end of each session close (software_factory)
