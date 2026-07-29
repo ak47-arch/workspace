@@ -21,3 +21,4 @@
 - [Voice Input to Pi via whisper.cpp](sessions/019fa825-a262-7020-afec-0c733d21536d/decisions/01-voice-input-via-whisper-cpp.md)
 - [Survival Infrastructure as Core Product — Two-Agent Architecture](sessions/019faf18-7a30-7afe-87ba-3070f248c536/decisions/01-survival-infrastructure-core-product-architecture.md)
 - [GitHub Device Authorization Flow Implementation](sessions/019faf44-901a-73f9-aa74-817eead12980/decisions/01-github-device-auth-flow-implementation.md)
+- [Device Flow End-to-End Test Verification](sessions/019faf44-901a-73f9-aa74-817eead12980/decisions/02-device-flow-test-verification.md)
