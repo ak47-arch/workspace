@@ -59,7 +59,7 @@ These are agent-facing instruction files that direct coding agents to use the Op
 | `confirm-git-push.ts` | Asks for confirmation before git push operations |
 | `database-write-guard.ts` | Guards against unintended database writes |
 | `herdr-agent-state.ts` | Tracks agent state via herdr integration |
-| `langfuse-tracing.ts` | Langfuse observability integration |
+| `langfuse-tracing.ts` | Langfuse observability integration — captures every agent turn (LLM requests/responses, tool calls) and sends to self-hosted Langfuse as traces, generations, and spans. Requires `LANGFUSE_SECRET_KEY`, `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_BASE_URL` env vars or `~/.pi/agent/langfuse-config.json`. Gracefully degrades if Langfuse is unreachable. |
 
 ### Skills (`/.pi/skills/`)
 
@@ -108,6 +108,40 @@ Captures the current session's key decisions, architectural rationale, issues, o
 
 **Usage:** When the user wants to preserve session learnings, design decisions, or tool evaluations for future reference. The skill creates a durable, searchable knowledge entry with full context.
 
+### manifest-add-repo (`/.agents/skills/manifest-add-repo/SKILL.md`)
+
+Scans `opensource/` for git repos and adds any that exist on disk but are missing from the workspace restore manifest (`workspace-portability/workspace_restore_manifest.json`). Use when new repos have been cloned under `opensource/` and need to be registered for backup/restore operations.
+
+- Deterministic Python script: `.agents/skills/manifest-add-repo/add-repo.py`
+- Reads manifest, scans `opensource/` for `.git` directories, extracts git metadata (branch, primary remote, extra remotes)
+- Appends missing repos to `additional_repos` section, sorted alphabetically by path
+- No arguments needed — auto-discovers missing repos
+
+**Usage:** Run after cloning a new repo under `opensource/` to register it for backup/restore.
+
+### transcribe (`/.agents/skills/transcribe/SKILL.md`)
+
+Local speech-to-text transcription using whisper.cpp. Supports WAV, MP3, FLAC, OGG, and any ffmpeg-compatible format. Also supports live microphone recording with automatic transcription and sending to pi as a prompt.
+
+- Whisper.cpp build at `opensource/whisper.cpp/` with model `ggml-small.bin` (487 MB)
+- `transcribe.sh <audio-file>` — transcribes audio file to stdout
+- `speak-to-pi.sh` — records 5s from microphone, transcribes, sends to pi as prompt
+- Triggered via `Ctrl+Super+V` hotkey (xbindkeys)
+
+**Usage:** When the user wants to transcribe audio files, speak to pi, or use voice input.
+
+### product-layer (`/.agents/skills/product-layer/SKILL.md`)
+
+Start a product/architecture session. Produces PRDs and structured design decisions. Operates the product/architecture layer of the software factory — the UX layer the user interacts with directly.
+
+- Reads `docs/factory.txt` for factory model, `docs/tasks.txt` for task selection
+- Grilling process using technique guides from `opensource/skills/docs/engineering/`
+- Produces two artifacts: PRD (saved to `docs/prd-queue/`) and design decisions (saved to `docs/knowledge/sessions/<uuid>/decisions/`)
+- Uses `save-knowledge` skill for decision capture
+- `disable-model-invocation: true` — user-invoked only
+
+**Usage:** When starting a new product/architecture task that needs a PRD and decision record.
+
 ## Planning & Tasks
 
 ### tasks.txt
@@ -115,18 +149,35 @@ Captures the current session's key decisions, architectural rationale, issues, o
 High-level task list from `/docs/tasks.txt`:
 
 1. **Common LLM API** — Completed via `llm_client` migration
-2. **Modularising all apps** — Extract independent concerns into reusable packages
-3. **Thorough testing** — Expand test coverage across all projects
-4. **Agent containerisation** — Containerise coding agent workflows
-5. **Think about survival infrastructure extension** — Extend pipeline stages
-6. **Extend feed analyser with YouTube, Gmail, GDrive** — Add new ingestion sources
-7. **Clean up the project root** — Move open-source projects to `opensource/` directory and update workspace-portability — ✅ **Done**
-8. **Build the shared context infrastructure with OpenWiki** — In progress
-9. **Set up langfuse** — Observability/tracing platform
-10. **Implement GitHub browser authentication flow** — For project restore
-11. **Set up themistocles (secondary Debian host)** — Offload compute from laptop
-12. **Work on headroom-pi** — Get it working reliably and run eval
-13. **Create save-knowledge skill** — Summarise session learnings and attach context window link — ✅ **Done**
+2. **Thorough testing** — Expand test coverage across all projects
+3. **Agent containerisation** — Containerise coding agent workflows
+4. **Think about survival infrastructure extension** — Extend pipeline stages
+5. **Extend feed analyser with YouTube** — Add YouTube ingestion
+6. **Implement GitHub browser authentication flow for project restore** — (workspace-portability) In PRD queue
+7. **Set up themistocles** — Secondary Debian host to offload compute from laptop
+8. **Work on headroom-pi** — Get it working reliably and run evals
+9. **Think about automated monitoring** — Software factory monitoring automation
+10. **People profiles in survival-infrastructure** — Work on people profiles
+11. **Standardise documentation structure** — Across all apps
+12. **Vision, functional, technical documentation** — Make projects factory-ready
+13. **Plan modularisation of all apps** — Consistent project structure
+14. **Update workspace portability** — With latest opensource projects
+15. **Integrate Langfuse** — Observability/tracing for all applications
+16. **Extend software_factory architecture** — Based on learnings from advanced context engineering
+17. **Extend survival-infrastructure with Gmail and GDrive** — New instruction sources
+18. **Deprecate spec-driven process** — For all projects
+19. **Evaluate opensource/cognee integration** — Assess benefits for ecosystem
+20. **Improve shared context infrastructure** — Add architecture design step
+21. **Define projects clearly** — For efficient context infrastructure
+22. **Make feed_analyser and survival_infrastructure private repos** — With current opensource repos
+23. **Create personal website and blog** — Add toTweet, toBlog, toVideo pipeline (resume)
+24. **Set up Langfuse agentically** — Use and operate Langfuse via agents
+
+Completed tasks:
+- Add script to update workspace_portability with latest opensource repos
+- Create save-knowledge skill — Summarise session learnings and attach context window link
+- Clean up project root — Move open source projects to separate directory
+- Set up Langfuse — Fix langfuse-tracing.ts extension
 
 ### PLAN_shared_llm_client.md
 
@@ -157,10 +208,26 @@ Implementation summary for headroom-pi integration, documenting:
 
 ## Git History Notes
 
-Recent commits cleaned up several legacy files:
+Recent commits cleaned up several legacy files and added new skills:
 
 | Commit | Change |
 |--------|--------|
+| `e7eff7e` | Fixed manifest-add-repo skill: added missing YAML frontmatter with name and description |
+| `a81f00c` | Rewrote manifest-add-repo skill to auto-scan opensource/ and add missing repos |
+| `51c86ec` | Added voice-to-pi via whisper.cpp + transcribe skill |
+| `3d0dff0` | Added manifest-add-repo skill for registering new opensource repos |
+| `7149dda` | Added disable-model-invocation to all skills except web-search and save-knowledge |
+| `8112c52` | Added opensource repos — bitchat, bitchat-android, deepagents |
+| `aea743f` | GDrive instruction source ingest — PRD and design decisions |
+| `1ad1ffa` | PRD + knowledge: x-capture instrument design decisions |
+| `b62305d` | Parallel repo clone decision |
+| `e34cfcd` | Product-layer skill updates |
+| `dbb8380` | Added vscode-git-viewer-fix skill |
+| `23a2d9d` | PRD: GitHub browser auth flow |
+| `66b39df` | Product-layer skill, structured knowledge capture, factory architecture decisions |
+| `5b9f00f` | Software factory paradigm, knowledge base deep-dive, vision doc pointers |
+| `1768101` | Fixed langfuse-tracing extension no longer blocks TUI when langfuse is down |
+| `16d4a12` | Factory context index for progressive disclosure |
 | `4cd2828` | Deleted `.omp/` extension files (confirm-directory-delete, confirm-git-push, lsp-tools) |
 | `33fe99f` | Deleted `.pi-session-pane-map.json`, `HERMES_DEBUGGING_LOG.md`, `PODMAN_MIGRATION_PLAN.md` |
 | `f24c742` | Deleted `SKILLS_CONSOLIDATION_AND_QUALITY_REPORT.md` |
