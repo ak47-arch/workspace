@@ -20,3 +20,4 @@
 - [GDrive File Export, Dedup, and Metadata Strategy](sessions/019f9a16-9363-7e5a-a9a7-f696fc32e4c6/decisions/03-gdrive-file-export-and-storage.md)
 - [Voice Input to Pi via whisper.cpp](sessions/019fa825-a262-7020-afec-0c733d21536d/decisions/01-voice-input-via-whisper-cpp.md)
 - [Survival Infrastructure as Core Product — Two-Agent Architecture](sessions/019faf18-7a30-7afe-87ba-3070f248c536/decisions/01-survival-infrastructure-core-product-architecture.md)
+- [GitHub Device Authorization Flow Implementation](sessions/019faf44-901a-73f9-aa74-817eead12980/decisions/01-github-device-auth-flow-implementation.md)
