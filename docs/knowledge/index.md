@@ -21,6 +21,7 @@ Entries are grouped by project for progressive discovery. When the agent needs t
 
 ### workspace-portability
 
+- [Make feed_analyser and goal-agent Private](sessions/019fb4a3-3b15-7363-838d-100a18ed270f/decisions/01-make-repos-private.md)
 - [GitHub Browser Auth Flow for Workspace Restore](sessions/019f937c-9afe-731e-a70d-c88d4eb9d675/decisions/01-github-browser-auth-flow.md)
 - [Parallel Repo Clone](sessions/019f93aa-ee32-7014-b963-8bec75928d5d/decisions/01-parallel-repo-clone.md)
 - [Opensource Repo Manifest Registration Skill Design](sessions/019fa31b-694b-7f94-ad00-bbc57a0c88df/decisions/01-opensource-repo-manifest-registration-skill.md)

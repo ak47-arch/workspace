@@ -33,14 +33,14 @@ This task established the **upstream traceability link** in the progressive disc
 
 ## Artifacts
 
-- Convention: docs/vision-convention.md
-- Vision (capture): feed_analyser/capture/docs/vision/VISION.md
-- Vision (llm): llm/docs/vision/VISION.md
+- Convention: [vision-convention.md](../vision-convention.md)
+- Vision (capture): [feed_analyser/capture/docs/vision/VISION.md](../../feed_analyser/capture/docs/vision/VISION.md)
+- Vision (llm): [llm/docs/vision/VISION.md](../../llm/docs/vision/VISION.md)
 
 ## Sessions
 
-- docs/knowledge/sessions/019fb45b-9f0f-79e2-ac55-a0a084ac3156/session.jsonl
+- [Session](../knowledge/sessions/019fb45b-9f0f-79e2-ac55-a0a084ac3156/session.jsonl)
 
 ## Decisions
 
-- docs/knowledge/sessions/019fb45b-9f0f-79e2-ac55-a0a084ac3156/decisions/01-vision-document-convention.md
+- [01-vision-document-convention](../knowledge/sessions/019fb45b-9f0f-79e2-ac55-a0a084ac3156/decisions/01-vision-document-convention.md)

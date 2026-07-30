@@ -13,8 +13,8 @@
 
 ## Sessions
 
-- docs/knowledge/sessions/019fb3b8-27d7-7b8e-b8a4-3a0274646646/session.jsonl
+- [Session](../knowledge/sessions/019fb3b8-27d7-7b8e-b8a4-3a0274646646/session.jsonl)
 
 ## Decisions
 
-- docs/knowledge/sessions/019fb3b8-27d7-7b8e-b8a4-3a0274646646/decisions/01-mission-control-deprecation.md
+- [01-mission-control-deprecation](../knowledge/sessions/019fb3b8-27d7-7b8e-b8a4-3a0274646646/decisions/01-mission-control-deprecation.md)
