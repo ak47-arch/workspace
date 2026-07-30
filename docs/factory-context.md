@@ -20,15 +20,21 @@ Each first-party project has its own `openwiki/` for project-specific documentat
 
 ### Vision / Design Intent
 
-When you need to understand **why** something was built or why it works a particular way, consult each project's vision or design doc:
+When you need to understand **why** something was built or why it works a particular way, consult each project's vision or design doc.
 
-| Project | Vision / Design Doc |
-|---------|--------------------|
-| `survival-infrastructure/` | [`docs/technical/VISION.md`](../survival-infrastructure/docs/technical/VISION.md) — stakeholder vision, three-layer model, end goal |
-| `survival-infrastructure/` | [`docs/technical/TECHNICAL_VISION.md`](../survival-infrastructure/docs/technical/TECHNICAL_VISION.md) — technical roadmap, phased implementation |
-| `feed_analyser/` (legacy) | [`archive/vision.md`](../feed_analyser/archive/vision.md) — legacy vision (archived) |
-| `feed_analyser/capture/` | _(no vision doc yet — new project)_ |
-| ~~`mission-control/`~~ | ~~Deprecated — removed from workspace. See `docs/tasks.txt`~~ |
+**Convention**: See [docs/vision-convention.md](vision-convention.md) for the standard format, path convention, and linking rules.
+
+| Project | Vision Doc | Status |
+|---------|-----------|--------|
+| `survival-infrastructure/` | [`docs/technical/VISION.md`](../survival-infrastructure/docs/technical/VISION.md) — stakeholder vision | ✅ Written (legacy path) |
+| `survival-infrastructure/` | [`docs/technical/TECHNICAL_VISION.md`](../survival-infrastructure/docs/technical/TECHNICAL_VISION.md) — technical roadmap | ✅ Written (legacy path) |
+| `feed_analyser/` (legacy) | [`archive/vision.md`](../feed_analyser/archive/vision.md) — legacy vision (archived) | 📦 Archived |
+| `feed_analyser/capture/` | — | ❌ Missing |
+| `llm/` | — | ❌ Missing |
+| `headroom-pi/` | — | ❌ Missing |
+| `workspace-portability/` | — | ❌ Missing |
+| `resume/` | — | ❌ Missing (deferred) |
+| ~~`mission-control/`~~ | ~~Deprecated — removed from workspace. See `docs/tasks.txt`~~ | ~~🗑️ Deprecated~~ |
 
 These give you the bigger picture of what each project is about and where it's headed. Read the relevant one when you need context about purpose or direction before making changes.
 
