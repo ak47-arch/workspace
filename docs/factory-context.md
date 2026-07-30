@@ -31,8 +31,8 @@ When you need to understand **why** something was built or why it works a partic
 | `feed_analyser/` (legacy) | [`archive/vision.md`](../feed_analyser/archive/vision.md) — legacy vision (archived) | 📦 Archived |
 | `feed_analyser/capture/` | [`docs/vision/VISION.md`](../feed_analyser/capture/docs/vision/VISION.md) — capture instrument vision | ✅ Written |
 | `llm/` | [`docs/vision/VISION.md`](../llm/docs/vision/VISION.md) — inference server & client vision | ✅ Written |
-| `headroom-pi/` | — | ❌ Missing |
-| `workspace-portability/` | — | ❌ Missing |
+| `headroom-pi/` | [`docs/vision/VISION.md`](../headroom-pi/docs/vision/VISION.md) — compression proxy vision | ✅ Written |
+| `workspace-portability/` | [`docs/vision/VISION.md`](../workspace-portability/docs/vision/VISION.md) — portability system vision | ✅ Written |
 | `resume/` | — | ❌ Missing (deferred) |
 | ~~`mission-control/`~~ | ~~Deprecated — removed from workspace. See `docs/tasks.txt`~~ | ~~🗑️ Deprecated~~ |
 

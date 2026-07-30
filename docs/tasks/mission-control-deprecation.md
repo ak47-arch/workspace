@@ -2,6 +2,7 @@
 
 **Status**: complete
 **Project**: software-factory
+**Vision**: docs/vision-convention.md
 **Created**: 2026-07-30
 **Completed**: 2026-07-30
 **Source**: docs/tasks.txt — `(complete) deprecate mission_control (mission_control) [mission-control-deprecation]`
