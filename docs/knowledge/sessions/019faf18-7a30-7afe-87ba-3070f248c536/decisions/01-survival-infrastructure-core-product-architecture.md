@@ -2,6 +2,7 @@
 
 **Status**: accepted
 **Date**: 2026-07-29
+**Project**: survival-infrastructure
 **Session**: sessions/019faf18-7a30-7afe-87ba-3070f248c536/session.jsonl
 
 ### Context

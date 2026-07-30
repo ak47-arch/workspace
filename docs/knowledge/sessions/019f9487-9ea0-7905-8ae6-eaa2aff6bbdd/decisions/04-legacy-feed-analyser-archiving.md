@@ -2,6 +2,7 @@
 
 **Status**: accepted
 **Date**: 2026-07-25
+**Project**: feed-analyser
 **Session**: sessions/019f9487-9ea0-7905-8ae6-eaa2aff6bbdd/session.jsonl
 
 ### Context

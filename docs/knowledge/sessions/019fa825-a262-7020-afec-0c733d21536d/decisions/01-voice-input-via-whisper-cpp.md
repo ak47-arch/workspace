@@ -2,6 +2,7 @@
 
 **Status**: accepted
 **Date**: 2026-07-28
+**Project**: software-factory
 **Session**: sessions/019fa825-a262-7020-afec-0c733d21536d/session.jsonl
 
 ### Context

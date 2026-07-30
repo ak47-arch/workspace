@@ -2,6 +2,7 @@
 
 **Status**: accepted
 **Date**: 2026-07-30
+**Project**: headroom-pi
 **Session**: sessions/019fb3a9-bf84-79db-b194-c580b76e4228/session.jsonl
 
 ### Context

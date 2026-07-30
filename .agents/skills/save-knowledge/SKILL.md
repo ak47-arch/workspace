@@ -39,17 +39,20 @@ Multiple saves from the same session add new decision files to the same session 
 
 6. **Determine the task slug** — if the session is associated with a task (i.e., the agent is working on a task from `docs/tasks.txt`), look up the task slug from the task file or from the session context. The slug is the `<slug>` portion of the task file path. Include it in the `Task:` field.
 
-7. **Capture the decision** — write a new file at:
+7. **Determine the project slug** — derive the project slug from the task's `**Project**:` field (if a task is associated) or from the session context (which project this session relates to). Use the same hyphenated convention as task files (e.g. `survival-infrastructure`, `software-factory`, `workspace-portability`). Include it in the `Project:` field.
+
+8. **Capture the decision** — write a new file at:
    ```
    docs/knowledge/sessions/<uuid>/decisions/<sequence>-<slug>.md
    ```
    Use the structured format below. Every field matters. The **revision triggers** field is especially important — it tells a future agent when to stop trusting this entry.
 
-8. **Append to `docs/knowledge/index.md`** — add one line:
+9. **Append to `docs/knowledge/index.md`** — add a project-grouped entry. The index is organized by project so entries are discoverable by project context. Add:
    ```markdown
+   ### <project-slug>
    - [<title>](sessions/<uuid>/decisions/<sequence>-<slug>.md)
    ```
-   Create `index.md` with a `# Knowledge Base` heading if it doesn't exist.
+   If the project section already exists, just add the line under it. Create `index.md` with a `# Knowledge Base` heading if it doesn't exist.
 
 ## Structured format
 
@@ -59,6 +62,7 @@ Multiple saves from the same session add new decision files to the same session 
 **Status**: proposed | accepted | deprecated | superseded
 **Date**: <yyyy-mm-dd>
 **Task**: <slug>
+**Project**: <slug>
 **Session**: sessions/<uuid>/session.jsonl
 
 ### Context

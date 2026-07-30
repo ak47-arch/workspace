@@ -2,6 +2,7 @@
 
 **Status**: accepted
 **Date**: 2026-07-24
+**Project**: workspace-portability
 **Session**: sessions/019f937c-9afe-731e-a70d-c88d4eb9d675/session.jsonl
 
 ### Context
