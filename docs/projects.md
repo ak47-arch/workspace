@@ -69,17 +69,16 @@ The workspace contains **10 first-party projects** (owned/developed by us) plus 
 
 ---
 
-### 5. `mission-control` — Pane Monitoring Dashboard
+### 5. ~~`mission-control` — Pane Monitoring Dashboard~~
+
+~~DEPRECATED — removed from workspace. See `docs/tasks.txt` for context.~~
 
 | Field | Value |
 |-------|-------|
-| **Description** | Rust workspace with schema, core collector, and binary. Collects pane state from herdr and Pi signals. Provides TUI + web dashboard |
-| **Remote** | `ak47-arch/mission-control.git` |
-| **Stack** | Rust (mc-schema, mc-core, mc-binary) |
-| **Status** | ✅ Phase 3 complete — `mc status`, `mc serve`, `mc tui`, `mc web` implemented |
-
-**Related tasks:**
-- _(none directly in tasks.txt — but related to infrastructure/observability)_
+| **Description** | ~~Rust workspace: schema, core collector, binary. Collected pane state from herdr and Pi signals. Provided TUI + web dashboard~~ |
+| **Remote** | ~~[ak47-arch/mission-control.git](https://github.com/ak47-arch/mission-control.git)~~ |
+| **Stack** | ~~Rust (mc-schema, mc-core, mc-binary)~~ |
+| **Status** | ~~Deprecated — removed from workspace.~~ |
 
 ---
 

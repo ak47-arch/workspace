@@ -7,7 +7,7 @@ tags: [workspace, quickstart, llm, personal-infrastructure]
 
 # Workspace Root Quickstart
 
-This workspace is the home of a personal coding-agent infrastructure ecosystem. It contains a centralized [LLM inference server](/openwiki/projects/llm-server-client.md), two downstream data pipeline apps, a Rust-based session monitor, a context compression proxy for the pi coding agent, and comprehensive backup/restore tooling — all wired together through container networking and a shared `llm_client` package.
+This workspace is the home of a personal coding-agent infrastructure ecosystem. It contains a centralized [LLM inference server](/openwiki/projects/llm-server-client.md), two downstream data pipeline apps, a context compression proxy for the pi coding agent, and comprehensive backup/restore tooling — all wired together through container networking and a shared `llm_client` package.
 
 ## Quick Navigation
 
@@ -17,7 +17,6 @@ This workspace is the home of a personal coding-agent infrastructure ecosystem. 
 | [LLM Server & Client](/openwiki/projects/llm-server-client.md) | Inference server, `llm_client` package, providers, prompt capture |
 | [Survival Infrastructure](/openwiki/projects/survival-infrastructure.md) | Personal intelligence pipeline (capture → extract → wiki) |
 | [Feed Analyser](/openwiki/projects/feed-analyser.md) | Feed ingestion (Twitter/YouTube), classification, sandbox |
-| [Mission Control](/openwiki/projects/mission-control.md) | Rust-based session monitoring over herdr + pi signals |
 | [Operations & Infrastructure](/openwiki/operations/infrastructure.md) | Headroom compression proxy, workspace backup/restore, containers |
 | [Agent Configuration](/openwiki/reference/agent-config.md) | Skills, root config, tasks, known issues |
 
@@ -28,7 +27,6 @@ workspace/                    # Root (workspace-omp-local-tools)
 ├── llm/                      # Shared inference server + llm_client package
 ├── survival-infrastructure/  # Personal intelligence pipeline
 ├── feed_analyser/            # Feed ingestion & analysis
-├── mission-control/          # Rust session monitor
 ├── headroom-pi/              # Headroom compression proxy for pi
 ├── workspace-portability/    # Backup/restore/bootstrap
 ├── emotional_architecture/   # Personal operating manual & code of conduct
@@ -119,7 +117,7 @@ The workspace tracks 25+ external open-source projects:
 | Project | Description | Active Use |
 |---------|-------------|------------|
 | [headroom](https://github.com/chopratejas/headroom) | Context compression layer for AI agents (60-95% token reduction) | Core dependency of headroom-pi |
-| [herdr](https://herdr.dev) | Terminal workspace manager / agent multiplexer | Core — mission-control collects signals from it |
+| [herdr](https://herdr.dev) | Terminal workspace manager / agent multiplexer | Core — pane management across the workspace |
 | [openwiki](https://github.com/langchain-ai/openwiki) | CLI for writing/maintaining agent wikis | Actively generating this documentation |
 | [agent-browser](https://github.com/vercel-labs/agent-browser) | Browser automation CLI for AI agents | Referenced; evaluated in knowledge base |
 | [graphify](https://github.com/ak47-arch/graphify) | Code graph analysis tool | Analysis output in /graphify-out/ |

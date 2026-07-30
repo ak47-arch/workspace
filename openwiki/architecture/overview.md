@@ -43,12 +43,6 @@ The workspace follows a **centralized inference hub with multiple downstream con
 └────────────────────────┘   └──────────────────────────┘
 
 ┌──────────────────────────────────────────────────────┐
-│ mission-control (Rust binary)                         │
-│   Collectors: herdr (JSON-RPC) + pi (.jsonl) + cwd   │
-│   → Reducer → State → Event Emitter → TUI / Web UI   │
-└──────────────────────────────────────────────────────┘
-
-┌──────────────────────────────────────────────────────┐
 │ workspace-portability                                 │
 │   Phase 1: magic-setup → bootstrap-orchestrator       │
 │   Phase 2: setup-guide → secrets, assets, services    │
@@ -111,7 +105,6 @@ The workspace defines agent skills under [/.agents/skills/](/openwiki/reference/
 | llm/ | llama.cpp binary, GGUF model files | survival-infrastructure, feed_analyser, pi (via headroom) |
 | llm_client | llm/ server at runtime | survival-infrastructure, feed_analyser |
 | headroom-pi | headroom OSS binary | pi coding agent |
-| mission-control | herdr socket, pi .jsonl files | Human operators (TUI/Web) |
 | workspace-portability | GitHub Release storage, GDrive | All projects (backup/restore) |
 | survival-infrastructure | llm/ (via llm_client) | None (end-user app) |
 | feed_analyser | llm/ (via llm_client) | None (end-user app) |
@@ -128,6 +121,5 @@ This is **not** a monorepo. Each sub-project is an independent git repository wi
 | LLM Client | `/llm/llm_client/workflow_client.py`, `/llm/llm_client/config.py` |
 | Survival Infra | `/survival-infrastructure/app.py`, `/survival-infrastructure/config/app.yaml` |
 | Feed Analyser | `/feed_analyser/backend/`, `/feed_analyser/scripts/` |
-| Mission Control | `/mission-control/mc-core/src/`, `/mission-control/mc/src/main.rs` |
 | Workspace Portability | `/workspace-portability/magic-setup.sh`, `/workspace-portability/backup_artifact.sh` |
 | Headroom-pi | `/headroom-pi/install.sh`, `/headroom-pi/systemd/` |

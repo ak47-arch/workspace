@@ -22,4 +22,4 @@
 - [Survival Infrastructure as Core Product — Two-Agent Architecture](sessions/019faf18-7a30-7afe-87ba-3070f248c536/decisions/01-survival-infrastructure-core-product-architecture.md)
 - [GitHub Device Authorization Flow Implementation](sessions/019faf44-901a-73f9-aa74-817eead12980/decisions/01-github-device-auth-flow-implementation.md)
 - [Device Flow End-to-End Test Verification](sessions/019faf44-901a-73f9-aa74-817eead12980/decisions/02-device-flow-test-verification.md)
-- [Herdr-Pi Session Repopulation Architecture](sessions/019fb3a9-bf84-79db-b194-c580b76e4228/decisions/01-herdr-pi-session-repopulation.md)
+- [Herdr-Pi Session Repopulation Architecture](sessions/019fb3a9-bf84-79db-b194-c580b76e4228/decisions/01-herdr-pi-session-repopulation.md)- [Mission Control Deprecation](sessions/019fb3b8-27d7-7b8e-b8a4-3a0274646646/decisions/01-mission-control-deprecation.md)

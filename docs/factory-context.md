@@ -9,7 +9,7 @@ This is where everything is. If you need anything just follow the trail.
 | `llm/` | Inference server. ✅ Running | [openwiki](openwiki/projects/llm-server-client.md) |
 | `survival-infrastructure/` | Pipeline app. 🟡 Broken preflight | [openwiki](openwiki/projects/survival-infrastructure.md) |
 | `feed_analyser/` | Social media analysis. ✅ Running | [openwiki](openwiki/projects/feed-analyser.md) |
-| `mission-control/` | Rust session monitor. ✅ Phase 3 done | [openwiki](openwiki/projects/mission-control.md) |
+| ~~`mission-control/`~~ | ~~Deprecated — removed from workspace. See `docs/tasks.txt`~~ | ~~—~~ |
 | `headroom-pi/` | Compression proxy. 🟡 Needs eval | project's own `openwiki/` |
 | `workspace-portability/` | Backup/restore. ✅ Phase 1 done | project's own `openwiki/` |
 | `resume/` | Resume editor. 🟡 Needs assessment | project's own `openwiki/` |
@@ -26,7 +26,7 @@ When you need to understand **why** something was built or why it works a partic
 |---------|--------------------|
 | `survival-infrastructure/` | [`docs/technical/VISION.md`](../survival-infrastructure/docs/technical/VISION.md) — stakeholder vision, three-layer model, end goal |
 | `feed_analyser/` | [`vision.md`](../feed_analyser/vision.md) — problem statement, core pillars, phased direction |
-| `mission-control/` | [`MISSION_CONTROL_PRD.md`](../mission-control/MISSION_CONTROL_PRD.md) — product requirements, architecture, design decisions |
+| ~~`mission-control/`~~ | ~~Deprecated — removed from workspace. See `docs/tasks.txt`~~ |
 
 These give you the bigger picture of what each project is about and where it's headed. Read the relevant one when you need context about purpose or direction before making changes.
 

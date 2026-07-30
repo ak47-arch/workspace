@@ -70,12 +70,10 @@ Key principle: each layer is discovered on demand. The agent never loads everyth
 - Project READMEs covering usage, configuration, and API
 
 **Why layer — partial:**
-- Vision/PRD docs exist for 3/5 core projects:
+- Vision/PRD docs exist for 2/4 core projects:
     - `survival-infrastructure/docs/technical/VISION.md` — three-layer model, decision loop, guiding principles
     - `survival-infrastructure/docs/technical/TECHNICAL_VISION.md` — technical roadmap, phased implementation
     - `feed_analyser/vision.md` — problem statement, core pillars, phased direction
-    - `mission-control/MISSION_CONTROL_PRD.md` — product requirements, architecture, design decisions
-    - `mission-control/DESIGN.md` — architectural decisions and implementation summary
 - Missing: `llm/` and `resume/` have no vision/design docs
 - Knowledge base entries: only one (browser automation eval). The `save-knowledge` skill exists but is underused.
 
