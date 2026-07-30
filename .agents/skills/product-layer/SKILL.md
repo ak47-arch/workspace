@@ -22,7 +22,11 @@ Read `docs/factory.txt` to understand the software factory model and how this la
 
 Then read `docs/tasks.txt` and prompt the user to pick a task to work on. The session centres around that task — everything from grilling to the PRD is scoped to it.
 
-**When a task is picked up**, derive a slug from its title (e.g. `github-browser-auth-flow`) and create the task file at `docs/tasks/<slug>.md` with status `in-prd`. The task file is the reference hub that will accumulate links to the PRD, sessions, and decisions as work progresses.
+**When a task is picked up**, derive a slug from its title (e.g. `github-browser-auth-flow` from "implement github browser authentication flow for project restore"), then:
+
+1. **Annotate `docs/tasks.txt`** — append `[<slug>]` to the end of that task's line so the mapping is explicit and deterministic. This is a one-time edit — the slug never changes after assignment.
+
+2. **Create the task file** at `docs/tasks/<slug>.md` with status `in-prd`. The task file is the reference hub that will accumulate links to the PRD, sessions, and decisions as work progresses.
 
 Task file template:
 ```markdown
@@ -31,6 +35,7 @@ Task file template:
 **Status**: in-prd
 **Project**: <project>
 **Created**: <yyyy-mm-dd>
+**Source**: docs/tasks.txt — `<exact text from the tasks.txt line>`
 
 ## Artifacts
 

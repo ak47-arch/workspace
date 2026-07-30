@@ -4,6 +4,7 @@
 **Project**: workspace-portability
 **Created**: 2026-07-24
 **Completed**: 2026-07-29
+**Source**: docs/tasks.txt — `(complete) implement github browser authentication flow for project restore (workspace-portability) [github-browser-auth-flow]`
 
 ## Artifacts
 
