@@ -22,7 +22,6 @@ tasks:
     - implement end to end tracaebility for each task from picked up to completed. this includes connecting a task from here through the prd queue to the implementation. as we are saving the prd sessions and the context around it we will trace implementation and verifications sessions also. point is to trace tasks end to end so their entire lifecycle can be traced and logged (software_factory)
     - extend the software_factory architecture based on the learnings in this https://github.com/humanlayer/advanced-context-engineering-for-coding-agents/blob/main/wsff.md (software_factory)
     - add more clarity to the knowledge base by connecting the vision to the tasks and the end to end tracing of everything (software_factory)(top priority)
-    - (complete) deprecate mission_control (mission_control)
     - integrate official langfuse skill (langfuse)
     - add audio event ingestion using whisper.cpp (survival_infrastructure)
 
@@ -39,3 +38,4 @@ tasks:
     - (complete) clean up the project root. move open source projects in a seperate directory 
     - (complete) set up langfuse (fix the langfuse-tracing.ts extension) (langfuse)
     - (complete) implement github browser authentication flow for project restore (workspace-portability)
+    - (complete) deprecate mission_control (mission_control)
