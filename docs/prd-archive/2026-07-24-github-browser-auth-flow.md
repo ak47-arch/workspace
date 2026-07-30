@@ -3,6 +3,7 @@
 **Date**: 2026-07-24
 **Status**: Draft
 **Owner**: Workspace portability initiative
+**Task**: github-browser-auth-flow
 **Session**: `docs/knowledge/sessions/019f937c-9afe-731e-a70d-c88d4eb9d675/session.jsonl`
 **Decisions**:
   - `docs/knowledge/sessions/019f937c-9afe-731e-a70d-c88d4eb9d675/decisions/01-github-browser-auth-flow.md`

@@ -10,8 +10,9 @@ disable-model-invocation: true
 
 You are now operating the **product/architecture layer** of the software factory. This is the UX layer — the only interface the user interacts with directly. Your job is to understand what the user wants to build, sharpen it into a concrete plan, and produce two durable artifacts:
 
-1. **PRD** — forward-looking spec, saved to `docs/prd-queue/`
+1. **PRD** — forward-looking spec, saved to `docs/prd-queue/` (moved to `docs/prd-archive/` when the task is complete)
 2. **Design decisions** — backward-looking record, captured in `docs/knowledge/`
+3. **Task file** — reference hub at `docs/tasks/<slug>.md` tying all artifacts together
 
 **For trivial tasks** — if the scope is small enough that a PRD would be more ceremony than value — skip the PRD, complete the task directly in the session, and save only the design decisions.
 
@@ -20,6 +21,29 @@ You are now operating the **product/architecture layer** of the software factory
 Read `docs/factory.txt` to understand the software factory model and how this layer fits.
 
 Then read `docs/tasks.txt` and prompt the user to pick a task to work on. The session centres around that task — everything from grilling to the PRD is scoped to it.
+
+**When a task is picked up**, derive a slug from its title (e.g. `github-browser-auth-flow`) and create the task file at `docs/tasks/<slug>.md` with status `in-prd`. The task file is the reference hub that will accumulate links to the PRD, sessions, and decisions as work progresses.
+
+Task file template:
+```markdown
+# Task: <slug>
+
+**Status**: in-prd
+**Project**: <project>
+**Created**: <yyyy-mm-dd>
+
+## Artifacts
+
+- PRD: _(will be created)_
+
+## Sessions
+
+- _(this session)_
+
+## Decisions
+
+- _(will be captured inline)_
+```
 
 ## Workflow
 
@@ -50,6 +74,7 @@ Every PRD starts with a header block that ties it to its session and decisions:
 **Date**: <yyyy-mm-dd>
 **Status**: Draft | Review | Final
 **Owner**: <team or initiative>
+**Task**: <slug>
 **Session**: `docs/knowledge/sessions/<session-uuid>/session.jsonl`
 **Decisions**:
   - `docs/knowledge/sessions/<session-uuid>/decisions/<sequence>-<slug>.md`
@@ -72,7 +97,11 @@ Save to: `docs/prd-queue/<yyyy-mm-dd>-<slug>.md`
 
 ### 4. Finalise
 
-The session is complete. The PRD sits in the queue; the decision records sit in the knowledge base. Both will be picked up asynchronously by downstream layers.
+Update the task file (`docs/tasks/<slug>.md`) with:
+- Status: `prd-ready` (if PRD was created) or `complete` (if trivial task was implemented directly)
+- Links to the PRD, session, and decisions
+
+The PRD sits in `docs/prd-queue/` and the decision records sit in `docs/knowledge/`. When the task is eventually marked complete, the PRD moves from `docs/prd-queue/` to `docs/prd-archive/` (same filename, just moved).
 
 ---
 
@@ -85,6 +114,7 @@ Every decision entry uses this structure:
 
 **Status**: proposed | accepted | deprecated | superseded
 **Date**: <yyyy-mm-dd>
+**Task**: <slug>
 **Session**: <path to session.jsonl>
 
 ### Context

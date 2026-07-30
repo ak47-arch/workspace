@@ -37,13 +37,15 @@ Multiple saves from the same session add new decision files to the same session 
 
 5. **Determine the next sequence number** — list files in `docs/knowledge/sessions/<uuid>/decisions/`. If the directory doesn't exist yet, start at `01`. Otherwise, find the highest existing numeric prefix and increment by one.
 
-6. **Capture the decision** — write a new file at:
+6. **Determine the task slug** — if the session is associated with a task (i.e., the agent is working on a task from `docs/tasks.txt`), look up the task slug from the task file or from the session context. The slug is the `<slug>` portion of the task file path. Include it in the `Task:` field.
+
+7. **Capture the decision** — write a new file at:
    ```
    docs/knowledge/sessions/<uuid>/decisions/<sequence>-<slug>.md
    ```
    Use the structured format below. Every field matters. The **revision triggers** field is especially important — it tells a future agent when to stop trusting this entry.
 
-7. **Append to `docs/knowledge/index.md`** — add one line:
+8. **Append to `docs/knowledge/index.md`** — add one line:
    ```markdown
    - [<title>](sessions/<uuid>/decisions/<sequence>-<slug>.md)
    ```
@@ -56,6 +58,7 @@ Multiple saves from the same session add new decision files to the same session 
 
 **Status**: proposed | accepted | deprecated | superseded
 **Date**: <yyyy-mm-dd>
+**Task**: <slug>
 **Session**: sessions/<uuid>/session.jsonl
 
 ### Context
