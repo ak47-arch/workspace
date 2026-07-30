@@ -2,6 +2,8 @@
 
 **Date**: 2026-07-25
 **Status**: Draft
+**Project**: feed-analyser
+**Vision**: feed_analyser/capture/docs/vision/VISION.md
 **Owner**: Feed analyser → capture pivot initiative
 **Session**: (current session — product-layer skill conversation)
 **Decisions**: All decisions recorded inline in this PRD (see Implementation decisions section).

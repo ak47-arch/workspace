@@ -29,8 +29,8 @@ When you need to understand **why** something was built or why it works a partic
 | `survival-infrastructure/` | [`docs/technical/VISION.md`](../survival-infrastructure/docs/technical/VISION.md) — stakeholder vision | ✅ Written (legacy path) |
 | `survival-infrastructure/` | [`docs/technical/TECHNICAL_VISION.md`](../survival-infrastructure/docs/technical/TECHNICAL_VISION.md) — technical roadmap | ✅ Written (legacy path) |
 | `feed_analyser/` (legacy) | [`archive/vision.md`](../feed_analyser/archive/vision.md) — legacy vision (archived) | 📦 Archived |
-| `feed_analyser/capture/` | — | ❌ Missing |
-| `llm/` | — | ❌ Missing |
+| `feed_analyser/capture/` | [`docs/vision/VISION.md`](../feed_analyser/capture/docs/vision/VISION.md) — capture instrument vision | ✅ Written |
+| `llm/` | [`docs/vision/VISION.md`](../llm/docs/vision/VISION.md) — inference server & client vision | ✅ Written |
 | `headroom-pi/` | — | ❌ Missing |
 | `workspace-portability/` | — | ❌ Missing |
 | `resume/` | — | ❌ Missing (deferred) |

@@ -2,6 +2,8 @@
 
 **Date**: 2026-07-25
 **Status**: Draft
+**Project**: survival-infrastructure
+**Vision**: survival-infrastructure/docs/technical/VISION.md | survival-infrastructure/docs/technical/TECHNICAL_VISION.md
 **Owner**: survival-infrastructure
 **Session**: `docs/knowledge/sessions/019f9a16-9363-7e5a-a9a7-f696fc32e4c6/session.jsonl`
 **Decisions**:
