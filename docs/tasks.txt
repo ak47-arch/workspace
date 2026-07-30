@@ -1,42 +1,89 @@
 tasks:
-    - common llm api (llm)
+    # Tasks organised by project, then by status within each project.
+    # Original task lines preserved verbatim (project tags, slugs, spacing).
+
+    ## all (cross-project)
+
+    ### Pending
     - thorough testing (all)
     - agent containerisation (all)
-    - think about survival infrastructure extension (survival-infrastructure)
-    - this laptop is hitting its limits. set up thermisticles and run everything on that (workspace-portability)
-    - work on headroom-pi and get that working reliably and run evals (headroom-pi)
-    - think about how entire monitoring can be automated (software_factory)
-    - in survival-infrastructure work on the people profiles (survival-infrastructure)
     - standardise documentation structure across all apps (all)
     - work on vision, functional and technical documentation across projects making them factory ready (all)
     - plan the modularisation of all apps. it would be better if all projects follow same structure (all)
-    - update workspace portability with latest opensource projects (workspace-portability)
     - integrate langfuse with all applications (all)
     - deprecate the spec driven process for all projects (all)
+
+    ## llm
+
+    ### Pending
+    - common llm api (llm)
+
+    ## survival-infrastructure
+
+    ### Pending
+    - think about survival infrastructure extension (survival-infrastructure)
+    - in survival-infrastructure work on the people profiles (survival-infrastructure)
+    - add audio event ingestion using whisper.cpp (survival_infrastructure)
+
+    ### Queued
+    - (queued) extend survival-infrastructure with gmail and gdrive (survival-infrastructure)
+
+    ## workspace-portability
+
+    ### Pending
+    - this laptop is hitting its limits. set up thermisticles and run everything on that (workspace-portability)
+    - update workspace portability with latest opensource projects (workspace-portability)
+
+    ### Complete
+    - (complete) add script to update workspace_portability with latest opensource repos (workspace_portability)
+    - (complete) implement github browser authentication flow for project restore (workspace-portability) [github-browser-auth-flow]
+    - (complete) make feed_analyser and survival_infrastructure private repos with current opensource repos (workspace_portability) [feed-analyser-survival-infra-private-repos]
+
+    ## headroom-pi
+
+    ### Pending
+    - work on headroom-pi and get that working reliably and run evals (headroom-pi)
+
+    ## software-factory
+
+    ### Pending
+    - think about how entire monitoring can be automated (software_factory)
     - see how opensource/cognee can be intgrated into our ecosystem and what benefits it might provide and evaluate the benefits(software_factory)
-    - create personal website and blog add the toTweet, toBlog, toVideo pipeline (resume) 
     - extend the software_factory architecture based on the learnings in this https://github.com/humanlayer/advanced-context-engineering-for-coding-agents/blob/main/wsff.md (software_factory)
     - improve the shared context infrastructure and add architecture design step (software_factory)
     - clearly define the projects so the context infrastructure is is more efficient. the projects are survival-infrastructure, feed_analyser, llm, resume, workspace-portability, headroom-pi, software_factory (software_factory)
     - build and host the task generation infrastructure (currently task.txt file) so it can be accessible to the user 24/7 (software_factory)
-    - integrate official langfuse skill (langfuse)
-    - set up langfuse use and operation agentically (langfuse)
-    - add audio event ingestion using whisper.cpp (survival_infrastructure)
 
-    
-
-    - (queued) pivot feed analyser to X capture instrument (feed_analyser)
-    - (queued) extend survival-infrastructure with gmail and gdrive (survival-infrastructure)
-
-
-
-
-    - (complete) add script to update workspace_portability with latest opensource repos (workspace_portability)
+    ### Complete
     - (complete)create a skill to summarise the content and most important learnings from a session and attach a link to the actual context window of that session so we can save our knowledge and build on it and not lose it at the end of each session close (software_factory)
-    - (complete) clean up the project root. move open source projects in a seperate directory 
-    - (complete) set up langfuse (fix the langfuse-tracing.ts extension) (langfuse)
-    - (complete) implement github browser authentication flow for project restore (workspace-portability) [github-browser-auth-flow]
-    - (complete) deprecate mission_control (mission_control) [mission-control-deprecation]
     - (complete) implement end to end tracaebility for each task from picked up to completed. this includes connecting a task from here through the prd queue to the implementation. as we are saving the prd sessions and the context around it we will trace implementation and verifications sessions also. point is to trace tasks end to end so their entire lifecycle can be traced and logged (software_factory) [end-to-end-traceability]
     - (complete) add more clarity to the knowledge base by connecting the vision to the tasks and the end to end tracing of everything (software_factory)(top priority) [vision-task-traceability]
-    - (complete) make feed_analyser and survival_infrastructure private repos with current opensource repos (workspace_portability) [feed-analyser-survival-infra-private-repos]
+
+    ## resume
+
+    ### Pending
+    - create personal website and blog add the toTweet, toBlog, toVideo pipeline (resume)
+
+    ## feed-analyser
+
+    ### Queued
+    - (queued) pivot feed analyser to X capture instrument (feed_analyser)
+
+    ## langfuse
+
+    ### Pending
+    - integrate official langfuse skill (langfuse)
+    - set up langfuse use and operation agentically (langfuse)
+
+    ### Complete
+    - (complete) set up langfuse (fix the langfuse-tracing.ts extension) (langfuse)
+
+    ## mission-control (deprecated)
+
+    ### Complete
+    - (complete) deprecate mission_control (mission_control) [mission-control-deprecation]
+
+    ## workspace-root
+
+    ### Complete
+    - (complete) clean up the project root. move open source projects in a seperate directory
