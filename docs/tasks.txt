@@ -14,7 +14,6 @@ tasks:
     - integrate langfuse with all applications (all)
     - deprecate the spec driven process for all projects (all)
     - see how opensource/cognee can be intgrated into our ecosystem and what benefits it might provide and evaluate the benefits(software_factory)
-
     - make feed_analyser and survival_infrastructure private repos with current opensource repos (workspace_portability)
     - create personal website and blog add the toTweet, toBlog, toVideo pipeline (resume) 
     - (complete) implement end to end tracaebility for each task from picked up to completed. this includes connecting a task from here through the prd queue to the implementation. as we are saving the prd sessions and the context around it we will trace implementation and verifications sessions also. point is to trace tasks end to end so their entire lifecycle can be traced and logged (software_factory) [end-to-end-traceability]
