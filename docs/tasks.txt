@@ -14,15 +14,16 @@ tasks:
     - integrate langfuse with all applications (all)
     - deprecate the spec driven process for all projects (all)
     - see how opensource/cognee can be intgrated into our ecosystem and what benefits it might provide and evaluate the benefits(software_factory)
-    - improve the shared context infrastructure and add architecture design step (software_factory)
-    - clearly define the projects so the context infrastructure is is more efficient. the projects are survival-infrastructure, feed_analyser, llm, resume, workspace-portability, headroom-pi, software_factory (software_factory)
+
     - make feed_analyser and survival_infrastructure private repos with current opensource repos (workspace_portability)
     - create personal website and blog add the toTweet, toBlog, toVideo pipeline (resume) 
-    - set up langfuse use and operation agentically (langfuse)
     - implement end to end tracaebility for each task from picked up to completed. this includes connecting a task from here through the prd queue to the implementation. as we are saving the prd sessions and the context around it we will trace implementation and verifications sessions also. point is to trace tasks end to end so their entire lifecycle can be traced and logged (software_factory)
-    - extend the software_factory architecture based on the learnings in this https://github.com/humanlayer/advanced-context-engineering-for-coding-agents/blob/main/wsff.md (software_factory)
     - add more clarity to the knowledge base by connecting the vision to the tasks and the end to end tracing of everything (software_factory)(top priority)
+    - extend the software_factory architecture based on the learnings in this https://github.com/humanlayer/advanced-context-engineering-for-coding-agents/blob/main/wsff.md (software_factory)
+    - improve the shared context infrastructure and add architecture design step (software_factory)
+    - clearly define the projects so the context infrastructure is is more efficient. the projects are survival-infrastructure, feed_analyser, llm, resume, workspace-portability, headroom-pi, software_factory (software_factory)
     - integrate official langfuse skill (langfuse)
+    - set up langfuse use and operation agentically (langfuse)
     - add audio event ingestion using whisper.cpp (survival_infrastructure)
 
     
