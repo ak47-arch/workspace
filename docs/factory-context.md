@@ -7,12 +7,12 @@ This is where everything is. If you need anything just follow the trail.
 | Project | Status | Docs |
 |---------|--------|------|
 | `llm/` | Inference server. ✅ Running | [openwiki](openwiki/projects/llm-server-client.md) |
-| `survival-infrastructure/` | Pipeline app. 🟡 Broken preflight | [openwiki](openwiki/projects/survival-infrastructure.md) |
-| `feed_analyser/` | Social media analysis. ✅ Running | [openwiki](openwiki/projects/feed-analyser.md) |
+| `survival-infrastructure/` | Personal intelligence pipeline. 🟡 Broken preflight | [openwiki](openwiki/projects/survival-infrastructure.md) |
+| `feed_analyser/` | ~~Legacy feed analyser deprecated—archived~~. __Capture instrument (new)__: thin Chrome extension + minimal local server. | [archive/openwiki](https://github.com/ak47-arch/feed_analyser/tree/main/archive/openwiki) (legacy) |
 | ~~`mission-control/`~~ | ~~Deprecated — removed from workspace. See `docs/tasks.txt`~~ | ~~—~~ |
-| `headroom-pi/` | Compression proxy. 🟡 Needs eval | project's own `openwiki/` |
-| `workspace-portability/` | Backup/restore. ✅ Phase 1 done | project's own `openwiki/` |
-| `resume/` | Resume editor. 🟡 Needs assessment | project's own `openwiki/` |
+| `headroom-pi/` | Compression proxy for pi. 🟡 Needs eval | project's own `openwiki/` |
+| `workspace-portability/` | Backup/restore/bootstrap. ✅ Phase 1 done | project's own `openwiki/` |
+| `resume/` | Resume editor. Deferred — not actively developed | project's own `openwiki/` |
 | `emotional_architecture/` | Personal operating manual. Static | — |
 | `timesheetViewer/` | Timesheet validation. Deferred | — |
 
@@ -25,7 +25,9 @@ When you need to understand **why** something was built or why it works a partic
 | Project | Vision / Design Doc |
 |---------|--------------------|
 | `survival-infrastructure/` | [`docs/technical/VISION.md`](../survival-infrastructure/docs/technical/VISION.md) — stakeholder vision, three-layer model, end goal |
-| `feed_analyser/` | [`vision.md`](../feed_analyser/vision.md) — problem statement, core pillars, phased direction |
+| `survival-infrastructure/` | [`docs/technical/TECHNICAL_VISION.md`](../survival-infrastructure/docs/technical/TECHNICAL_VISION.md) — technical roadmap, phased implementation |
+| `feed_analyser/` (legacy) | [`archive/vision.md`](../feed_analyser/archive/vision.md) — legacy vision (archived) |
+| `feed_analyser/capture/` | _(no vision doc yet — new project)_ |
 | ~~`mission-control/`~~ | ~~Deprecated — removed from workspace. See `docs/tasks.txt`~~ |
 
 These give you the bigger picture of what each project is about and where it's headed. Read the relevant one when you need context about purpose or direction before making changes.
