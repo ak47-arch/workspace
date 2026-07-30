@@ -17,6 +17,7 @@ Entries are grouped by project for progressive discovery. When the agent needs t
 - [Task-Centric Reference Hub](sessions/019fb3ee-9573-78d2-9d4b-a4bf49a742a7/decisions/02-task-centric-storage.md)
 - [PRD Queue Lifecycle](sessions/019fb3ee-9573-78d2-9d4b-a4bf49a742a7/decisions/03-prd-queue-lifecycle.md)
 - [Traceability Links via Task Field](sessions/019fb3ee-9573-78d2-9d4b-a4bf49a742a7/decisions/04-traceability-links.md)
+- [Vision Document Convention for Upstream Traceability](sessions/019fb45b-9f0f-79e2-ac55-a0a084ac3156/decisions/01-vision-document-convention.md)
 
 ### workspace-portability
 
