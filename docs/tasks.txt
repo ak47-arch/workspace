@@ -49,7 +49,7 @@ tasks:
     ### Pending
     - think about how entire monitoring can be automated (software_factory)
     - see how opensource/cognee can be intgrated into our ecosystem and what benefits it might provide and evaluate the benefits(software_factory)
-    - extend the software_factory architecture based on the learnings in this https://github.com/humanlayer/advanced-context-engineering-for-coding-agents/blob/main/wsff.md (software_factory)
+    - extend the software_factory architecture based on the learnings in this https://github.com/humanlayer/advanced-context-engineering-for-coding-agents/blob/main/wsff.md (software_factory) [extend-software-factory-wsff]
     - improve the shared context infrastructure and add architecture design step (software_factory)
     - clearly define the projects so the context infrastructure is is more efficient. the projects are survival-infrastructure, feed_analyser, llm, resume, workspace-portability, headroom-pi, software_factory (software_factory)
     - build and host the task generation infrastructure (currently task.txt file) so it can be accessible to the user 24/7 (software_factory)
