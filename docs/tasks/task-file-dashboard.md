@@ -1,6 +1,6 @@
 # Task: task-file-dashboard
 
-**Status**: in-prd
+**Status**: prd-ready
 **Category**: Small
 **Project**: software-factory
 **Created**: 2026-08-01
@@ -8,7 +8,7 @@
 
 ## Artifacts
 
-- Plan: _(will be created)_
+- Plan: `docs/prd-queue/2026-08-01-task-file-dashboard.md`
 
 ## Sessions
 
