@@ -127,11 +127,26 @@ Save to: `docs/prd-queue/<yyyy-mm-dd>-<slug>.md`
 
 ### 4. Finalise
 
-Update the task file (`docs/tasks/<slug>.md`) with:
-- Status: `prd-ready` (if plan document was created) or `complete` (if Trivial task was implemented directly)
-- Links to the plan document, session, and decisions
+Call `bin/transition-task.sh` to bookkeep the lifecycle transition. The tool handles everything:
 
-The plan document sits in `docs/prd-queue/` and the decision records sit in `docs/knowledge/`. When the task is eventually marked complete, the plan document moves from `docs/prd-queue/` to `docs/prd-archive/` (same filename, just moved).
+```bash
+# After a PRD session (plan is done, task is ready for implementation):
+bin/transition-task.sh <slug> --to prd-ready --session <session-uuid> --decisions <decision-files...>
+
+# After implementing a Trivial task directly in session:
+bin/transition-task.sh <slug> --to complete --session <session-uuid> --decisions <decision-files...>
+
+# After completing a task that had a PRD (archives PRD automatically):
+bin/transition-task.sh <slug> --to complete --session <session-uuid> --decisions <decision-files...>
+```
+
+This will:
+- Update the task file status, sessions, and decisions
+- Move the task line in `docs/tasks.txt` to the correct status section
+- Archive the PRD (if transitioning to `complete`)
+- Commit the changes
+
+**Do not manually edit** `docs/tasks.txt` or the task file for lifecycle transitions — always use the script.
 
 ---
 
