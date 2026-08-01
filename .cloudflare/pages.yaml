@@ -1,0 +1,7 @@
+# Cloudflare Pages configuration
+# Prevents the build system from trying to fetch submodules
+# which are present in opensource/ subdirectories
+
+build:
+  command: ""
+  output: /docs
