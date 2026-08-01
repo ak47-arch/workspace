@@ -18,6 +18,18 @@ You are now operating the **product/architecture layer** of the software factory
 
 ## Before you begin
 
+### 0. Sync the workspace
+
+Run `git pull` to bring the workspace up to date with the remote. The task dashboard may have modified `docs/tasks.txt` from another device, so this ensures the file is current before any work begins.
+
+```bash
+cd /home/anupam/Desktop/workspace && git pull --rebase
+```
+
+If there are merge conflicts, resolve them manually before proceeding.
+
+### 1. Read the model
+
 Read `docs/factory.txt` to understand the software factory model and how this layer fits.
 
 Then read `docs/tasks.txt` and prompt the user to pick a task to work on. The session centres around that task — everything from grilling to the PRD is scoped to it.
