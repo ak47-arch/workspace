@@ -9,12 +9,12 @@
 
 ## Artifacts
 
-- Plan: `docs/prd-archive/2026-07-31-extend-software-factory-wsff.md` (completed)
+- [Plan](../prd-archive/2026-07-31-extend-software-factory-wsff.md) (completed)
 
 ## Sessions
 
-- `docs/knowledge/sessions/019fb4f8-7a69-7968-b884-f4902565e512/session.jsonl`
+- [Session](../knowledge/sessions/019fb4f8-7a69-7968-b884-f4902565e512/session.jsonl)
 
 ## Decisions
 
-- `docs/knowledge/sessions/019fb4f8-7a69-7968-b884-f4902565e512/decisions/01-three-phase-product-layer.md`
+- [01-three-phase-product-layer](../knowledge/sessions/019fb4f8-7a69-7968-b884-f4902565e512/decisions/01-three-phase-product-layer.md)

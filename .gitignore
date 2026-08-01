@@ -55,3 +55,6 @@ coverage.xml
 # Cloned repos (not part of workspace source)
 /opensource/Handy/
 /opensource/whisper.cpp/
+# Ignore embedded git repos to prevent accidental submodule re-addition
+opensource/
+emotional_architecture/

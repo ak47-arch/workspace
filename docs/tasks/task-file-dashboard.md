@@ -9,7 +9,7 @@
 
 ## Artifacts
 
-- Plan: `docs/prd-archive/2026-08-01-task-file-dashboard.md`
+- [Plan](../prd-archive/2026-08-01-task-file-dashboard.md)
 
 ## Sessions
 
@@ -17,4 +17,4 @@
 
 ## Decisions
 
-- sessions/019fb98c-22b4-7a11-8ef5-fc3baa6634c0/decisions/01-task-lifecycle-state-machine-and-transition-tooling.md
+- [01-task-lifecycle-state-machine-and-transition-tooling](../knowledge/sessions/019fb98c-22b4-7a11-8ef5-fc3baa6634c0/decisions/01-task-lifecycle-state-machine-and-transition-tooling.md)

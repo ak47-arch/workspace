@@ -12,6 +12,7 @@
 #                          Label is for auditability (planning, implementation, verification).
 #                          Default label: "session"
 #   --decisions <files>   Comma-separated decision file paths relative to docs/knowledge/
+#                          (e.g. "sessions/<uuid>/decisions/01-foo.md")
 #
 # States:
 #   in-prd       → Being planned, stays in Pending
@@ -22,6 +23,7 @@
 #
 # What it does:
 #   1. Updates docs/tasks/<slug>.md (status, sessions, decisions, completion date)
+#      - All links are clickable markdown links with proper relative paths
 #   2. Moves the task line in docs/tasks.txt to the correct status section
 #   3. Archives the PRD from docs/prd-queue/ to docs/prd-archive/ (if complete)
 #   4. Commits everything
@@ -120,7 +122,7 @@ if [ -n "$SESSION_UUID" ]; then
   if [ "$SESSION_LABEL" = "$SESSION_ID" ]; then
     SESSION_LABEL="session"
   fi
-  SESSION_LINK="- [$SESSION_LABEL](sessions/$SESSION_ID/session.jsonl)"
+  SESSION_LINK="- [$SESSION_LABEL](../knowledge/sessions/$SESSION_ID/session.jsonl)"
 
   if grep -q "^## Sessions" "$TASK_MD"; then
     if ! grep -q "$SESSION_ID" "$TASK_MD"; then
@@ -145,36 +147,47 @@ if [ -n "$SESSION_UUID" ]; then
   fi
 fi
 
-# Append decisions (replaces placeholder if present, one at a time)
+# Append decisions (replaces placeholder if present, generates clickable links)
 if [ -n "$DECISIONS" ]; then
   IFS=',' read -ra DEC_ARRAY <<< "$DECISIONS"
   for DEC in "${DEC_ARRAY[@]}"; do
     DEC_TRIMMED=$(echo "$DEC" | xargs)
-    DEC_LINE="- $DEC_TRIMMED"
+    # Extract title from filename (e.g. "01-foo-bar.md" -> "foo-bar")
+    DEC_FILENAME=$(basename "$DEC_TRIMMED" .md)
+    DEC_TITLE=$(echo "$DEC_FILENAME" | sed 's/^[0-9]*-//')
+    DEC_LINK="- [$DEC_TITLE](../knowledge/$DEC_TRIMMED)"
+
     if grep -q "^## Decisions" "$TASK_MD"; then
       if ! grep -q "$DEC_TRIMMED" "$TASK_MD"; then
         if grep -q -- "- _(will be captured inline)_" "$TASK_MD"; then
           # Replace only the first occurrence of placeholder
-          sed -i "0,/- _(will be captured inline)_/s||$DEC_LINE|" "$TASK_MD"
+          sed -i "0,/- _(will be captured inline)_/s||$DEC_LINK|" "$TASK_MD"
           echo "  Replaced decision placeholder"
         else
           LINE_NUM=$(grep -n "^## Decisions" "$TASK_MD" | head -1 | cut -d: -f1)
           NEXT_HEADING=$(sed -n "$((LINE_NUM+1)),\$p" "$TASK_MD" | grep -n "^## " | head -1 | cut -d: -f1)
           if [ -n "$NEXT_HEADING" ]; then
             INSERT_AT=$((LINE_NUM + NEXT_HEADING - 1))
-            sed -i "$((INSERT_AT-1))a $DEC_LINE" "$TASK_MD"
+            sed -i "$((INSERT_AT-1))a $DEC_LINK" "$TASK_MD"
           else
-            echo "$DEC_LINE" >> "$TASK_MD"
+            echo "$DEC_LINK" >> "$TASK_MD"
           fi
           echo "  Appended decision"
         fi
       fi
     else
-      printf "\n## Decisions\n\n%s\n" "$DEC_LINE" >> "$TASK_MD"
+      printf "\n## Decisions\n\n%s\n" "$DEC_LINK" >> "$TASK_MD"
       echo "  Created Decisions section"
     fi
   done
   echo "  Updated decisions"
+fi
+
+# ─── Also convert any existing backtick-wrapped paths to clickable links ───
+# Converts: "- Plan: \`docs/prd-archive/foo.md\`" -> "- [Plan](../prd-archive/foo.md)"
+if grep -q '^[-*] .*: \`docs/' "$TASK_MD"; then
+  sed -i 's/^\([-*] \)\([^:]*\): \`docs\/\([^`]*\)\`/\1[\2](..\/\3)/' "$TASK_MD"
+  echo "  Converted backtick paths to clickable links in artifacts"
 fi
 
 # ─── Update tasks.txt ──────────────────────────────────────────────────────
