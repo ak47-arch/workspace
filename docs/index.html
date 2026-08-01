@@ -430,7 +430,7 @@
     <div class="header-actions">
       <span class="status-text" id="status-text"></span>
       <button id="refresh-btn" onclick="loadTasks()">↻ Refresh</button>
-      <button id="setup-btn" onclick="showSetup()">⚙️ Setup</button>
+      <button id="auth-btn" onclick="handleAuth()">⚙️ Setup</button>
     </div>
   </header>
 
@@ -515,19 +515,45 @@ document.addEventListener('DOMContentLoaded', () => {
   if (token) {
     setupScreen.classList.add('hidden');
     addSection.classList.remove('hidden');
+    updateAuthButton();
     loadTasks();
   } else {
     setupScreen.classList.remove('hidden');
     addSection.classList.add('hidden');
+    updateAuthButton();
   }
   populateProjectSelect();
 });
 
-// ─── Token management ────────────────────────────────────────────
-function showSetup() {
-  setupScreen.classList.remove('hidden');
-  tokenInput.value = token;
-  tokenInput.focus();
+// ─── Auth management ────────────────────────────────────────────
+function handleAuth() {
+  if (token) {
+    // Logout
+    token = '';
+    localStorage.removeItem('gh_token');
+    setupScreen.classList.remove('hidden');
+    addSection.classList.add('hidden');
+    updateAuthButton();
+    statusText.textContent = '';
+    taskList.innerHTML = '';
+    showTestResult('', '');
+    tokenInput.value = '';
+    testResult.classList.add('hidden');
+  } else {
+    // Show setup
+    setupScreen.classList.remove('hidden');
+    tokenInput.value = token;
+    tokenInput.focus();
+  }
+}
+
+function updateAuthButton() {
+  const btn = document.getElementById('auth-btn');
+  if (token) {
+    btn.textContent = '🚪 Logout';
+  } else {
+    btn.textContent = '⚙️ Setup';
+  }
 }
 
 function saveToken() {
@@ -562,6 +588,7 @@ async function testToken() {
       localStorage.setItem('gh_token', token);
       setupScreen.classList.add('hidden');
       addSection.classList.remove('hidden');
+      updateAuthButton();
       loadTasks();
     } else if (res.status === 401) {
       showTestResult('❌ Invalid token. Check it was entered correctly.', 'error');
