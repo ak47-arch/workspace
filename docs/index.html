@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Task Dashboard</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --surface: #f6f8fa;
+    --border: #d0d7de;
+    --text: #1f2328;
+    --text-secondary: #656d76;
+    --accent: #0969da;
+    --accent-hover: #0550ae;
+    --success: #1a7f37;
+    --warning: #9a6700;
+    --danger: #cf222e;
+    --complete: #8b949e;
+    --card-bg: #ffffff;
+    --input-bg: #ffffff;
+    --shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --border: #30363d;
+      --text: #e6edf3;
+      --text-secondary: #8b949e;
+      --accent: #58a6ff;
+      --accent-hover: #79c0ff;
+      --success: #3fb950;
+      --warning: #d29922;
+      --danger: #f85149;
+      --complete: #484f58;
+      --card-bg: #161b22;
+      --input-bg: #0d1117;
+      --shadow: 0 1px 3px rgba(0,0,0,0.3);
+    }
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+    padding: 24px;
+    min-height: 100vh;
+  }
+
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  /* Header */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  header h1 {
+    font-size: 24px;
+    font-weight: 600;
+  }
+
+  .header-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .header-actions .status-text {
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+
+  /* Buttons */
+  button, .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--surface);
+    color: var(--text);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+    white-space: nowrap;
+  }
+
+  button:hover { background: var(--border); }
+  button.primary {
+    background: var(--accent);
+    color: #ffffff;
+    border-color: var(--accent);
+  }
+  button.primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* Setup screen */
+  #setup-screen {
+    max-width: 480px;
+    margin: 60px auto;
+    text-align: center;
+  }
+
+  #setup-screen h2 {
+    font-size: 20px;
+    margin-bottom: 8px;
+  }
+
+  #setup-screen p {
+    color: var(--text-secondary);
+    font-size: 14px;
+    margin-bottom: 20px;
+  }
+
+  #setup-screen .setup-form {
+    text-align: left;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px;
+  }
+
+  #setup-screen .setup-form label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+
+  #setup-screen .setup-form input[type="password"] {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--input-bg);
+    color: var(--text);
+    font-size: 14px;
+    margin-bottom: 4px;
+  }
+
+  #setup-screen .setup-form input[type="password"]:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(9,105,218,0.15);
+  }
+
+  #setup-screen .setup-form .hint {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 16px;
+  }
+
+  #setup-screen .setup-form .token-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  #setup-screen .test-result {
+    margin-top: 12px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+  }
+
+  #setup-screen .test-result.success { background: #dafbe1; color: #1a7f37; }
+  #setup-screen .test-result.error { background: #ffebe9; color: #cf222e; }
+
+  @media (prefers-color-scheme: dark) {
+    #setup-screen .test-result.success { background: #1a3a2a; color: #3fb950; }
+    #setup-screen .test-result.error { background: #3a1a1a; color: #f85149; }
+  }
+
+  /* Project cards */
+  .project-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+
+  .project-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    cursor: pointer;
+    user-select: none;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    font-size: 15px;
+    font-weight: 600;
+  }
+
+  .project-header:hover { background: var(--border); }
+  .project-header .chevron {
+    transition: transform 0.2s;
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+  .project-header .chevron.collapsed { transform: rotate(-90deg); }
+  .project-header .task-count {
+    margin-left: auto;
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--text-secondary);
+  }
+
+  .project-body { padding: 4px 0; }
+  .project-body.collapsed { display: none; }
+
+  /* Status sections */
+  .status-section {
+    border-bottom: 1px solid var(--border);
+  }
+  .status-section:last-child { border-bottom: none; }
+
+  .status-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    cursor: pointer;
+    user-select: none;
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .status-header:hover { background: var(--surface); }
+  .status-header .chevron {
+    transition: transform 0.2s;
+    font-size: 10px;
+    color: var(--text-secondary);
+  }
+  .status-header .chevron.collapsed { transform: rotate(-90deg); }
+  .status-header .count {
+    margin-left: auto;
+    font-size: 11px;
+    font-weight: 400;
+    color: var(--text-secondary);
+  }
+
+  .status-pending .status-header { color: var(--accent); }
+  .status-queued .status-header { color: var(--warning); }
+  .status-complete .status-header { color: var(--complete); }
+
+  .status-body { padding: 2px 0; }
+  .status-body.collapsed { display: none; }
+
+  /* Task items */
+  .task-item {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    padding: 6px 16px 6px 28px;
+    font-size: 14px;
+    color: var(--text);
+  }
+
+  .task-item:hover { background: var(--surface); }
+
+  .task-item .bullet {
+    color: var(--text-secondary);
+    font-size: 12px;
+    flex-shrink: 0;
+  }
+
+  .task-item .description {
+    flex: 1;
+  }
+
+  .task-item .slug-badge {
+    font-size: 11px;
+    padding: 1px 6px;
+    border-radius: 10px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    font-family: 'SF Mono', 'Consolas', monospace;
+    flex-shrink: 0;
+  }
+
+  .task-item.complete .description {
+    text-decoration: line-through;
+    color: var(--complete);
+  }
+
+  /* Empty state */
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-secondary);
+  }
+  .empty-state p { font-size: 14px; margin-bottom: 4px; }
+  .empty-state .sub { font-size: 13px; }
+
+  /* Add task form */
+  #add-task-section {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    margin-top: 24px;
+    box-shadow: var(--shadow);
+  }
+
+  #add-task-section h2 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 16px;
+  }
+
+  .form-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .form-group {
+    flex: 1;
+    min-width: 160px;
+  }
+
+  .form-group label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .form-group select,
+  .form-group input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--input-bg);
+    color: var(--text);
+    font-size: 14px;
+  }
+
+  .form-group select:focus,
+  .form-group input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(9,105,218,0.15);
+  }
+
+  .form-group.description-group {
+    flex: 3;
+    min-width: 250px;
+  }
+
+  .form-actions {
+    display: flex;
+    gap: 8px;
+    align-items: flex-end;
+    padding-bottom: 1px;
+  }
+
+  .form-message {
+    margin-top: 8px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+  }
+
+  .form-message.success { background: #dafbe1; color: #1a7f37; }
+  .form-message.error { background: #ffebe9; color: #cf222e; }
+
+  @media (prefers-color-scheme: dark) {
+    .form-message.success { background: #1a3a2a; color: #3fb950; }
+    .form-message.error { background: #3a1a1a; color: #f85149; }
+  }
+
+  /* Loading spinner */
+  .spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Mobile */
+  @media (max-width: 600px) {
+    body { padding: 12px; }
+    header { flex-direction: column; align-items: flex-start; }
+    .header-actions { width: 100%; justify-content: flex-start; flex-wrap: wrap; }
+    .form-row { flex-direction: column; }
+    .form-group { min-width: 100%; }
+    #setup-screen { margin: 40px 16px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>📋 Task Dashboard</h1>
+    <div class="header-actions">
+      <span class="status-text" id="status-text"></span>
+      <button id="refresh-btn" onclick="loadTasks()">↻ Refresh</button>
+      <button id="setup-btn" onclick="showSetup()">⚙️ Setup</button>
+    </div>
+  </header>
+
+  <!-- Setup Screen -->
+  <div id="setup-screen" class="hidden">
+    <h2>GitHub Token Setup</h2>
+    <p>Enter a fine-grained GitHub Personal Access Token to read and write tasks.</p>
+    <div class="setup-form">
+      <label for="token-input">Personal Access Token</label>
+      <input type="password" id="token-input" placeholder="github_pat_..." autocomplete="off" />
+      <div class="hint">Requires <strong>Contents: read &amp; write</strong> permission on <code>ak47-arch/workspace</code></div>
+      <div class="token-actions">
+        <button class="primary" onclick="saveToken()">Save Token</button>
+        <button onclick="testToken()">Test Connection</button>
+      </div>
+      <div id="test-result" class="test-result hidden"></div>
+    </div>
+  </div>
+
+  <!-- Task List -->
+  <div id="task-list"></div>
+
+  <!-- Add Task Form -->
+  <div id="add-task-section" class="hidden">
+    <h2>✚ Add a Task</h2>
+    <div class="form-row">
+      <div class="form-group">
+        <label for="task-project">Project</label>
+        <select id="task-project"></select>
+      </div>
+      <div class="form-group">
+        <label for="task-status">Status</label>
+        <select id="task-status">
+          <option value="Pending">Pending</option>
+          <option value="Queued">Queued</option>
+          <option value="Complete">Complete</option>
+        </select>
+      </div>
+      <div class="form-group description-group">
+        <label for="task-desc">Description</label>
+        <input type="text" id="task-desc" placeholder="Describe the task..." />
+      </div>
+      <div class="form-actions">
+        <button class="primary" onclick="addTask()">Submit</button>
+      </div>
+    </div>
+    <div id="form-message" class="form-message hidden"></div>
+  </div>
+</div>
+
+<script>
+// ─── State ───────────────────────────────────────────────────────
+const REPO = 'ak47-arch/workspace';
+const FILE_PATH = 'docs/tasks.txt';
+const API_BASE = 'https://api.github.com';
+
+let token = localStorage.getItem('gh_token') || '';
+let projects = [];       // parsed project list
+let fileSha = '';
+let isLoading = false;
+
+const PROJECTS = [
+  'all', 'llm', 'survival-infrastructure', 'workspace-portability',
+  'headroom-pi', 'software-factory', 'resume', 'feed-analyser', 'langfuse'
+];
+
+// ─── DOM refs ────────────────────────────────────────────────────
+const $ = id => document.getElementById(id);
+const setupScreen = $('setup-screen');
+const taskList = $('task-list');
+const addSection = $('add-task-section');
+const statusText = $('status-text');
+const tokenInput = $('token-input');
+const testResult = $('test-result');
+const formMessage = $('form-message');
+const taskProject = $('task-project');
+const taskDesc = $('task-desc');
+const refreshBtn = $('refresh-btn');
+
+// ─── Init ────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  if (token) {
+    setupScreen.classList.add('hidden');
+    addSection.classList.remove('hidden');
+    loadTasks();
+  } else {
+    setupScreen.classList.remove('hidden');
+    addSection.classList.add('hidden');
+  }
+  populateProjectSelect();
+});
+
+// ─── Token management ────────────────────────────────────────────
+function showSetup() {
+  setupScreen.classList.remove('hidden');
+  tokenInput.value = token;
+  tokenInput.focus();
+}
+
+function saveToken() {
+  const val = tokenInput.value.trim();
+  if (!val) {
+    showTestResult('Please enter a token.', 'error');
+    return;
+  }
+  token = val;
+  localStorage.setItem('gh_token', token);
+  showTestResult('Token saved. Testing connection...', '');
+  testToken();
+}
+
+function showTestResult(msg, type) {
+  testResult.textContent = msg;
+  testResult.className = 'test-result' + (type ? ' ' + type : '');
+  testResult.classList.remove('hidden');
+}
+
+async function testToken() {
+  const t = tokenInput.value.trim() || token;
+  if (!t) { showTestResult('No token entered.', 'error'); return; }
+  showTestResult('Testing...', '');
+  try {
+    const res = await fetch(`${API_BASE}/repos/${REPO}`, {
+      headers: { 'Authorization': `token ${t}`, 'Accept': 'application/vnd.github.v3+json' }
+    });
+    if (res.ok) {
+      showTestResult('✅ Connection successful! Token is valid.', 'success');
+      token = t;
+      localStorage.setItem('gh_token', token);
+      setupScreen.classList.add('hidden');
+      addSection.classList.remove('hidden');
+      loadTasks();
+    } else if (res.status === 401) {
+      showTestResult('❌ Invalid token. Check it was entered correctly.', 'error');
+    } else if (res.status === 403) {
+      showTestResult('❌ Token does not have access to this repo.', 'error');
+    } else {
+      showTestResult(`❌ Unexpected error: ${res.status} ${res.statusText}`, 'error');
+    }
+  } catch (e) {
+    showTestResult(`❌ Network error: ${e.message}`, 'error');
+  }
+}
+
+// ─── Project select ──────────────────────────────────────────────
+function populateProjectSelect() {
+  taskProject.innerHTML = PROJECTS.map(p => `<option value="${p}">${p}</option>`).join('');
+}
+
+// ─── Load tasks ──────────────────────────────────────────────────
+async function loadTasks() {
+  if (isLoading) return;
+  isLoading = true;
+  statusText.textContent = 'Loading...';
+  refreshBtn.disabled = true;
+
+  try {
+    const res = await fetch(`${API_BASE}/repos/${REPO}/contents/${FILE_PATH}`, {
+      headers: {
+        'Authorization': `token ${token}`,
+        'Accept': 'application/vnd.github.v3+json'
+      }
+    });
+
+    if (!res.ok) {
+      if (res.status === 404) {
+        taskList.innerHTML = '<div class="empty-state"><p>📄 tasks.txt not found</p><p class="sub">Create it in the repo root to get started.</p></div>';
+        statusText.textContent = 'File not found';
+        return;
+      }
+      if (res.status === 401 || res.status === 403) {
+        showSetupScreen('Token expired or invalid. Please re-enter.');
+        return;
+      }
+      throw new Error(`GitHub API error: ${res.status}`);
+    }
+
+    const data = await res.json();
+    fileSha = data.sha;
+    const content = decodeBase64(data.content);
+    projects = parseTasks(content);
+    renderTasks(projects);
+    statusText.textContent = `${countTasks(projects)} tasks`;
+  } catch (e) {
+    statusText.textContent = 'Error loading';
+    taskList.innerHTML = `<div class="empty-state"><p>⚠️ Error loading tasks</p><p class="sub">${escapeHtml(e.message)}</p></div>`;
+  } finally {
+    isLoading = false;
+    refreshBtn.disabled = false;
+  }
+}
+
+function showSetupScreen(msg) {
+  setupScreen.classList.remove('hidden');
+  addSection.classList.add('hidden');
+  token = '';
+  localStorage.removeItem('gh_token');
+  if (msg) showTestResult(msg, 'error');
+}
+
+// ─── Parse tasks.txt format ──────────────────────────────────────
+function parseTasks(content) {
+  const lines = content.split('\n');
+  const projects = [];
+  let currentProject = null;
+  let currentStatus = null;
+
+  for (const rawLine of lines) {
+    const line = rawLine;
+
+    // Project heading: "    ## project-name"
+    const projMatch = line.match(/^ {4}## (.+)/);
+    if (projMatch) {
+      currentProject = {
+        name: projMatch[1].trim(),
+        statuses: {}
+      };
+      projects.push(currentProject);
+      currentStatus = null;
+      continue;
+    }
+
+    // Status heading: "    ### Status"
+    const statusMatch = line.match(/^ {4}### (.+)/);
+    if (statusMatch && currentProject) {
+      currentStatus = statusMatch[1].trim();
+      currentProject.statuses[currentStatus] = currentProject.statuses[currentStatus] || [];
+      continue;
+    }
+
+    // Task item: "    - ..."
+    const taskMatch = line.match(/^ {4}- (.+)/);
+    if (taskMatch && currentProject && currentStatus) {
+      const task = parseTaskLine(taskMatch[1]);
+      if (task) {
+        currentProject.statuses[currentStatus].push(task);
+      }
+      continue;
+    }
+  }
+
+  return projects;
+}
+
+function parseTaskLine(text) {
+  // text is the part after "- "
+  // Format: [optional (status)] description (project) [optional-slug]
+
+  let remaining = text.trim();
+
+  // Extract status prefix: (queued), (complete)
+  let status = 'pending';
+  const statusPrefixMatch = remaining.match(/^\((queued|complete)\)\s+/);
+  if (statusPrefixMatch) {
+    status = statusPrefixMatch[1];
+    remaining = remaining.slice(statusPrefixMatch[0].length);
+  }
+
+  // Extract slug suffix: [slug-name]
+  let slug = null;
+  const slugMatch = remaining.match(/\s+\[([\w-]+)\]$/);
+  if (slugMatch) {
+    slug = slugMatch[1];
+    remaining = remaining.slice(0, remaining.lastIndexOf('[')).trim();
+  }
+
+  // Extract project tag: (project)
+  let project = null;
+  const projMatch = remaining.match(/\s+\(([^)]+)\)$/);
+  if (projMatch) {
+    project = projMatch[1];
+    remaining = remaining.slice(0, remaining.lastIndexOf('(')).trim();
+  }
+
+  const description = remaining.trim();
+
+  return {
+    description,
+    project,
+    slug,
+    status,
+    // For display: show the raw line status prefix if it differs from section status
+    explicitStatus: status
+  };
+}
+
+// ─── Render tasks ────────────────────────────────────────────────
+function renderTasks(projects) {
+  if (projects.length === 0) {
+    taskList.innerHTML = '<div class="empty-state"><p>📭 No tasks found</p><p class="sub">Add your first task using the form below.</p></div>';
+    return;
+  }
+
+  let html = '';
+  for (const proj of projects) {
+    const statusKeys = Object.keys(proj.statuses);
+    const totalTasks = statusKeys.reduce((sum, k) => sum + proj.statuses[k].length, 0);
+
+    html += `<div class="project-card">
+      <div class="project-header" onclick="toggleProject(this)">
+        <span class="chevron">▼</span>
+        ${escapeHtml(proj.name)}
+        <span class="task-count">${totalTasks} task${totalTasks !== 1 ? 's' : ''}</span>
+      </div>
+      <div class="project-body">`;
+
+    // Priority order: Pending, Queued, Complete
+    const statusOrder = ['Pending', 'Queued', 'Complete'];
+    for (const sk of statusOrder) {
+      const tasks = proj.statuses[sk] || [];
+      if (tasks.length === 0) continue;
+
+      const isComplete = sk === 'Complete';
+      html += `<div class="status-section status-${sk.toLowerCase()}">
+        <div class="status-header" onclick="toggleStatus(this)">
+          <span class="chevron ${isComplete ? 'collapsed' : ''}">▼</span>
+          ${sk}
+          <span class="count">${tasks.length}</span>
+        </div>
+        <div class="status-body ${isComplete ? 'collapsed' : ''}">`;
+
+      for (const task of tasks) {
+        html += `<div class="task-item ${isComplete ? 'complete' : ''}">
+          <span class="bullet">-</span>
+          <span class="description">${escapeHtml(task.description)}</span>`;
+        if (task.slug) {
+          html += `<span class="slug-badge">${escapeHtml(task.slug)}</span>`;
+        }
+        html += `</div>`;
+      }
+
+      html += `</div></div>`;
+    }
+
+    html += `</div></div>`;
+  }
+
+  taskList.innerHTML = html;
+}
+
+// ─── Toggle helpers ──────────────────────────────────────────────
+function toggleProject(header) {
+  const body = header.nextElementSibling;
+  const chevron = header.querySelector('.chevron');
+  body.classList.toggle('collapsed');
+  chevron.classList.toggle('collapsed');
+}
+
+function toggleStatus(header) {
+  const body = header.nextElementSibling;
+  const chevron = header.querySelector('.chevron');
+  body.classList.toggle('collapsed');
+  chevron.classList.toggle('collapsed');
+}
+
+// ─── Add task ────────────────────────────────────────────────────
+async function addTask() {
+  const project = taskProject.value;
+  const status = $('task-status').value;
+  const description = taskDesc.value.trim();
+
+  if (!description) {
+    showFormMessage('Please enter a task description.', 'error');
+    return;
+  }
+
+  const submitBtn = addSection.querySelector('.primary');
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Adding...';
+  showFormMessage('', '');
+
+  try {
+    // Read current file
+    const res = await fetch(`${API_BASE}/repos/${REPO}/contents/${FILE_PATH}`, {
+      headers: {
+        'Authorization': `token ${token}`,
+        'Accept': 'application/vnd.github.v3+json'
+      }
+    });
+
+    if (!res.ok) throw new Error(`Failed to read file: ${res.status}`);
+
+    const data = await res.json();
+    const currentSha = data.sha;
+    const content = decodeBase64(data.content);
+
+    // Add the new task line
+    const newContent = addTaskLine(content, project, status, description);
+
+    // Write back
+    const writeRes = await fetch(`${API_BASE}/repos/${REPO}/contents/${FILE_PATH}`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `token ${token}`,
+        'Accept': 'application/vnd.github.v3+json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        message: `Add task: ${description}`,
+        content: encodeBase64(newContent),
+        sha: currentSha
+      })
+    });
+
+    if (!writeRes.ok) {
+      const errData = await writeRes.json().catch(() => ({}));
+      if (writeRes.status === 409) {
+        throw new Error('Conflict: the file was modified by someone else. Please refresh and try again.');
+      }
+      throw new Error(`Failed to write: ${writeRes.status} ${errData.message || ''}`);
+    }
+
+    showFormMessage('✅ Task added successfully!', 'success');
+    taskDesc.value = '';
+    await loadTasks();
+  } catch (e) {
+    showFormMessage(`❌ ${escapeHtml(e.message)}`, 'error');
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Submit';
+  }
+}
+
+function addTaskLine(content, project, status, description) {
+  const lines = content.split('\n');
+
+  // Build the new task line
+  let newLine;
+  if (status === 'Pending') {
+    newLine = `    - ${description} (${project})`;
+  } else {
+    newLine = `    - (${status.toLowerCase()}) ${description} (${project})`;
+  }
+
+  // Track state
+  let foundProject = false;
+  let projectStart = -1;
+  let projectEnd = -1;
+  let targetStatusLine = -1;       // line of the matching status heading
+  let lastTaskInTargetStatus = -1; // line of the last task in the matching status
+
+  // Track all status headings in the target project for ordering
+  const statusHeadings = []; // { name, line }
+  let lastTaskEnd = -1; // track the last line of content in the project
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+
+    // Detect project headings
+    const projMatch = line.match(/^ {4}## (.+)/);
+    if (projMatch) {
+      const projName = projMatch[1].trim();
+      const projSlug = projName.split(' ')[0];
+      if (projSlug === project) {
+        foundProject = true;
+        projectStart = i;
+        statusHeadings.length = 0;
+        lastTaskEnd = -1;
+      } else if (foundProject && projectEnd === -1) {
+        projectEnd = i;
+      }
+      continue;
+    }
+
+    // Skip lines outside the target project
+    if (!foundProject || (projectEnd !== -1 && i >= projectEnd)) continue;
+
+    // Detect status headings within the target project
+    const statusMatch = line.match(/^ {4}### (.+)/);
+    if (statusMatch) {
+      const sname = statusMatch[1].trim();
+      statusHeadings.push({ name: sname, line: i });
+      if (sname === status) {
+        targetStatusLine = i;
+      }
+      continue;
+    }
+
+    // Detect task lines
+    const taskMatch = line.match(/^ {4}- /);
+    if (taskMatch) {
+      // Determine which status section this task belongs to
+      let taskStatus = null;
+      for (let s = statusHeadings.length - 1; s >= 0; s--) {
+        if (statusHeadings[s].line < i) {
+          taskStatus = statusHeadings[s].name;
+          break;
+        }
+      }
+      if (taskStatus === status) {
+        lastTaskInTargetStatus = i;
+      }
+      lastTaskEnd = i + 1;
+    }
+  }
+
+  // If the project runs to the end of the file
+  if (foundProject && projectEnd === -1) {
+    projectEnd = lines.length;
+  }
+
+  // Determine where to insert
+  const insertLines = [];
+
+  if (targetStatusLine >= 0 && lastTaskInTargetStatus >= 0) {
+    // Status section exists with tasks — insert after the last task
+    insertLines.push(newLine);
+    return spliceLines(lines, lastTaskInTargetStatus + 1, insertLines);
+  }
+
+  if (targetStatusLine >= 0) {
+    // Status section exists but empty — insert after the heading
+    insertLines.push(newLine);
+    return spliceLines(lines, targetStatusLine + 1, insertLines);
+  }
+
+  // Need to create a new status section
+  // Find the right position among existing status headings
+  const statusOrder = ['Pending', 'Queued', 'Complete'];
+  const targetIdx = statusOrder.indexOf(status);
+
+  let insertAt = projectEnd; // default: end of project
+
+  for (const sh of statusHeadings) {
+    const shIdx = statusOrder.indexOf(sh.name);
+    if (shIdx > targetIdx) {
+      // Insert before this status heading
+      insertAt = sh.line;
+      break;
+    }
+  }
+
+  // If the project doesn't exist, create it at the end of the file
+  if (!foundProject) {
+    // Find the end of the file (trim trailing blank lines)
+    let endIdx = lines.length;
+    while (endIdx > 0 && lines[endIdx - 1].trim() === '') {
+      endIdx--;
+    }
+    insertAt = endIdx;
+
+    // Add blank line separator before new project
+    const before = lines[insertAt - 1];
+    if (before !== undefined && before.trim() !== '') {
+      insertLines.push('');
+    }
+    insertLines.push(`    ## ${project}`);
+    insertLines.push('');
+    insertLines.push(`    ### ${status}`);
+    insertLines.push(newLine);
+    return spliceLines(lines, insertAt, insertLines);
+  }
+
+  // Insert the status heading + task line
+  const beforeLine = lines[insertAt - 1];
+  if (beforeLine !== undefined && beforeLine.trim() !== '') {
+    insertLines.push('');
+  }
+  insertLines.push(`    ### ${status}`);
+  insertLines.push(newLine);
+
+  // Add blank line after if the next line is not blank
+  const afterLine = lines[insertAt];
+  if (afterLine !== undefined && afterLine.trim() !== '') {
+    insertLines.push('');
+  }
+
+  return spliceLines(lines, insertAt, insertLines);
+}
+
+function spliceLines(lines, index, newLines) {
+  const result = lines.slice();
+  result.splice(index, 0, ...newLines);
+  return result.join('\n');
+}
+
+// ─── Helpers ─────────────────────────────────────────────────────
+function countTasks(projects) {
+  let count = 0;
+  for (const p of projects) {
+    for (const k of Object.keys(p.statuses)) {
+      count += p.statuses[k].length;
+    }
+  }
+  return count;
+}
+
+function decodeBase64(str) {
+  // GitHub API returns base64 with line breaks every 60 chars
+  str = str.replace(/\n/g, '');
+  try {
+    return atob(str);
+  } catch (e) {
+    // Try UTF-8 decoding
+    const bytes = Uint8Array.from(atob(str), c => c.charCodeAt(0));
+    return new TextDecoder('utf-8').decode(bytes);
+  }
+}
+
+function encodeBase64(str) {
+  try {
+    return btoa(str);
+  } catch (e) {
+    // Handle UTF-8
+    const bytes = new TextEncoder().encode(str);
+    let binary = '';
+    for (const b of bytes) {
+      binary += String.fromCharCode(b);
+    }
+    return btoa(binary);
+  }
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function showFormMessage(msg, type) {
+  formMessage.textContent = msg;
+  formMessage.className = 'form-message' + (type ? ' ' + type : '');
+  formMessage.classList.toggle('hidden', !msg);
+}
+</script>
+</body>
+</html>
