@@ -3,14 +3,15 @@
 # transition-task.sh — Bookkeeping for task lifecycle transitions
 #
 # Usage:
-#   bin/transition-task.sh <slug> --to <state> [--session <uuid>] [--decisions <files>]
+#   bin/transition-task.sh <slug> --to <state> [--session <uuid:label>] [--decisions <files>]
 #
 # Arguments:
 #   <slug>                Task slug (e.g. "task-file-dashboard")
 #   --to <state>          Target state: in-prd, prd-ready, in-progress, in-review, complete
-#   --session <uuid>      Session UUID to append to the task file (optional)
+#   --session <uuid:label> Session UUID with optional label (e.g. "abc123:planning").
+#                          Label is for auditability (planning, implementation, verification).
+#                          Default label: "session"
 #   --decisions <files>   Comma-separated decision file paths relative to docs/knowledge/
-#                         (optional)
 #
 # States:
 #   in-prd       → Being planned, stays in Pending
@@ -36,8 +37,9 @@ PRD_ARCHIVE="$WORKSPACE/docs/prd-archive"
 
 # ─── Parse arguments ───────────────────────────────────────────────────────
 if [ $# -lt 3 ]; then
-  echo "Usage: $(basename "$0") <slug> --to <state> [--session <uuid>] [--decisions <files>]"
+  echo "Usage: $(basename "$0") <slug> --to <state> [--session <uuid:label>] [--decisions <files>]"
   echo "States: in-prd, prd-ready, in-progress, in-review, complete"
+  echo "Session label examples: 'abc123:planning', 'def456:implementation', 'ghi789:verification'"
   exit 1
 fi
 
@@ -110,33 +112,40 @@ if [ "$TARGET_STATE" = "complete" ]; then
   fi
 fi
 
-# Append session (replaces placeholder if present)
+# Append session (replaces placeholder if present, generates clickable link)
 if [ -n "$SESSION_UUID" ]; then
-  SESSION_LINE="- \`$SESSION_UUID\`"
+  # Parse uuid:label format (e.g. "abc123:planning")
+  SESSION_ID="${SESSION_UUID%%:*}"
+  SESSION_LABEL="${SESSION_UUID#*:}"
+  if [ "$SESSION_LABEL" = "$SESSION_ID" ]; then
+    SESSION_LABEL="session"
+  fi
+  SESSION_LINK="- [$SESSION_LABEL](sessions/$SESSION_ID/session.jsonl)"
+
   if grep -q "^## Sessions" "$TASK_MD"; then
-    if ! grep -q "$SESSION_UUID" "$TASK_MD"; then
+    if ! grep -q "$SESSION_ID" "$TASK_MD"; then
       if grep -q -- "- _(this session)_" "$TASK_MD"; then
-        sed -i "s|- _(this session)_|$SESSION_LINE|" "$TASK_MD"
+        sed -i "s|- _(this session)_|$SESSION_LINK|" "$TASK_MD"
         echo "  Replaced session placeholder"
       else
         LINE_NUM=$(grep -n "^## Sessions" "$TASK_MD" | head -1 | cut -d: -f1)
         NEXT_HEADING=$(sed -n "$((LINE_NUM+1)),\$p" "$TASK_MD" | grep -n "^## " | head -1 | cut -d: -f1)
         if [ -n "$NEXT_HEADING" ]; then
           INSERT_AT=$((LINE_NUM + NEXT_HEADING - 1))
-          sed -i "$((INSERT_AT-1))a $SESSION_LINE" "$TASK_MD"
+          sed -i "$((INSERT_AT-1))a $SESSION_LINK" "$TASK_MD"
         else
-          echo "$SESSION_LINE" >> "$TASK_MD"
+          echo "$SESSION_LINK" >> "$TASK_MD"
         fi
         echo "  Appended session"
       fi
     fi
   else
-    printf "\n## Sessions\n\n%s\n" "$SESSION_LINE" >> "$TASK_MD"
+    printf "\n## Sessions\n\n%s\n" "$SESSION_LINK" >> "$TASK_MD"
     echo "  Created Sessions section"
   fi
 fi
 
-# Append decisions
+# Append decisions (replaces placeholder if present, one at a time)
 if [ -n "$DECISIONS" ]; then
   IFS=',' read -ra DEC_ARRAY <<< "$DECISIONS"
   for DEC in "${DEC_ARRAY[@]}"; do
@@ -145,7 +154,9 @@ if [ -n "$DECISIONS" ]; then
     if grep -q "^## Decisions" "$TASK_MD"; then
       if ! grep -q "$DEC_TRIMMED" "$TASK_MD"; then
         if grep -q -- "- _(will be captured inline)_" "$TASK_MD"; then
-          sed -i "s|- _(will be captured inline)_|$DEC_LINE|" "$TASK_MD"
+          # Replace only the first occurrence of placeholder
+          sed -i "0,/- _(will be captured inline)_/s||$DEC_LINE|" "$TASK_MD"
+          echo "  Replaced decision placeholder"
         else
           LINE_NUM=$(grep -n "^## Decisions" "$TASK_MD" | head -1 | cut -d: -f1)
           NEXT_HEADING=$(sed -n "$((LINE_NUM+1)),\$p" "$TASK_MD" | grep -n "^## " | head -1 | cut -d: -f1)
@@ -155,10 +166,12 @@ if [ -n "$DECISIONS" ]; then
           else
             echo "$DEC_LINE" >> "$TASK_MD"
           fi
+          echo "  Appended decision"
         fi
       fi
     else
       printf "\n## Decisions\n\n%s\n" "$DEC_LINE" >> "$TASK_MD"
+      echo "  Created Decisions section"
     fi
   done
   echo "  Updated decisions"

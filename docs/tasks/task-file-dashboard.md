@@ -13,9 +13,8 @@
 
 ## Sessions
 
-- `019fb98c-22b4-7a11-8ef5-fc3baa6634c0`
+- [Planning & Implementation](../knowledge/sessions/019fb98c-22b4-7a11-8ef5-fc3baa6634c0/session.jsonl)
 
 ## Decisions
 
-- _(will be captured inline)_
 - sessions/019fb98c-22b4-7a11-8ef5-fc3baa6634c0/decisions/01-task-lifecycle-state-machine-and-transition-tooling.md

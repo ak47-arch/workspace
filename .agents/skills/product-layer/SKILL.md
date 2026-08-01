@@ -131,13 +131,13 @@ Call `bin/transition-task.sh` to bookkeep the lifecycle transition. The tool han
 
 ```bash
 # After a PRD session (plan is done, task is ready for implementation):
-bin/transition-task.sh <slug> --to prd-ready --session <session-uuid> --decisions <decision-files...>
+bin/transition-task.sh <slug> --to prd-ready --session <session-uuid>:planning --decisions <decision-files...>
 
 # After implementing a Trivial task directly in session:
-bin/transition-task.sh <slug> --to complete --session <session-uuid> --decisions <decision-files...>
+bin/transition-task.sh <slug> --to complete --session <session-uuid>:planning --decisions <decision-files...>
 
 # After completing a task that had a PRD (archives PRD automatically):
-bin/transition-task.sh <slug> --to complete --session <session-uuid> --decisions <decision-files...>
+bin/transition-task.sh <slug> --to complete --session <session-uuid>:implementation --decisions <decision-files...>
 ```
 
 This will:
