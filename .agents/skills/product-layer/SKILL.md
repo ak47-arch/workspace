@@ -1,6 +1,6 @@
 ---
 name: product-layer
-description: Start a product/architecture session. Produces one artifact per task: the plan document.
+description: "Start a product/architecture session. Produces one artifact per task: the plan document."
 disable-model-invocation: true
 ---
 
