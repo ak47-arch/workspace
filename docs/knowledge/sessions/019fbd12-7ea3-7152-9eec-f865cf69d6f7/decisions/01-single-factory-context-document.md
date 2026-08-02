@@ -1,7 +1,7 @@
 ## Decision: Single Factory Context Document for Token-Efficient Context
 
 **Status**: accepted
-**Date**: 2026-08-01
+**Date**: 2026-08-02 15:09
 **Task**: combine-factory-context-factory-txt
 **Project**: software-factory
 **Session**: sessions/019fbd12-7ea3-7152-9eec-f865cf69d6f7/session.jsonl

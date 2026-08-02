@@ -1,7 +1,7 @@
 ## Decision: Herdr-Pi Session Repopulation Architecture
 
 **Status**: accepted
-**Date**: 2026-07-30
+**Date**: 2026-07-30 21:18
 **Project**: headroom-pi
 **Session**: sessions/019fb3a9-bf84-79db-b194-c580b76e4228/session.jsonl
 

@@ -1,10 +1,10 @@
 # Task: combine-factory-context-factory-txt
 
 **Status**: complete
-**Completed**: 2026-08-02
+**Completed**: 2026-08-02 15:26
 **Category**: Medium
 **Project**: software-factory
-**Created**: 2026-08-01
+**Created**: 2026-08-02 15:26
 **Source**: docs/tasks.txt — `Combine factory-context.md and factory.txt into a single document (software-factory)`
 
 ## Artifacts

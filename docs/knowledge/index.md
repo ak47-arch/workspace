@@ -1,13 +1,10 @@
+
 # Knowledge Base
 
 Entries are grouped by project for progressive discovery. When the agent needs to understand design intent for a specific project, it opens the relevant section.
 
 ### software-factory
 
-- [Single Factory Context Document for Token-Efficient Context](sessions/019fbd12-7ea3-7152-9eec-f865cf69d6f7/decisions/01-single-factory-context-document.md)
-- [Rename knowledge_base Factory Component to context_engine](sessions/019fbd12-7ea3-7152-9eec-f865cf69d6f7/decisions/02-context-engine-nomenclature.md)
-- [Reliable Lifecycle Transition Script with Test Suite](sessions/019fbd12-7ea3-7152-9eec-f865cf69d6f7/decisions/03-reliable-transition-script-with-tests.md)
-- [Three-Phase Product Layer with Vertical Slicing as Guiding Principle](sessions/019fb4f8-7a69-7968-b884-f4902565e512/decisions/01-three-phase-product-layer.md)
 - [Knowledge Base as Infrastructure Layer](sessions/019f8faf-c8f2-7612-a79d-10e18e6f78cf/decisions/01-factory-architecture-decisions.md#1-knowledge-base-as-infrastructure-layer)
 - [Product/Architecture as UX Layer](sessions/019f8faf-c8f2-7612-a79d-10e18e6f78cf/decisions/01-factory-architecture-decisions.md#2-productarchitecture-as-ux-layer--two-artifact-outputs)
 - [Progressive Disclosure Chain](sessions/019f8faf-c8f2-7612-a79d-10e18e6f78cf/decisions/01-factory-architecture-decisions.md#3-progressive-disclosure-chain-for-agent-context)
@@ -22,16 +19,21 @@ Entries are grouped by project for progressive discovery. When the agent needs t
 - [PRD Queue Lifecycle](sessions/019fb3ee-9573-78d2-9d4b-a4bf49a742a7/decisions/03-prd-queue-lifecycle.md)
 - [Traceability Links via Task Field](sessions/019fb3ee-9573-78d2-9d4b-a4bf49a742a7/decisions/04-traceability-links.md)
 - [Vision Document Convention for Upstream Traceability](sessions/019fb45b-9f0f-79e2-ac55-a0a084ac3156/decisions/01-vision-document-convention.md)
+- [Three-Phase Product Layer with Vertical Slicing as Guiding Principle](sessions/019fb4f8-7a69-7968-b884-f4902565e512/decisions/01-three-phase-product-layer.md)
 - [Task Lifecycle State Machine and Transition Tooling](sessions/019fb98c-22b4-7a11-8ef5-fc3baa6634c0/decisions/01-task-lifecycle-state-machine-and-transition-tooling.md)
+- [Single Factory Context Document for Token-Efficient Context](sessions/019fbd12-7ea3-7152-9eec-f865cf69d6f7/decisions/01-single-factory-context-document.md)
+- [Rename knowledge_base Factory Component to context_engine](sessions/019fbd12-7ea3-7152-9eec-f865cf69d6f7/decisions/02-context-engine-nomenclature.md)
+- [Temporal Metadata Convention](sessions/019fc389-c171-7c69-9eeb-6100abd6bc87/decisions/01-temporal-metadata-convention.md)
+- [Reliable Lifecycle Transition Script with Test Suite](sessions/019fbd12-7ea3-7152-9eec-f865cf69d6f7/decisions/03-reliable-transition-script-with-tests.md)
 
 ### workspace-portability
 
-- [Make feed_analyser and goal-agent Private](sessions/019fb4a3-3b15-7363-838d-100a18ed270f/decisions/01-make-repos-private.md)
 - [GitHub Browser Auth Flow for Workspace Restore](sessions/019f937c-9afe-731e-a70d-c88d4eb9d675/decisions/01-github-browser-auth-flow.md)
 - [Parallel Repo Clone](sessions/019f93aa-ee32-7014-b963-8bec75928d5d/decisions/01-parallel-repo-clone.md)
 - [Opensource Repo Manifest Registration Skill Design](sessions/019fa31b-694b-7f94-ad00-bbc57a0c88df/decisions/01-opensource-repo-manifest-registration-skill.md)
 - [GitHub Device Authorization Flow Implementation](sessions/019faf44-901a-73f9-aa74-817eead12980/decisions/01-github-device-auth-flow-implementation.md)
 - [Device Flow End-to-End Test Verification](sessions/019faf44-901a-73f9-aa74-817eead12980/decisions/02-device-flow-test-verification.md)
+- [Make feed_analyser and goal-agent Private](sessions/019fb4a3-3b15-7363-838d-100a18ed270f/decisions/01-make-repos-private.md)
 
 ### feed-analyser
 

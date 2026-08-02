@@ -1,7 +1,7 @@
 ## Decision: Chrome MV3 extension with manual capture via side panel
 
 **Status**: accepted
-**Date**: 2026-07-25
+**Date**: 2026-07-25 20:01
 **Project**: feed-analyser
 **Session**: sessions/019f9487-9ea0-7905-8ae6-eaa2aff6bbdd/session.jsonl
 

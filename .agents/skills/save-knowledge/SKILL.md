@@ -60,7 +60,7 @@ Multiple saves from the same session add new decision files to the same session 
 ## Decision: <title>
 
 **Status**: proposed | accepted | deprecated | superseded
-**Date**: <yyyy-mm-dd>
+**Date**: <yyyy-mm-dd HH:MM>
 **Task**: <slug>
 **Project**: <slug>
 **Session**: sessions/<uuid>/session.jsonl

@@ -1,7 +1,7 @@
 ## Decision: Three-Phase Product Layer with Vertical Slicing as Guiding Principle
 
 **Status**: accepted
-**Date**: 2026-07-31
+**Date**: 2026-07-31 23:57
 **Task**: extend-software-factory-wsff
 **Project**: software-factory
 **Session**: sessions/019fb4f8-7a69-7968-b884-f4902565e512/session.jsonl

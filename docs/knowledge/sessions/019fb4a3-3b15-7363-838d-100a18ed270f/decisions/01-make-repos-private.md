@@ -1,7 +1,7 @@
 ## Decision: Make feed_analyser and goal-agent (survival-infrastructure) Private
 
 **Status**: accepted
-**Date**: 2025-07-30
+**Date**: 2026-07-31 01:56
 **Task**: feed-analyser-survival-infra-private-repos
 **Project**: workspace-portability
 **Session**: sessions/019fb4a3-3b15-7363-838d-100a18ed270f/session.jsonl

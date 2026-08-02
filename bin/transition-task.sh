@@ -155,7 +155,7 @@ sed -i "s/^\*\*Status\*\*:.*/**Status**: $TARGET_STATE/" "$TASK_MD"
 
 # If complete, add/update completion date
 if [ "$TARGET_STATE" = "complete" ]; then
-  TODAY=$(date +%Y-%m-%d)
+  TODAY=$(date '+%Y-%m-%d %H:%M')
   if grep -q '^\*\*Completed\*\*:' "$TASK_MD"; then
     sed -i "s/^\*\*Completed\*\*:.*/**Completed**: $TODAY/" "$TASK_MD"
   else

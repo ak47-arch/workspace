@@ -1,7 +1,7 @@
 ## Decision: Mission Control Deprecation
 
 **Status**: accepted
-**Date**: 2026-07-30
+**Date**: 2026-07-30 21:31
 **Project**: software-factory
 **Session**: sessions/019fb3b8-27d7-7b8e-b8a4-3a0274646646/session.jsonl
 

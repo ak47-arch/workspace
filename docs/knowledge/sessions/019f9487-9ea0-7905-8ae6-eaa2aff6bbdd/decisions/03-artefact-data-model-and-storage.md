@@ -1,7 +1,7 @@
 ## Decision: Artefact data model and JSONL storage
 
 **Status**: accepted
-**Date**: 2026-07-25
+**Date**: 2026-07-25 20:01
 **Project**: feed-analyser
 **Session**: sessions/019f9487-9ea0-7905-8ae6-eaa2aff6bbdd/session.jsonl
 

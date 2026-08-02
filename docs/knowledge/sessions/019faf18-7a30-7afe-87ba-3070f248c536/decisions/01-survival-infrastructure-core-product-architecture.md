@@ -1,7 +1,7 @@
 ## Decision: Survival Infrastructure as Core Product — Two-Agent Architecture
 
 **Status**: accepted
-**Date**: 2026-07-29
+**Date**: 2026-07-30 00:31
 **Project**: survival-infrastructure
 **Session**: sessions/019faf18-7a30-7afe-87ba-3070f248c536/session.jsonl
 

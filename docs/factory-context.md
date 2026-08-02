@@ -96,6 +96,49 @@ These give you the bigger picture of what each project is about and where it's
 headed. Read the relevant one when you need context about purpose or direction
 before making changes.
 
+## Temporal Metadata
+
+Every artifact in the factory carries a timestamp with **minute precision**
+so agents can reconstruct chronological order with a single `rg` call — no
+sequence numbers, no counters, no coordination.
+
+### Convention
+
+| Artifact | Field | Format | Example |
+|----------|-------|--------|--------|
+| Decision files (`docs/knowledge/sessions/*/decisions/*.md`) | `**Date**:` | `yyyy-mm-dd HH:MM` | `**Date**: 2026-07-30 14:23` |
+| Task files (`docs/tasks/<slug>.md`) | `**Created**:` | `yyyy-mm-dd HH:MM` | `**Created**: 2026-07-30 14:23` |
+
+### Knowledge base index
+
+Within the index (`docs/knowledge/index.md`), entries are sorted **oldest → newest**
+within each project section, so a scan down the section reads as an evolution
+timeline.
+
+### Token-efficient search
+
+Agent can query the full timeline without parsing dates or UUIDs:
+
+```bash
+# All decisions, chronologically
+rg "^\\*\\*(Date|Created)\\*\\*" docs/knowledge/sessions/*/decisions/*.md | sort
+
+# All task files, chronologically
+rg "^\\*\\*Created\\*\\*" docs/tasks/*.md | sort
+
+# Cross-project: all decisions AND tasks sorted together (full factory timeline)
+rg "^\\*\\*(Date|Created)\\*\\*" docs/knowledge/sessions/*/decisions/*.md docs/tasks/*.md | sort
+
+# Per-project: sequence of decisions and tasks for one project, single command
+rg "^\\*\\*(Date|Created|Project)\\*\\*" docs/knowledge/sessions/*/decisions/*.md docs/tasks/*.md \
+  | paste - - - | sort | grep "<project-slug>" | tr '\t' '\n'
+```
+
+The per-project command grabs the `Date`/`Created`/`Project` lines together,
+sorts them, filters to one project's slug, and restores each triple to its
+own line — giving the chronological sequence of tasks and decisions for that
+project in a single `rg` call.
+
 ## Pointers
 
 - [Tasks → docs/tasks.txt](tasks.txt)

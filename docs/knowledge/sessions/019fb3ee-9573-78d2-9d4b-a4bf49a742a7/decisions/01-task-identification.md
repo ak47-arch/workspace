@@ -1,7 +1,7 @@
 ## Decision: Task Identification
 
 **Status**: accepted
-**Date**: 2026-07-30
+**Date**: 2026-07-30 23:32
 **Task**: end-to-end-traceability
 **Project**: software-factory
 **Session**: sessions/019fb3ee-9573-78d2-9d4b-a4bf49a742a7/session.jsonl

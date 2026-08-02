@@ -1,7 +1,7 @@
 ## Decision: Opensource Repo Manifest Registration Skill Design
 
 **Status**: accepted
-**Date**: 2026-07-27
+**Date**: 2026-07-27 23:02
 **Project**: workspace-portability
 **Session**: sessions/019fa31b-694b-7f94-ad00-bbc57a0c88df/session.jsonl
 

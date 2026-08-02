@@ -1,7 +1,7 @@
 ## Decision: Task Lifecycle State Machine and Transition Tooling
 
 **Status**: accepted
-**Date**: 2026-08-01
+**Date**: 2026-08-01 16:36
 **Task**: task-file-dashboard
 **Project**: software-factory
 **Session**: sessions/019fb98c-22b4-7a11-8ef5-fc3baa6634c0/session.jsonl

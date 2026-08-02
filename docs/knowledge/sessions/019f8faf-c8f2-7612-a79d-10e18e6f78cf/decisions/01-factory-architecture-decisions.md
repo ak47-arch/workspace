@@ -1,6 +1,6 @@
 # Software Factory — Architecture Decisions
 
-Date: 2026-07-23
+Date: 2026-07-24 01:10
 Session: sessions/019f8faf-c8f2-7612-a79d-10e18e6f78cf/session.jsonl
 Project: software-factory
 

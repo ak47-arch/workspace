@@ -1,7 +1,7 @@
 ## Decision: Vision Document Convention for Upstream Traceability
 
 **Status**: accepted
-**Date**: 2026-07-31
+**Date**: 2026-07-31 01:21
 **Task**: _(none — part of the ongoing context infrastructure initiative)_
 **Project**: software-factory
 **Session**: sessions/019fb45b-9f0f-79e2-ac55-a0a084ac3156/session.jsonl

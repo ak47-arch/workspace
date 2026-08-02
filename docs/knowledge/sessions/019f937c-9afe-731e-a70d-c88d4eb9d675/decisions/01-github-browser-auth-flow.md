@@ -1,7 +1,7 @@
 ## Decision: GitHub Browser Auth Flow for Workspace Restore
 
 **Status**: accepted
-**Date**: 2026-07-24
+**Date**: 2026-07-24 15:53
 **Project**: workspace-portability
 **Session**: sessions/019f937c-9afe-731e-a70d-c88d4eb9d675/session.jsonl
 

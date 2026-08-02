@@ -51,7 +51,7 @@ Task file template:
 **Status**: in-prd
 **Category**: Trivial | Small | Medium | Large
 **Project**: <project>
-**Created**: <yyyy-mm-dd>
+**Created**: <yyyy-mm-dd HH:MM>
 **Source**: docs/tasks.txt — `<exact text from the tasks.txt line>`
 
 ## Artifacts
@@ -97,7 +97,7 @@ Otherwise, once alignment is reached across all phases relevant to the task's ca
 Every PRD starts with a header block that ties it to its session and decisions:
 
 ```
-**Date**: <yyyy-mm-dd>
+**Date**: <yyyy-mm-dd HH:MM>
 **Status**: Draft | Review | Final
 **Owner**: <team or initiative>
 **Task**: <slug>
@@ -156,7 +156,7 @@ Every decision entry uses this structure:
 ## Decision: <title>
 
 **Status**: proposed | accepted | deprecated | superseded
-**Date**: <yyyy-mm-dd>
+**Date**: <yyyy-mm-dd HH:MM>
 **Task**: <slug>
 **Session**: <path to session.jsonl>
 
