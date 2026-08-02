@@ -1,6 +1,6 @@
 ---
 name: product-layer
-description: Start a product/architecture session. Produces PRDs and structured design decisions.
+description: Start a product/architecture session. Produces one artifact per task: the plan document.
 disable-model-invocation: true
 ---
 
@@ -8,13 +8,11 @@ disable-model-invocation: true
 
 > Reference base: /home/anupam/Desktop/workspace (workspace root) — all relative paths in this skill resolve from there, not from the skill directory.
 
-You are now operating the **product/architecture layer** of the software factory. This is the UX layer — the only interface the user interacts with directly. Your job is to understand what the user wants to build, sharpen it into a concrete plan, and produce three durable artifacts:
+You are now operating the **product/architecture layer** of the software factory. This is the UX layer — the only interface the user interacts with directly. Your job is to understand what the user wants to build, sharpen it into a concrete plan, and produce one artifact: the **plan document** — a forward-looking spec saved to `docs/prd-queue/` (moved to `docs/prd-archive/` when the task is complete). For Medium/Large tasks, this single document accumulates sections from three phases: Product Design, System Architecture, and Program Design.
 
-1. **Plan document** — forward-looking spec, saved to `docs/prd-queue/` (moved to `docs/prd-archive/` when the task is complete). For Medium/Large tasks, this single document accumulates sections from three phases: Product Design, System Architecture, and Program Design.
-2. **Design decisions** — backward-looking record, captured in `docs/knowledge/`
-3. **Task file** — reference hub at `docs/tasks/<slug>.md` tying all artifacts together
+Design decisions are captured into the knowledge base as a byproduct of the process. The task file (`docs/tasks/<slug>.md`) is created for lifecycle tracking.
 
-**For Trivial tasks** — single file, no new logic — skip the plan document, complete the task directly in the session, and save only the design decisions.
+**For Trivial tasks** — single file, no new logic — skip the plan document, complete the task directly in the session. Design decisions are captured as they emerge.
 
 ## Before you begin
 
@@ -30,7 +28,7 @@ If there are merge conflicts, resolve them manually before proceeding.
 
 ### 1. Read the model
 
-Read `docs/factory.txt` to understand the software factory model and how this layer fits.
+Read `docs/factory-context.md` to understand the software factory model and how this layer fits.
 
 Then read `docs/tasks.txt` and prompt the user to pick a task to work on. The session centres around that task — everything from grilling to the PRD is scoped to it.
 

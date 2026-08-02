@@ -1,5 +1,82 @@
 # Known Issues — Post-Migration Cleanup
 
+---
+
+## Factory Context & Knowledge Base
+
+### Issue 5: Resume project missing vision doc
+
+**Affects:** `resume/`
+**Severity:** Low — project is deferred, no active development
+
+### What
+
+`resume/` is the only active project without a vision doc. All other projects have
+VISION.md following the convention at `docs/vision-convention.md`.
+
+### Why it matters
+
+An agent working on resume has no documented context about why it exists, its
+intended direction, or scope boundaries. Decisions made without this context
+may conflict with the project's purpose.
+
+### Fix
+
+Write a VISION.md for resume following the convention in `docs/vision-convention.md`.
+
+### Issue 6: Subagent tool description is the largest single context item
+
+**Affects:** All sessions (system prompt overhead)
+**Severity:** Low — functional, but wasteful
+
+### What
+
+The pi subagent tool description contributes ~1,500 tokens to the initial context
+footprint. This is the largest single item in the ~2,500 total.
+
+### Why it matters
+
+If the subagent tool is not used in most sessions, those tokens are wasted on
+every turn. Pruning or compressing the description would reduce initial context
+overhead.
+
+### Fix
+
+Review the pi subagent tool description for compression opportunities. If the
+tool is rarely used, consider removing it from the default tool set.
+
+### Issue 7: Knowledge base storage is file-based, may not scale
+
+**Affects:** `docs/knowledge/`
+**Severity:** Low — functional, but may need attention as the collection grows
+
+### What
+
+All knowledge base entries are markdown files in a directory tree. There is no
+vector index, graph, or semantic search. As the collection grows beyond ~50
+entries, the index-based discovery may become slow for agents.
+
+### Why it matters
+
+The knowledge base is the last resort — agents already avoid it when possible.
+But if the collection grows large enough that locating the right entry takes
+multiple turns, agents will skip it entirely, defeating its purpose.
+
+### Fix
+
+Evaluate vector search (e.g., via `opensource/cognee`) or a graph-based approach
+(e.g., a knowledge graph index) when the collection reaches ~50 entries or when
+agents start skipping the KB due to search overhead.
+
+---
+
+## Post-Migration Cleanup
+
+These issues were identified after completing the `llm_client` shared-package migration
+(Phases 1–3). They are functional — all three apps are running and passing requests —
+but represent technical debt that should be resolved before the next deployment or
+before onboarding another project.
+
 These issues were identified after completing the `llm_client` shared-package migration
 (Phases 1–3). They are functional — all three apps are running and passing requests —
 but represent technical debt that should be resolved before the next deployment or
