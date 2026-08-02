@@ -1,6 +1,7 @@
 ---
 name: manifest-add-repo
 description: Scans `opensource/` for git repos and adds any that exist on disk but are missing from the workspace restore manifest. Use when new repos have been cloned under `opensource/` and need to be registered for backup/restore operations.
+disable-model-invocation: true
 ---
 
 # Manifest Add Repo
