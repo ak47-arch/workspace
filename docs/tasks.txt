@@ -51,6 +51,7 @@ tasks:
     - see how opensource/cognee can be intgrated into our ecosystem and what benefits it might provide and evaluate the benefits(software_factory)
     - improve the shared context infrastructure and add architecture design step (software_factory)
     - clearly define the projects so the context infrastructure is is more efficient. the projects are survival-infrastructure, feed_analyser, llm, resume, workspace-portability, headroom-pi, software_factory (software_factory)
+    - Extend project management and start work on the assembly line components (software-factory)
 
     ### Complete
     - (complete)create a skill to summarise the content and most important learnings from a session and attach a link to the actual context window of that session so we can save our knowledge and build on it and not lose it at the end of each session close (software_factory)
