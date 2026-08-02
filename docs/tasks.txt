@@ -10,7 +10,7 @@ tasks:
     - standardise documentation structure across all apps (all)
     - work on vision, functional and technical documentation across projects making them factory ready (all)
     - plan the modularisation of all apps. it would be better if all projects follow same structure (all)
-    - integrate langfuse with all applications (all)
+    - integrate langfuse with all applications (all) [langfuse-agentic-operations]
     - deprecate the spec driven process for all projects (all)
 
     ## llm
@@ -52,7 +52,7 @@ tasks:
     - improve the shared context infrastructure and add architecture design step (software_factory)
     - clearly define the projects so the context infrastructure is is more efficient. the projects are survival-infrastructure, feed_analyser, llm, resume, workspace-portability, headroom-pi, software_factory (software_factory)
     - Extend project management and start work on the assembly line components (software-factory)
-    - Add another abstraction layer on the tasks.txt that helps the user select the next task based on the overall state of the system and reasoning on priorities (software-factory)
+    - Add another abstraction layer on the tasks.txt that helps the user select the next task based on the overall state of the system and reasoning on priorities (software-factory) [task-selection-abstraction-layer]
 
     ### Complete
     - (complete)create a skill to summarise the content and most important learnings from a session and attach a link to the actual context window of that session so we can save our knowledge and build on it and not lose it at the end of each session close (software_factory)
@@ -76,8 +76,8 @@ tasks:
     ## langfuse
 
     ### Pending
-    - integrate official langfuse skill (langfuse)
-    - set up langfuse use and operation agentically (langfuse)
+    - integrate official langfuse skill (langfuse) [langfuse-agentic-operations]
+    - set up langfuse use and operation agentically (langfuse) [langfuse-agentic-operations]
 
     ### Complete
     - (complete) set up langfuse (fix the langfuse-tracing.ts extension) (langfuse)

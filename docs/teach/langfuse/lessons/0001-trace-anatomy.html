@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lesson 1: Trace Anatomy — Langfuse Teaching</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<article>
+
+<h1>Trace Anatomy</h1>
+<p class="lesson-meta">Lesson 1 · 2026-08-03 · ~10 minutes</p>
+
+<p>
+A <strong>trace</strong> is a recording of a single session — one user request, one agent turn, one conversation. If you've ever used OpenTelemetry, Datadog APM, or Sentry, the concept is the same: a trace captures everything that happened, in order, with timing.
+</p>
+
+<p>
+In Langfuse, a trace is the top-level container. Inside it lives a tree of <strong>observations</strong> — the individual events that made up the session. Every LLM call, every tool execution, every step is an observation.
+</p>
+
+<h2>Observation Types</h2>
+
+<p>
+Langfuse has four observation types. You only need to worry about two of them right now:
+</p>
+
+<table>
+<tr>
+  <th>Type</th>
+  <th>What it represents</th>
+  <th>Example</th>
+</tr>
+<tr>
+  <td><code>GENERATION</code></td>
+  <td>An LLM call — request in, response out</td>
+  <td>Asking Claude to write code</td>
+</tr>
+<tr>
+  <td><code>SPAN</code></td>
+  <td>Any other operation — tool call, database query, step</td>
+  <td>Running <code>bash</code>, <code>read</code>, <code>edit</code></td>
+</tr>
+<tr>
+  <td><code>EVENT</code></td>
+  <td>An instantaneous occurrence (rare)</td>
+  <td>Log line, metric snapshot</td>
+</tr>
+<tr>
+  <td><code>LLM_USAGE</code></td>
+  <td>Token/cost data (usually merged into GENERATION)</td>
+  <td>—</td>
+</tr>
+</table>
+
+<blockquote>
+<strong>Key insight</strong>
+A trace is a timeline. Each observation has a <code>startTime</code> and <code>endTime</code>. You can see exactly how long each step took, what was sent, and what came back.
+</blockquote>
+
+<h2>How the pi extension builds traces</h2>
+
+<p>
+The pi extension at <code>.pi/extensions/langfuse-tracing.ts</code> creates one trace per agent session. For each user turn, it emits:
+</p>
+
+<ol>
+  <li><strong>GENERATION</strong> — the LLM request (system prompt + messages) and response</li>
+  <li><strong>SPAN</strong> — for every tool call (<code>bash</code>, <code>read</code>, <code>edit</code>, <code>write</code>)</li>
+  <li><strong>GENERATION</strong> — the next LLM request (with tool results fed back in)</li>
+  <li>…and so on, until the agent settles</li>
+</ol>
+
+<p>
+The result is a tree: generations are the "thinking" steps, and the spans under them are the "doing" steps.
+</p>
+
+<h2>Real trace: "WHATS happening"</h2>
+
+<p>
+Here's a trace from our own instance. A user asked "WHATS happening" and the agent diagnosed the Open Notebook status. Let's walk through it.
+</p>
+
+<h3>Trace-level data</h3>
+
+<pre>
+Name:      WHATS happening
+ID:        pi-ms7kwt97-hf6ciiuk-9kiu
+Timestamp: 2026-07-30 13:58:21 UTC
+Model:     deepseek/deepseek-v4-flash
+Duration:  226 seconds (3 min 46 sec)
+Total tokens in:   ~86,000
+Total tokens out:  ~2,200
+Total cost:        ~$0.01
+Observations:      25
+</pre>
+
+<h3>Timeline</h3>
+
+<p>Reading from bottom to top (oldest first):</p>
+
+<table>
+<tr>
+  <th>Time</th>
+  <th>Type</th>
+  <th>Name</th>
+  <th>Tokens in/out</th>
+</tr>
+<tr><td>13:58:21</td><td><code>GENERATION</code></td><td>deepseek flash</td><td>14,000 / 244</td></tr>
+<tr><td>13:58:28</td><td><code>SPAN</code></td><td>bash</td><td>—</td></tr>
+<tr><td>13:58:28</td><td><code>SPAN</code></td><td>bash</td><td>—</td></tr>
+<tr><td>13:58:39</td><td><code>GENERATION</code></td><td>deepseek flash</td><td>570 / 131</td></tr>
+<tr><td>13:58:43</td><td><code>SPAN</code></td><td>bash</td><td>—</td></tr>
+<tr><td>13:58:44</td><td><code>GENERATION</code></td><td>deepseek flash</td><td>1,191 / 94</td></tr>
+<tr><td>13:58:50</td><td><code>SPAN</code></td><td>bash</td><td>—</td></tr>
+<tr><td>13:58:50</td><td><code>GENERATION</code></td><td>deepseek flash</td><td>276 / 137</td></tr>
+<tr><td>13:58:56</td><td><code>SPAN</code></td><td>bash</td><td>—</td></tr>
+<tr><td>13:58:56</td><td><code>SPAN</code></td><td>read</td><td>—</td></tr>
+<tr><td>13:58:56</td><td><code>GENERATION</code></td><td>deepseek flash</td><td>17,266 / 362</td></tr>
+<tr><td>13:59:03</td><td><code>SPAN</code></td><td>read</td><td>—</td></tr>
+<tr><td>13:59:03</td><td><code>GENERATION</code></td><td>deepseek flash</td><td>2,595 / 525</td></tr>
+<tr><td>13:59:13</td><td><code>SPAN</code></td><td>edit</td><td>—</td></tr>
+<tr><td>13:59:13</td><td><code>GENERATION</code></td><td>deepseek flash</td><td>16,600 / 144</td></tr>
+<tr><td>13:59:18</td><td><code>SPAN</code></td><td>bash</td><td>—</td></tr>
+<tr><td>13:59:48</td><td><code>GENERATION</code></td><td>deepseek flash</td><td>1,405 / 160</td></tr>
+<tr><td>13:59:53</td><td><code>SPAN</code></td><td>bash</td><td>—</td></tr>
+<tr><td>14:01:20</td><td><code>GENERATION</code></td><td>deepseek flash</td><td>3,060 / 89</td></tr>
+<tr><td>14:01:25</td><td><code>SPAN</code></td><td>bash</td><td>—</td></tr>
+<tr><td>14:01:25</td><td><code>GENERATION</code></td><td>deepseek flash</td><td>21,982 / 90</td></tr>
+<tr><td>14:01:45</td><td><code>SPAN</code></td><td>bash</td><td>—</td></tr>
+<tr><td>14:01:45</td><td><code>GENERATION</code></td><td>deepseek flash</td><td>5,716 / 62</td></tr>
+<tr><td>14:02:00</td><td><code>SPAN</code></td><td>bash</td><td>—</td></tr>
+<tr><td>14:02:00</td><td><code>GENERATION</code></td><td>deepseek flash</td><td>1,904 / 364</td></tr>
+</table>
+
+<blockquote>
+<strong>Read the pattern</strong>
+Each turn is <strong>GENERATION → SPAN → GENERATION → SPAN → …</strong> The LLM thinks, then acts (tool call), then the tool result feeds back into the next LLM call. This is the agent loop, captured in real time.
+</blockquote>
+
+<h3>What each generation contains</h3>
+
+<p>Here's what a generation observation actually stores. This is the first LLM call in the trace:</p>
+
+<pre>
+INPUT (system prompt + messages):
+  [
+    {"role": "system", "content": "You are an expert coding assistant..."
+      "(the full pi system prompt)"},
+    {"role": "user", "content": "WHATS happening"}
+  ]
+
+OUTPUT (model response):
+  [{"type": "thinking", "thinking": "Open Notebook is up and running..."},
+   {"type": "text", "text": "Open Notebook is fully up and running..."}]
+
+USAGE:
+  input: 14,000 tokens
+  output: 244 tokens
+  total: 0 (not used)
+
+COST:
+  totalCost: 0.000963424
+</pre>
+
+<p>
+Every generation captures the <strong>full input</strong> sent to the model (including the system prompt) and the <strong>full output</strong> returned. This is what makes Langfuse powerful for debugging — you can replay exactly what the agent saw.
+</p>
+
+<h2>What this enables</h2>
+
+<p>With this level of data captured for every session, you can answer questions like:</p>
+
+<ul>
+  <li>How many tokens does a typical session consume?</li>
+  <li>Which tool calls take the longest?</li>
+  <li>How many turns does the agent need before it settles?</li>
+  <li>Did the agent's final output actually answer the user's question?</li>
+</ul>
+
+<p>
+That last question is where <strong>evals</strong> come in — and that's Lesson 2.
+</p>
+
+<div class="exercise">
+<h3>Exercise: inspect a trace yourself</h3>
+<p>Pick any trace from the running instance. Open a terminal and try:</p>
+<pre>
+source .env.langfuse
+
+# List recent traces
+curl -H "Authorization: Basic $(echo -n "$LANGFUSE_PUBLIC_KEY:$LANGFUSE_SECRET_KEY" | base64 -w0)" \
+  "http://localhost:3000/api/public/traces?limit=3" | python3 -m json.tool
+
+# Get observations for a trace
+curl -H "Authorization: Basic $(echo -n "$LANGFUSE_PUBLIC_KEY:$LANGFUSE_SECRET_KEY" | base64 -w0)" \
+  "http://localhost:3000/api/public/observations?traceId=&lt;TRACE_ID&gt;&limit=30" | python3 -m json.tool
+</pre>
+<p>Look at the pattern: how many generations? How many spans? What's the longest step?</p>
+</div>
+
+<h2>Further reading</h2>
+
+<ul>
+  <li><a href="https://langfuse.com/docs/tracing">Langfuse Docs — Tracing</a> — the official reference for traces, observations, and the data model</li>
+  <li><a href="https://langfuse.com/docs/observability/features/observation-types">Observation Types</a> — detailed guide on when to use each type</li>
+  <li><a href="https://langfuse.com/docs/api">REST API Reference</a> — the full API for querying traces, observations, and scores</li>
+</ul>
+
+<p>
+<strong>Stuck? Ask the agent.</strong> You're learning in a session with full access to the Langfuse instance and the codebase. Ask anything that's unclear.
+</p>
+
+<hr>
+
+<p>Next: Lesson 2 — <strong>Scores 101</strong>: the foundation of every evaluation.</p>
+
+</article>
+</body>
+</html>
