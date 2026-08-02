@@ -51,7 +51,6 @@ tasks:
     - see how opensource/cognee can be intgrated into our ecosystem and what benefits it might provide and evaluate the benefits(software_factory)
     - improve the shared context infrastructure and add architecture design step (software_factory)
     - clearly define the projects so the context infrastructure is is more efficient. the projects are survival-infrastructure, feed_analyser, llm, resume, workspace-portability, headroom-pi, software_factory (software_factory)
-    - Combine factory-context.md and factory.txt into a single document (software-factory)
     - Add chronological tracking to task files and knowledge base entries so we save the sequence of things (software-factory)
 
     ### Complete
@@ -60,6 +59,7 @@ tasks:
     - (complete) add more clarity to the knowledge base by connecting the vision to the tasks and the end to end tracing of everything (software_factory)(top priority) [vision-task-traceability]
     - (complete) extend the software_factory architecture based on the learnings in this https://github.com/humanlayer/advanced-context-engineering-for-coding-agents/blob/main/wsff.md (software_factory) [extend-software-factory-wsff]
     - (complete) build and host the task generation infrastructure (currently task.txt file) so it can be accessible to the user 24/7 (software_factory) [task-file-dashboard]
+    - (complete) Combine factory-context.md and factory.txt into a single document (software-factory) [combine-factory-context-factory-txt]
 
     ## resume
 
