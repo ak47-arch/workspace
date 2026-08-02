@@ -1,6 +1,6 @@
 # PRD: GitHub Browser Auth Flow for Workspace Restore
 
-**Date**: 2026-07-24
+**Date**: 2026-07-24 15:53
 **Status**: Draft
 **Owner**: Workspace portability initiative
 **Task**: github-browser-auth-flow

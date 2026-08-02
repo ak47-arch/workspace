@@ -1,6 +1,6 @@
 # PRD: X Capture Instrument
 
-**Date**: 2026-07-25
+**Date**: 2026-07-25 20:01
 **Status**: Draft
 **Project**: feed-analyser
 **Vision**: feed_analyser/capture/docs/vision/VISION.md
