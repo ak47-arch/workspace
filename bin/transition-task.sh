@@ -3,7 +3,7 @@
 # transition-task.sh — Bookkeeping for task lifecycle transitions
 #
 # Usage:
-#   bin/transition-task.sh <slug> --to <state> [--session <uuid:label>] [--decisions <files>]
+#   bin/transition-task.sh <slug> --to <state> [--session <uuid:label>] [--decisions <files>] [--dry-run]
 #
 # Arguments:
 #   <slug>                Task slug (e.g. "task-file-dashboard")
@@ -13,6 +13,7 @@
 #                          Default label: "session"
 #   --decisions <files>   Comma-separated decision file paths relative to docs/knowledge/
 #                          (e.g. "sessions/<uuid>/decisions/01-foo.md")
+#   --dry-run             Print what would be done without making changes
 #
 # States:
 #   in-prd       → Being planned, stays in Pending
@@ -30,16 +31,31 @@
 # ============================================================================
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
-WORKSPACE="$SCRIPT_DIR"
-TASK_FILE="$WORKSPACE/docs/tasks"
-TASKS_TXT="$WORKSPACE/docs/tasks.txt"
-PRD_QUEUE="$WORKSPACE/docs/prd-queue"
-PRD_ARCHIVE="$WORKSPACE/docs/prd-archive"
+# ─── Helpers ───────────────────────────────────────────────────────────────
+# Replace first occurrence of a placeholder with literal text (robust against
+# special characters like &, \, and | that would break sed/awk replacements)
+replace_placeholder() {
+  local file="$1" placeholder="$2" replacement="$3"
+  python3 - "$file" "$placeholder" "$replacement" <<'PYEOF'
+import sys
+path, placeholder, replacement = sys.argv[1], sys.argv[2], sys.argv[3]
+with open(path, encoding='utf-8') as f:
+    content = f.read()
+if placeholder in content:
+    content = content.replace(placeholder, replacement, 1)
+    with open(path, 'w', encoding='utf-8') as f:
+        f.write(content)
+PYEOF
+}
+
+# Validate UUID format (8-4-4-4-12 hex)
+is_valid_uuid() {
+  echo "$1" | grep -qE '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+}
 
 # ─── Parse arguments ───────────────────────────────────────────────────────
 if [ $# -lt 3 ]; then
-  echo "Usage: $(basename "$0") <slug> --to <state> [--session <uuid:label>] [--decisions <files>]"
+  echo "Usage: $(basename "$0") <slug> --to <state> [--session <uuid:label>] [--decisions <files>] [--dry-run]"
   echo "States: in-prd, prd-ready, in-progress, in-review, complete"
   echo "Session label examples: 'abc123:planning', 'def456:implementation', 'ghi789:verification'"
   exit 1
@@ -50,12 +66,14 @@ shift
 TARGET_STATE=""
 SESSION_UUID=""
 DECISIONS=""
+DRY_RUN=false
 
 while [ $# -gt 0 ]; do
   case "$1" in
     --to) TARGET_STATE="$2"; shift 2 ;;
     --session) SESSION_UUID="$2"; shift 2 ;;
     --decisions) DECISIONS="$2"; shift 2 ;;
+    --dry-run) DRY_RUN=true; shift ;;
     *) echo "Unknown option: $1"; exit 1 ;;
   esac
 done
@@ -86,8 +104,15 @@ while IFS='=' read -r state section; do
   fi
 done <<< "$STATE_TO_SECTION"
 
-# ─── Validate slug ─────────────────────────────────────────────────────────
-TASK_MD="$TASK_FILE/$SLUG.md"
+# ─── Resolve paths ─────────────────────────────────────────────────────────
+SCRIPT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+WORKSPACE="$SCRIPT_DIR"
+TASK_MD="$WORKSPACE/docs/tasks/$SLUG.md"
+TASKS_TXT="$WORKSPACE/docs/tasks.txt"
+PRD_QUEUE="$WORKSPACE/docs/prd-queue"
+PRD_ARCHIVE="$WORKSPACE/docs/prd-archive"
+
+# ─── Validate slug / task file ─────────────────────────────────────────────
 if [ ! -f "$TASK_MD" ]; then
   echo "Error: Task file not found: $TASK_MD"
   exit 1
@@ -98,6 +123,30 @@ PROJECT=$(grep -m1 '^\*\*Project\*\*:' "$TASK_MD" | sed 's/^\*\*Project\*\*: *//
 if [ -z "$PROJECT" ]; then
   echo "Error: Could not determine project from task file $TASK_MD"
   exit 1
+fi
+
+# ─── Validate session UUID format (if provided) ────────────────────────────
+if [ -n "$SESSION_UUID" ]; then
+  SESSION_ID="${SESSION_UUID%%:*}"
+  SESSION_LABEL="${SESSION_UUID#*:}"
+  # If there's no colon separator, the label equals the UUID (use default)
+  if [ "$SESSION_LABEL" = "$SESSION_ID" ]; then
+    SESSION_LABEL="session"
+  fi
+  if ! is_valid_uuid "$SESSION_ID"; then
+    echo "Warning: Session ID '$SESSION_ID' does not look like a valid UUID"
+    echo "  (expected format: 8-4-4-4-12 hex, e.g. 019fbd12-7ea3-7152-9eec-f865cf69d6f7)"
+  fi
+fi
+
+# ─── Dry-run mode creates working copies in a temp dir ─────────────────────
+if [ "$DRY_RUN" = true ]; then
+  TMPDIR=$(mktemp -d)
+  cp "$TASK_MD" "$TMPDIR/task.md"
+  TASK_MD="$TMPDIR/task.md"
+  cp "$TASKS_TXT" "$TMPDIR/tasks.txt"
+  TASKS_TXT="$TMPDIR/tasks.txt"
+  echo "  [dry-run] Working copies in $TMPDIR"
 fi
 
 # ─── Update task file ──────────────────────────────────────────────────────
@@ -116,22 +165,16 @@ fi
 
 # Append session (replaces placeholder if present, generates clickable link)
 if [ -n "$SESSION_UUID" ]; then
-  # Parse uuid:label format (e.g. "abc123:planning")
-  SESSION_ID="${SESSION_UUID%%:*}"
-  SESSION_LABEL="${SESSION_UUID#*:}"
-  if [ "$SESSION_LABEL" = "$SESSION_ID" ]; then
-    SESSION_LABEL="session"
-  fi
   SESSION_LINK="- [$SESSION_LABEL](../knowledge/sessions/$SESSION_ID/session.jsonl)"
 
   if grep -q "^## Sessions" "$TASK_MD"; then
-    if ! grep -q "$SESSION_ID" "$TASK_MD"; then
+    if ! grep -Fq "$SESSION_ID" "$TASK_MD"; then
       if grep -q -- "- _(this session)_" "$TASK_MD"; then
-        sed -i "s|- _(this session)_|$SESSION_LINK|" "$TASK_MD"
+        replace_placeholder "$TASK_MD" "- _(this session)_" "$SESSION_LINK"
         echo "  Replaced session placeholder"
       else
         LINE_NUM=$(grep -n "^## Sessions" "$TASK_MD" | head -1 | cut -d: -f1)
-        NEXT_HEADING=$(sed -n "$((LINE_NUM+1)),\$p" "$TASK_MD" | grep -n "^## " | head -1 | cut -d: -f1)
+        NEXT_HEADING=$(sed -n "$((LINE_NUM+1)),\$p" "$TASK_MD" | grep -n "^## " | head -1 | cut -d: -f1 || true)
         if [ -n "$NEXT_HEADING" ]; then
           INSERT_AT=$((LINE_NUM + NEXT_HEADING - 1))
           sed -i "$((INSERT_AT-1))a $SESSION_LINK" "$TASK_MD"
@@ -158,14 +201,13 @@ if [ -n "$DECISIONS" ]; then
     DEC_LINK="- [$DEC_TITLE](../knowledge/$DEC_TRIMMED)"
 
     if grep -q "^## Decisions" "$TASK_MD"; then
-      if ! grep -q "$DEC_TRIMMED" "$TASK_MD"; then
+      if ! grep -Fq "$DEC_TRIMMED" "$TASK_MD"; then
         if grep -q -- "- _(will be captured inline)_" "$TASK_MD"; then
-          # Replace only the first occurrence of placeholder
-          sed -i "0,/- _(will be captured inline)_/s||$DEC_LINK|" "$TASK_MD"
+          replace_placeholder "$TASK_MD" "- _(will be captured inline)_" "$DEC_LINK"
           echo "  Replaced decision placeholder"
         else
           LINE_NUM=$(grep -n "^## Decisions" "$TASK_MD" | head -1 | cut -d: -f1)
-          NEXT_HEADING=$(sed -n "$((LINE_NUM+1)),\$p" "$TASK_MD" | grep -n "^## " | head -1 | cut -d: -f1)
+          NEXT_HEADING=$(sed -n "$((LINE_NUM+1)),\$p" "$TASK_MD" | grep -n "^## " | head -1 | cut -d: -f1 || true)
           if [ -n "$NEXT_HEADING" ]; then
             INSERT_AT=$((LINE_NUM + NEXT_HEADING - 1))
             sed -i "$((INSERT_AT-1))a $DEC_LINK" "$TASK_MD"
@@ -305,13 +347,30 @@ PYEOF
 if [ "$TARGET_STATE" = "complete" ]; then
   PRD_FILE=$(ls "$PRD_QUEUE/"*-"$SLUG.md" 2>/dev/null | head -1 || true)
   if [ -n "$PRD_FILE" ] && [ -f "$PRD_FILE" ]; then
-    mv "$PRD_FILE" "$PRD_ARCHIVE/"
-    echo "  Archived PRD: $(basename "$PRD_FILE")"
+    if [ "$DRY_RUN" = true ]; then
+      echo "  [dry-run] Would archive PRD: $(basename "$PRD_FILE")"
+    else
+      mv "$PRD_FILE" "$PRD_ARCHIVE/"
+      echo "  Archived PRD: $(basename "$PRD_FILE")"
+    fi
   fi
 fi
 
 # ─── Commit ────────────────────────────────────────────────────────────────
+if [ "$DRY_RUN" = true ]; then
+  echo "  [dry-run] Would commit: task($SLUG): transition to $TARGET_STATE"
+  echo "  [dry-run] Temp files in $TMPDIR — inspect them to verify correctness"
+  echo "Done (dry-run)."
+  exit 0
+fi
+
 cd "$WORKSPACE"
+
+# Check that we're in a git repo
+if ! git rev-parse --git-dir > /dev/null 2>&1; then
+  echo "Warning: Not a git repository. Skipping commit."
+  exit 0
+fi
 
 git add docs/tasks/"$SLUG.md" docs/tasks.txt docs/prd-queue/ docs/prd-archive/ 2>/dev/null || true
 
