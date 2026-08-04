@@ -1,28 +1,19 @@
 # PRD: X Capture Instrument
 
-**Date**: 2026-07-25 20:01
+**Date**: 2026-08-04 (revised; original 2026-07-25 20:01)
 **Status**: Draft
 **Project**: feed-analyser
 **Vision**: feed_analyser/capture/docs/vision/VISION.md
 **Owner**: Feed analyser → capture pivot initiative
+**Task**: x-capture-instrument
 **Session**: (current session — product-layer skill conversation)
-**Decisions**: All decisions recorded inline in this PRD (see Implementation decisions section).
+**Decisions**: Recorded inline in this PRD (see Implementation decisions, Architecture, and Program Design sections).
 
 ---
 
 ## Problem statement
 
-The feed_analyser application was built to collect content from Twitter and YouTube, classify it, and surface insights through a dashboard. In practice, only one part works reliably: the browser console scraper that dumps visible tweets into a JSON file, which is then ingested into SQLite. The dashboard, knowledge graph, GitHub scout, idea workbench, and all other features are unused by the sole user.
-
-The core problems:
-
-1. **Batch collection is low-signal.** Tweets are collected in bulk and stored in SQLite without semantic context. When agents try to reason over the data, they hit SQL's lack of semantic/vector retrieval — the data model doesn't support the analysis users want to do.
-
-2. **Auth restrictions block retrospective analysis.** X/Twitter does not allow headless access to comments, threads, or full tweet context. By the time data is collected and stored, the useful context (comments, related tweets, author profile) is inaccessible without the user being logged into the browser.
-
-3. **The UX doesn't match the user's workflow.** The user spends time in X's native interface, not in a separate dashboard. A standalone web dashboard adds friction — capture and review should happen where the content is consumed.
-
-4. **5,979 lines of code, 5 containers, 1 user.** The application is over-engineered for its actual usage. Most features exist speculatively and were never validated against real use.
+There is no reliable way to save X/Twitter content the user cares about *as they browse*. The prior feed_analyser effort was over-engineered and unused, so it is archived. What the user needs is a lightweight, honest way to capture a post (text and links), add their own notes, and keep it durably — with the analysis of that content deliberately left to separate, later tools.
 
 ## Solution overview
 
@@ -114,6 +105,92 @@ Key principle: **the capture pipeline ends at the JSONL file.** The server does 
 
 One JSON object per line in `artefacts.jsonl`.
 
+## Architecture
+
+**Data flow (text-only, minimal)**
+
+```
+User on x.com
+   │  hover tweet → Capture pill
+   ▼
+Extension (content.js) scrapes: tweet_url, author, tweet_text, links
+   │  opens side panel (background.js keeps state across navigation)
+   │  user adds selected text + notes
+   ▼
+sidepanel.js  POST /api/capture  {tweet_url, author, tweet_text, links, selected_texts, notes}
+   │
+   ▼
+Server (server.py): validate → stamp captured_at → append line to artefacts.jsonl → 200
+```
+
+**Endpoint contract**
+
+- `POST /api/capture`
+- Request body: artefact JSON (below), `Content-Type: application/json`
+- Success: `200` + `{ "status": "saved", "captured_at": "..." }` — nothing else is done (no enrichment, no analysis, no dedup)
+- Failure: `400` when the payload is missing/invalid required fields; if the server is unreachable the extension shows "server offline" and preserves the data in the panel
+- No other routes — no GET, no list, no resource id
+
+**Data model shape**
+
+- One JSON object per line, appended to `artefacts.jsonl`
+- `captured_at` is stamped by the **server** on receipt (accurate save-time)
+- No `id`, no `type`, no metadata envelope — a flat, minimal record. New fields are added to later lines as needed and never break existing ones
+- No dedup / uniqueness — each capture appends independently
+- Scope is **text-only**; images, screenshots, and binary/blob storage are explicitly out of scope for v1
+
+**Storage & config**
+
+- Single data file `artefacts.jsonl` beside the server (`server/artefacts.jsonl`), opened in append mode, write + flush per line
+- Fixed default port `8765`, overridable only by a single env var (e.g. `CAPTURE_PORT`); no config file, no CLI flags
+- `artefacts.jsonl` is gitignored
+
+## Program Design
+
+**File tree (greenfield)**
+
+```
+capture/
+├── extension/
+│   ├── manifest.json        # MV3: content script + side panel + permissions (x.com host)
+│   ├── content.js           # on x.com: hover → Capture pill, scrape tweet (url/author/text/links), text highlight
+│   ├── sidepanel.html       # panel UI: prefill review + notes + Save
+│   ├── sidepanel.js         # render scrape result, gather notes/selection, submit → POST /api/capture
+│   └── background.js        # service worker: keep panel state across navigation
+└── server/
+    ├── server.py            # FastAPI: POST /api/capture → validate → append artefacts.jsonl → 200
+    ├── artefacts.jsonl      # data (gitignored)
+    └── tests/
+        └── test_capture.py  # unit tests: valid → 200 + line; invalid → 400
+```
+
+**Key types & signatures — server**
+
+- `POST /api/capture` handler: `capture(artefact: dict) -> JSONResponse` — validates required fields (`tweet_url` is the anchor; empty `tweet_text` allowed), stamps `captured_at`, appends, returns 200
+- `append_artefact(artefact: dict, path: str = "artefacts.jsonl") -> None` — append mode, write `json.dumps(...) + "\n"`, flush
+
+**Key types & signatures — extension**
+
+- `content.js`: `scrapeTweet(tweetEl) -> { tweet_url, author, tweet_text, links[] }`; exposes the Capture pill on hover; listens for user text selection
+- `sidepanel.js`: `submit(artefact) -> Promise<Response>` — `fetch("http://127.0.0.1:8765/api/capture", POST)`; on network failure show "server offline" and keep the data in the panel
+- `background.js`: relays messages between content and panel so the panel survives navigation
+
+**Notes**
+
+- No shared code between extension and server — the only contract is the JSON over `POST /api/capture`
+- Server dependencies: FastAPI (+ uvicorn); tests use `pytest` + `httpx`
+- Extension is unpacked (Chromium/Brave), not published; no marketplace concerns
+
+## Vertical Slicing (guiding principle)
+
+End-to-end vertical slices are preferred over a horizontal stack-order build (all server first, then all extension). Recommended slicing for implementation:
+
+1. **Slice 1 — the spine (server)**: a `POST /api/capture` endpoint that validates, appends to `artefacts.jsonl`, and returns 200. Verified with a unit test and a raw `curl` POST. Already demoable on its own.
+2. **Slice 2 — capture-to-store end to end**: `content.js` scrapes one tweet → `sidepanel.js` submits → server appends → a line lands in `artefacts.jsonl`. The full path works.
+3. **Slice 3 — panel niceties**: notes field, selected-text/highlighting, and the "server offline" error state.
+
+Each slice leaves the system demoable end-to-end; no layer is completed in isolation.
+
 ## Testing decisions
 
 The feature will be tested at two levels:
@@ -142,7 +219,6 @@ The feature will be tested at two levels:
 - **Backend applications**: LLM analysis, semantic search, workflows, digests — all phase 2. The capture pipeline ends at JSONL.
 - **Storage infrastructure**: Vector DB, PostgreSQL, or any semantic storage. Deferred — JSONL is the interim format.
 - **YouTube/Gmail/GDrive ingestion**: Not part of this extension. The capture instrument is X/Twitter only. Other sources may be added later as separate extensions or ingestion paths.
-- **Historical data migration**: The existing ~1,200 tweets in `archive/backend/data.db` stay where they are. Migration is a separate effort when there's a clear need and a clear target format.
 - **Firefox/Safari support**: Chrome (Brave) only. Personal tool.
 - **Web Store publication**: Not published. Loaded unpacked.
 - **Auto-capture**: Explicitly not included. Manual only.
@@ -150,14 +226,6 @@ The feature will be tested at two levels:
 - **Multi-user support**: Single user, single machine.
 
 ## Further notes
-
-### Deprecation
-
-The old feed_analyser code has been moved to `archive/`. Everything is preserved — the code, data, specs, and documentation — but it is no longer active. The `capture/extension/` and `capture/server/` directories are where new development happens.
-
-### Existing data
-
-The `archive/backend/data.db` contains ~1,200 previously ingested tweets. When backend applications are built (phase 2), they can read from both the old SQLite DB and the new JSONL file. This is an integration detail for phase 2.
 
 ### Naming
 
