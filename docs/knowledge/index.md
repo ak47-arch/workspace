@@ -5,6 +5,9 @@ Entries are grouped by project for progressive discovery. When the agent needs t
 
 ### software-factory
 
+- [PRD as Routing Document, Context Engine Provides Depth](sessions/019fd00b-4e86-76ed-966b-186ea09c775c/decisions/01-prd-as-routing-document-context-engine-depth.md)
+- [Review Sub-Agent as In-Session PRD Verification Gate](sessions/019fd00b-4e86-76ed-966b-186ea09c775c/decisions/02-review-sub-agent-in-session-validation-gate.md)
+- [Scope Boundary — CI and Implementer Agent Deferred to Part 2](sessions/019fd00b-4e86-76ed-966b-186ea09c775c/decisions/03-scope-boundary-ci-and-implementer-deferred-to-part2.md)
 - [Knowledge Base as Infrastructure Layer](sessions/019f8faf-c8f2-7612-a79d-10e18e6f78cf/decisions/01-factory-architecture-decisions.md#1-knowledge-base-as-infrastructure-layer)
 - [Product/Architecture as UX Layer](sessions/019f8faf-c8f2-7612-a79d-10e18e6f78cf/decisions/01-factory-architecture-decisions.md#2-productarchitecture-as-ux-layer--two-artifact-outputs)
 - [Progressive Disclosure Chain](sessions/019f8faf-c8f2-7612-a79d-10e18e6f78cf/decisions/01-factory-architecture-decisions.md#3-progressive-disclosure-chain-for-agent-context)
