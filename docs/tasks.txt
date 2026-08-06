@@ -71,6 +71,9 @@ tasks:
 
     ## feed-analyser
 
+    ### Pending
+    - Add an agent to the extension that will have access to the content and urls (feed-analyser)
+
     ### Complete
     - (complete) pivot feed analyser to X capture instrument — recursive capture v1 shipped, UAT passed (feed_analyser) [x-capture-instrument]
 
