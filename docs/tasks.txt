@@ -71,8 +71,8 @@ tasks:
 
     ## feed-analyser
 
-    ### Done
-    - (done) pivot feed analyser to X capture instrument (feed_analyser) [x-capture-instrument]
+    ### Queued
+    - (queued) pivot feed analyser to X capture instrument (feed_analyser) [x-capture-instrument]
 
     ## langfuse
 

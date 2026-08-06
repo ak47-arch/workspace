@@ -1,6 +1,6 @@
 # PRD: X Capture Instrument
 
-**Date**: 2026-08-04 (revised; original 2026-07-25 20:01)
+**Date**: 2026-08-06 (rev 2; revised from 2026-08-04, original 2026-07-25 20:01)
 **Status**: Draft
 **Project**: feed-analyser
 **Vision**: feed_analyser/capture/docs/vision/VISION.md
@@ -8,6 +8,13 @@
 **Task**: x-capture-instrument
 **Session**: (current session — product-layer skill conversation)
 **Decisions**: Recorded inline in this PRD (see Implementation decisions, Architecture, and Program Design sections).
+
+> **Rev 2 — scope clarification (2026-08-06)**: This revision adopts a single
+> capture intent (**Intent A: save the whole post**) and drops the standalone
+> text-highlight flow (Intent B) from v1 as over-complex. Links now include
+> embedded/quote tweets, and `t.co` shortlinks resolve to their real
+> destination. See the updated Implementation decisions, User stories, and
+> Artefact schema sections.
 
 ---
 
@@ -31,12 +38,11 @@ User on X.com
 │ Auto-scrapes:       │
 │   • tweet text      │
 │   • links           │
-│   • visible comments│
 │   • tweet URL       │
 │                     │
 │ Side panel:         │
 │   • reviews data    │
-│   • highlights text │
+│   • toggles links   │
 │   • adds notes      │
 │   • submits         │
 └─────────┬───────────┘
@@ -61,11 +67,11 @@ Key principle: **the capture pipeline ends at the JSONL file.** The server does 
 
 ## User stories
 
-1. **Manual capture**: A user is browsing X.com and sees a tweet worth saving. They hover over the tweet, a "Capture" pill appears. Clicking it opens the side panel pre-filled with the tweet text, extracted links, and any visible comments. The user can add notes, toggle links, select additional text on the page (which auto-populates), then click Save. The artefact is POSTed to the local server and appended to `artefacts.jsonl`.
+1. **Manual capture (Intent A — whole post)**: A user is browsing X.com and sees a tweet worth saving. They hover over the tweet, a "Capture" pill appears. Clicking it opens the side panel pre-filled with the tweet text, its URLs (external links, resolved to real destinations), and any embedded/quote tweets. The user can review, toggle links off, add notes, then click Save. The artefact is POSTed to the local server and appended to `artefacts.jsonl`. This is the single capture flow — there is no separate text-highlight capture in v1.
 
 2. **Server offline UX**: The user clicks Save but the local server is not running. The side panel shows an error message: "Server offline — restart and try again." The data stays in the panel. The user starts the server and clicks Save again.
 
-3. **Auto-scrape failure**: The extension cannot scrape the tweet text (DOM changed, page structure differs). The panel shows a yellow warning "Could not auto-scrape tweet text." The Save button remains active — the user can still save links, selected text, and notes. The tweet URL always serves as the anchor.
+3. **Auto-scrape failure**: The extension cannot scrape the tweet text (DOM changed, page structure differs). The panel shows a yellow warning "Could not auto-scrape tweet text." The Save button remains active — the user can still save the links and notes. The tweet URL always serves as the anchor.
 
 4. **Dedup**: The user captures the same tweet twice, possibly with different notes or at different times. Both artefacts are saved independently with separate `captured_at` timestamps. No dedup. Downstream applications can handle merging if needed.
 
@@ -76,7 +82,7 @@ Key principle: **the capture pipeline ends at the JSONL file.** The server does 
 | # | Decision | Value | Rationale |
 |---|----------|-------|-----------|
 | 1 | **Product model** | Thin extension + dumb server + decoupled backend apps | Clean separation of concerns. Extension captures, server stores, backend apps process. Each can evolve independently. |
-| 2 | **Capture trigger** | Manual only — hover pill on tweet | No auto-capture. High signal, intentional. |
+| 2 | **Capture trigger** | Manual only — hover pill on tweet | No auto-capture. High signal, intentional. Single click captures the whole post (Intent A). |
 | 3 | **Extension platform** | Chrome MV3, unpacked, not published | Personal tool on Brave (Chromium). No marketplace concerns. |
 | 4 | **Side panel** | Chrome `sidePanel` API | Native browser UI, persists across navigations. Cleaner than injecting into X's DOM. |
 | 5 | **Server** | Local FastAPI, single POST endpoint | Familiar stack, runs alongside extension. No auth, no internet dependency. |
@@ -85,9 +91,11 @@ Key principle: **the capture pipeline ends at the JSONL file.** The server does 
 | 8 | **Dedup** | Append — independent artefacts | Each capture is its own artefact. Downstream apps decide what to do. |
 | 9 | **Server offline** | Show error in side panel, keep data | Simple. No queuing, no retry logic. Personal tool — user controls the server. |
 | 10 | **Auto-scrape failure** | Allow save, show yellow warning | Tweet URL is always the anchor. Links and notes still worth saving. |
-| 11 | **Artefact shape** | `{ tweet_url, author, tweet_text, links[], selected_texts[], notes, captured_at }` | Minimal. Covers all signal at capture time. Notes field for user context. |
-| 12 | **Data lifecycle** | Read-only after capture | Artefacts are immutable. Downstream apps read and process independently. |
-| 13 | **Legacy code** | Archived under `archive/` | Everything preserved, nothing deleted. Clean slate for new capture system. |
+| 11 | **Artefact shape** | `{ tweet_url, author, tweet_text, links[], notes, captured_at }` | Minimal. Covers all signal at capture time. Notes field for user context. |
+| 12 | **Links include embedded/quote tweets** | `links[]` holds external URLs (resolved from `t.co`) plus URLs of any embedded/quote tweets | A tweet often references other tweets; those are as worth keeping as external URLs. The current tweet's own URL is the anchor, not a link. |
+| 13 | **No text-highlight capture (Intent B) in v1** | Highlights / selected text are out of scope; notes cover user context | The two-intent model over-complicated the pill and the selection-read raced the click. v1 ships the single whole-post flow. |
+| 14 | **Data lifecycle** | Read-only after capture | Artefacts are immutable. Downstream apps read and process independently. |
+| 15 | **Legacy code** | Archived under `archive/` | Everything preserved, nothing deleted. Clean slate for new capture system. |
 
 ## Artefact schema
 
@@ -96,14 +104,19 @@ Key principle: **the capture pipeline ends at the JSONL file.** The server does 
   "tweet_url": "https://x.com/user/status/123456",
   "author": "@user",
   "tweet_text": "Full tweet text auto-scraped from DOM",
-  "links": ["https://github.com/owner/repo", "https://arxiv.org/abs/1234"],
-  "selected_texts": ["user-highlighted portion", "relevant comment text"],
+  "links": ["https://github.com/owner/repo", "https://arxiv.org/abs/1234", "https://x.com/other/status/999"],
   "notes": "User's own context added in side panel",
   "captured_at": "2026-08-03T14:30:00Z"
 }
 ```
 
 One JSON object per line in `artefacts.jsonl`.
+
+`links[]` is a flat list of URLs worth keeping. It mixes:
+- **external URLs** — real destinations, resolved out of X's `t.co` shortlinks
+- **embedded / quote tweets** — the `x.com/<user>/status/<id>` URL of any tweet embedded in the captured tweet
+
+`tweet_url` itself is the anchor and is never duplicated into `links[]`.
 
 ## Architecture
 
@@ -114,10 +127,11 @@ User on x.com
    │  hover tweet → Capture pill
    ▼
 Extension (content.js) scrapes: tweet_url, author, tweet_text, links
+   │   (links = external URLs resolved from t.co + embedded/quote tweet URLs)
    │  opens side panel (background.js keeps state across navigation)
-   │  user adds selected text + notes
+   │  user reviews links + adds notes
    ▼
-sidepanel.js  POST /api/capture  {tweet_url, author, tweet_text, links, selected_texts, notes}
+sidepanel.js  POST /api/capture  {tweet_url, author, tweet_text, links, notes}
    │
    ▼
 Server (server.py): validate → stamp captured_at → append line to artefacts.jsonl → 200
@@ -153,9 +167,9 @@ Server (server.py): validate → stamp captured_at → append line to artefacts.
 capture/
 ├── extension/
 │   ├── manifest.json        # MV3: content script + side panel + permissions (x.com host)
-│   ├── content.js           # on x.com: hover → Capture pill, scrape tweet (url/author/text/links), text highlight
+│   ├── content.js           # on x.com: hover → Capture pill, scrape tweet (url/author/text/links incl. embedded tweets)
 │   ├── sidepanel.html       # panel UI: prefill review + notes + Save
-│   ├── sidepanel.js         # render scrape result, gather notes/selection, submit → POST /api/capture
+│   ├── sidepanel.js         # render scrape result, gather notes, submit → POST /api/capture
 │   └── background.js        # service worker: keep panel state across navigation
 └── server/
     ├── server.py            # FastAPI: POST /api/capture → validate → append artefacts.jsonl → 200
@@ -171,7 +185,7 @@ capture/
 
 **Key types & signatures — extension**
 
-- `content.js`: `scrapeTweet(tweetEl) -> { tweet_url, author, tweet_text, links[] }`; exposes the Capture pill on hover; listens for user text selection
+- `content.js`: `scrapeTweet(tweetEl) -> { tweet_url, author, tweet_text, links[] }`; exposes the Capture pill on hover; `links[]` = external URLs resolved from `t.co` + embedded/quote tweet status URLs
 - `sidepanel.js`: `submit(artefact) -> Promise<Response>` — `fetch("http://127.0.0.1:8765/api/capture", POST)`; on network failure show "server offline" and keep the data in the panel
 - `background.js`: relays messages between content and panel so the panel survives navigation
 
@@ -187,7 +201,7 @@ End-to-end vertical slices are preferred over a horizontal stack-order build (al
 
 1. **Slice 1 — the spine (server)**: a `POST /api/capture` endpoint that validates, appends to `artefacts.jsonl`, and returns 200. Verified with a unit test and a raw `curl` POST. Already demoable on its own.
 2. **Slice 2 — capture-to-store end to end**: `content.js` scrapes one tweet → `sidepanel.js` submits → server appends → a line lands in `artefacts.jsonl`. The full path works.
-3. **Slice 3 — panel niceties**: notes field, selected-text/highlighting, and the "server offline" error state.
+3. **Slice 3 — panel niceties**: notes field, link toggling, and the "server offline" error state.
 
 Each slice leaves the system demoable end-to-end; no layer is completed in isolation.
 
@@ -205,7 +219,8 @@ The feature will be tested at two levels:
 - Server: POST missing required field → 400
 - Server: POST to stopped server → connection refused (extension handles this)
 - Extension: Click capture pill on tweet → side panel opens with scraped data
-- Extension: Highlight text on page → appears in selected_texts
+- Extension: Tweet with embedded/quote tweet → its `x.com/.../status/...` URL appears in links
+- Extension: Link rendered as `t.co` shortlink → links show the real destination URL
 - Extension: Submit with server offline → error shown, data preserved
 
 ### Non-goals
@@ -222,6 +237,7 @@ The feature will be tested at two levels:
 - **Firefox/Safari support**: Chrome (Brave) only. Personal tool.
 - **Web Store publication**: Not published. Loaded unpacked.
 - **Auto-capture**: Explicitly not included. Manual only.
+- **Standalone text-highlight capture (Intent B)**: Selecting/highlighting arbitrary text to save it separately is not in v1. The single capture flow saves the whole post; user context goes in `notes`. May return later as its own trigger if real use proves it.
 - **Tweet engagement (like, reply, retweet)**: Not captured. Only the tweet's visible content.
 - **Multi-user support**: Single user, single machine.
 

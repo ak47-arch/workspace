@@ -1,6 +1,6 @@
 # Task: x-capture-instrument
 
-**Status**: complete
+**Status**: prd-ready
 **Category**: Large
 **Project**: feed-analyser
 **Created**: 2026-08-04 12:22
@@ -8,7 +8,7 @@
 
 ## Artifacts
 
-- Plan: [prd-archive/2026-07-25-x-capture-instrument.md](../prd-archive/2026-07-25-x-capture-instrument.md)
+- Plan: [prd-queue/2026-07-25-x-capture-instrument.md](../prd-queue/2026-07-25-x-capture-instrument.md)
 
 ## Sessions
 

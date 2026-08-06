@@ -48,6 +48,9 @@ Entries are grouped by project for progressive discovery. When the agent needs t
 - [Capture v1 is text-only — vision as product doc](sessions/019fc8f4-ad2b-7aea-ac8b-df06363d0aba/decisions/01-capture-text-only-scope-and-vision.md)
 - [Capture API contract — one POST, flat artefact](sessions/019fc8f4-ad2b-7aea-ac8b-df06363d0aba/decisions/02-capture-api-contract.md)
 - [Capture server fixed config](sessions/019fc8f4-ad2b-7aea-ac8b-df06363d0aba/decisions/03-capture-server-fixed-config.md)
+- [Capture v1 ships a single intent — save the whole post (Intent A)](sessions/019fd314-9339-7a30-9b8b-f6d8892b5226/decisions/01-capture-v1-single-intent-save-whole-post.md)
+- [Capture links include embedded/quote tweets and resolve t.co shortlinks](sessions/019fd314-9339-7a30-9b8b-f6d8892b5226/decisions/02-capture-links-embedded-tweets-and-tco-resolution.md)
+- [PRD moves to archive only after UAT + user go-ahead](sessions/019fd314-9339-7a30-9b8b-f6d8892b5226/decisions/03-prd-archive-requires-uat-and-user-signoff.md)
 
 ### survival-infrastructure
 
