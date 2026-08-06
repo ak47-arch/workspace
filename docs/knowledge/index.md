@@ -52,6 +52,7 @@ Entries are grouped by project for progressive discovery. When the agent needs t
 - [Capture links include embedded/quote tweets and resolve t.co shortlinks](sessions/019fd314-9339-7a30-9b8b-f6d8892b5226/decisions/02-capture-links-embedded-tweets-and-tco-resolution.md)
 - [PRD moves to archive only after UAT + user go-ahead](sessions/019fd314-9339-7a30-9b8b-f6d8892b5226/decisions/03-prd-archive-requires-uat-and-user-signoff.md)
 - [Capture artefact is a recursive node tree — a comment is a tweet](sessions/019fd314-9339-7a30-9b8b-f6d8892b5226/decisions/04-capture-recursive-node-tree-comment-is-tweet.md)
+- [Resolve t.co links robustly; restart server after schema changes](sessions/019fd314-9339-7a30-9b8b-f6d8892b5226/decisions/05-capture-resolve-links-and-restart-server.md)
 
 ### survival-infrastructure
 

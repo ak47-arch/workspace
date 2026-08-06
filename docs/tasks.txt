@@ -71,8 +71,8 @@ tasks:
 
     ## feed-analyser
 
-    ### Queued
-    - (queued) pivot feed analyser to X capture instrument (feed_analyser) [x-capture-instrument]
+    ### Complete
+    - (complete) pivot feed analyser to X capture instrument — recursive capture v1 shipped, UAT passed (feed_analyser) [x-capture-instrument]
 
     ## langfuse
 

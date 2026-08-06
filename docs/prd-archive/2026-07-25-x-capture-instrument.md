@@ -1,6 +1,6 @@
 # PRD: X Capture Instrument
 
-**Date**: 2026-08-06 (rev 3; revised from 2026-08-04, original 2026-07-25 20:01)
+**Date**: 2026-08-06 (rev 4; revised from 2026-08-04, original 2026-07-25 20:01)
 **Status**: Draft
 **Project**: feed-analyser
 **Vision**: feed_analyser/capture/docs/vision/VISION.md
@@ -26,6 +26,14 @@
 > stays minimal — one Capture pill reused down the tree, plus a small capture
 > strip while adding comments. See the Artefact schema, User stories, and
 > Implementation decisions sections.
+>
+> **Rev 4 — forward UX: panel-as-live-view (2026-08-06)**: The side panel is
+> a **live view of a capture in progress**, not a one-shot form. Capturing the
+> root opens the panel and keeps the capture open; comments below show the same
+> Capture pill and clicking one adds it to the growing tree (toggle to remove).
+> There is no separate strip — the panel doubles as the live tree + Save. See
+> the new "Forward UX" section and updated Implementation decisions rows 16,
+> 19–20.
 
 ---
 
@@ -80,7 +88,7 @@ Key principle: **the capture pipeline ends at the JSONL file.** The server does 
 
 1. **Manual capture (Intent A — whole post)**: A user is browsing X.com and sees a tweet worth saving. They hover over the tweet, a "Capture" pill appears. Clicking it opens the side panel pre-filled with the tweet text, its URLs (external links, resolved to real destinations), and any embedded/quote tweets. The user can review, add notes, then click Save. The artefact is POSTed to the local server and appended to `artefacts.jsonl`. This is the single capture flow.
 
-2. **Recursive context capture (curated comments)**: The user sees a tweet whose *comments* carry value — a few specific replies, and links inside them. They click the **Capture** pill on the root tweet. A slim **capture strip** appears on the page ("Capturing this conversation · 1 · click comments to add · Done"). The user hovers interesting comments and clicks the **same Capture pill** on each — each selected comment is captured with the same mechanism as a tweet (author, text, its own links) and nested under the tweet/reply it replies to (the DOM knows the parent). A reply's reply nests deeper. Clicking **Done** opens the side panel showing the thread as an indented list (root on top, selected comments nested beneath). The user adds one note and saves. Only the *curated* comments are kept — never the whole thread.
+2. **Recursive context capture (curated comments)**: The user sees a tweet whose *comments* carry value — a few specific replies, and links inside them. They click the **Capture** pill on the root tweet. The **side panel opens and the capture stays in progress**. The user scrolls the comments below; every comment shows the **same Capture pill** on hover. Clicking a comment adds it to the capture, nested under its real parent, with a subtle on-page highlight and a live update in the panel's indented tree. Clicking the pill again removes it. When done, the user clicks **Save** in the panel, which POSTs the whole tree and resets for the next capture. Only the *curated* comments are kept — never the whole thread.
 
 3. **Server offline UX**: The user clicks Save but the local server is not running. The side panel shows "Server offline — restart and try again." The data stays in the panel. The user starts the server and clicks Save again.
 
@@ -109,7 +117,9 @@ Key principle: **the capture pipeline ends at the JSONL file.** The server does 
 | 13 | **Recursive curation, not text-highlight** | The capture flow is recursive: the same pill captures a comment as a node nested under its parent. The user keeps only *curated* comments; there is no arbitrary-text highlight in v1 | Replaces the earlier "Intent B / selected text" idea. A comment is a tweet, so it reuses the whole-post capture mechanism; curation = choosing which nodes to keep. Notes cover user context. |
 | 14 | **Data lifecycle** | Read-only after capture | Artefacts are immutable. Downstream apps read and process independently. |
 | 15 | **Legacy code** | Archived under `archive/` | Everything preserved, nothing deleted. Clean slate for new capture system. |
-| 16 | **One pill, reused down the tree** | A single Capture pill captures a root tweet *and* any comment; the tree nests by DOM parent. A slim capture strip (count + Done) is the only added UI while collecting comments | Keeps UX minimal — one intent, one affordance, no Save/Curate split, no toolbar counter or tree-builder. The tree "emerges from where you click," never constructed explicitly. |
+| 16 | **One pill, reused down the tree** | A single Capture pill captures a root tweet *and* any comment; the tree nests by DOM parent. Panel is the live view | Keeps UX minimal — one intent, one affordance, no Save/Curate split, no toolbar counter or tree-builder. The tree "emerges from where you click," never constructed explicitly. |
+| 19 | **Panel-as-live-view** | The side panel is the live view of a capture in progress. Capturing the root opens the panel and keeps the capture open; adds update the tree live | No separate strip/toolbar. One fewer piece of UI. The panel is the tree view + the Save button. |
+| 20 | **Toggle-to-remove** | Clicking the pill on an already-added comment removes it (same gesture toggles) | No separate per-node remove UI in v1. Accidental adds are undone with the same click. |
 | 17 | **Recursive depth** | Unlimited depth in the schema; curation chooses how deep | `children` is a recursive `array<node>`; the user only adds what they click, so they control depth implicitly. |
 | 18 | **Parent linkage** | Every node carries `parent_url` (null for the root); plus `children` for in-tree order | Lets a node be re-attached to the real thread even if an intermediate comment isn't captured, and enables flat traversal/rebuild. |
 
@@ -158,23 +168,54 @@ Every node:
 - `parent_url` links it back to the real thread even when intermediate comments aren't captured
 - `tweet_url` of that node is its own anchor, never duplicated into its `links[]`
 
+## Forward UX (panel-as-live-view)
+
+From the moment the root is captured, the side panel is a **live capture in
+progress** — never a one-shot form. On the tweet's detail page, replies render
+below and every comment shows the same Capture pill on hover.
+
+1. **Capture the root** → panel opens, capture stays open, anchored to that root.
+2. **Comments show the same pill on hover.** One affordance, one meaning: *add
+   this tweet to the current capture.*
+3. **Click a comment** → added, nested by its real position (DOM parent). Two
+   forms of feedback so you always know what's kept:
+   - **On-page:** the comment gets a subtle accent/highlight (no tree-builder).
+   - **In panel:** the indented tree grows live under the root.
+4. **Click the pill again** → removes it (same gesture toggles; no per-node remove UI).
+5. **Save in the panel** finishes it — one POST of the whole tree → capture
+   completes → panel resets for the next one.
+6. **The root pill is inert** while its capture is open; capturing an unrelated
+   root *replaces* the current capture. Whether a hovered tweet is a comment of
+   the current root is disambiguated by DOM containment.
+
+### Locked decisions
+
+- **A. Nesting display** — indent by the captured-ancestor chain; `parent_url`
+  preserves the true position even when an intermediate comment isn't captured.
+- **B. Context-sensitivity** — comment curation happens on the detail page
+  (comments visible there). Capturing from the timeline yields just the single
+  node; there are no comments to add, so no confusion.
+- **C. On-page highlight** — selected comments get a subtle accent while
+  scrolling, so curation is visible without a tree-builder.
+- **D. Toggle-to-remove only** — re-clicking the pill removes; no panel remove ×
+  in v1.
+- **E. Live panel updates** — the panel mirrors the growing capture on every add.
+
 ## Architecture
 
 **Data flow (text-only, minimal, recursive)**
 
 ```
-User on x.com
-   │  hover tweet → Capture pill (root)
+User on x.com (detail page)
+   │  hover tweet → Capture pill (root) → panel opens, capture in progress
    ▼
 Extension (content.js) scrapes root node: tweet_url, author, tweet_text, links
-   │  tiny capture strip appears; user clicks Capture pill on curated comments
+   │  user scrolls comments; each shows the same Capture pill
    ▼
-Each selected comment scraped with the SAME node scraper (parented by DOM)
-   │  nested into children[] automatically
+Click a comment → scraped with the same node scraper (parented by DOM)
+   │  nested into children[] automatically; on-page highlight + live panel tree
    ▼
-Done → side panel shows indented tree (root on top) + one Notes box
-   ▼
-sidepanel.js  POST /api/capture  { root node with nested children }
+Save in panel → sidepanel.js  POST /api/capture  { root node tree }
    │
    ▼
 Server (server.py): validate recursively → stamp captured_at on root →
@@ -212,7 +253,7 @@ Server (server.py): validate recursively → stamp captured_at on root →
 capture/
 ├── extension/
 │   ├── manifest.json        # MV3: content script + side panel + permissions (x.com host)
-│   ├── content.js           # on x.com: single Capture pill (hover); recursive node scraper; capture strip
+│   ├── content.js           # on x.com: single Capture pill (hover); recursive node scraper; open-capture state
 │                        #   scrapeNode(tweetEl, parentUrl) -> node {url, author, text, links, parent_url, notes, children}
 │   ├── sidepanel.html       # panel UI: indented tree review + notes + Save
 │   ├── sidepanel.js         # render tree, gather notes, submit recursive root → POST /api/capture
@@ -231,7 +272,7 @@ capture/
 
 **Key types & signatures — extension**
 
-- `content.js`: `scrapeNode(tweetEl, parentUrl) -> Node` — a **recursive** node scraper (tweet_url, author, tweet_text, links, parent_url, notes, children[]). The root is scraped with `parentUrl = null`; each selected comment is scraped with its DOM-derived parent. `scrapeLinks(tweetEl)` = external URLs resolved from `t.co` + embedded/quote tweet status URLs (per node). Exposes the single Capture pill on hover; manages the capture strip while collecting curated comments.
+- `content.js`: `scrapeNode(tweetEl, parentUrl) -> Node` — a **recursive** node scraper (tweet_url, author, tweet_text, links, parent_url, notes, children[]). The root is scraped with `parentUrl = null`; each selected comment is scraped with its DOM-derived parent. `scrapeLinks(tweetEl)` = external URLs resolved from `t.co` + embedded/quote tweet status URLs (per node). Exposes the single Capture pill on hover; tracks the open-capture state (root + growing tree) and live-updates the panel; toggles add/remove; applies on-page highlight to selected comments.
 - `sidepanel.js`: renders the recursive tree as an indented list; gathers notes; `submit(rootNode) -> Promise<Response>` — `fetch("http://127.0.0.1:8765/api/capture", POST)`; on network failure show "server offline" and keep the data in the panel
 - `background.js`: relays messages between content and panel so the panel survives navigation
 
@@ -246,7 +287,7 @@ capture/
 End-to-end vertical slices are preferred over a horizontal stack-order build (all server first, then all extension). Recommended slicing for implementation:
 
 1. **Slice 1 — the spine (server)**: `POST /api/capture` validates a tree (recursively: every nested node must have a `tweet_url`), appends to `artefacts.jsonl`, returns 200. Verified with a unit test and a raw `curl` POST. Already demoable on its own.
-2. **Slice 2 — capture-to-store end to end**: `content.js` scrapes a root tweet → the user adds a couple of comments via the strip → `sidepanel.js` submits the nested tree → server appends → a line lands in `artefacts.jsonl`. The full recursive path works.
+2. **Slice 2 — capture-to-store end to end**: on the detail page, `content.js` scrapes a root tweet → panel opens, user adds a couple of comments (live tree) → `sidepanel.js` submits the nested tree → server appends → a line lands in `artefacts.jsonl`. The full recursive path works.
 3. **Slice 3 — panel niceties**: notes field, indented tree rendering, and the "server offline" error state.
 
 Each slice leaves the system demoable end-to-end; no layer is completed in isolation.
