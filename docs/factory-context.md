@@ -24,6 +24,16 @@ Invoked via the `product-layer` skill.
 (`in-prd` → `prd-ready` → `in-progress` → `in-review` → `complete`).
 Tooling: `bin/transition-task.sh`.
 
+**PRD lifecycle.** A PRD enters `docs/prd-queue/` when its task reaches
+`prd-ready`, and it leaves the queue (moves to `docs/prd-archive/`) only when
+its task is genuinely done. "Done" means the feature passed user acceptance
+testing **and** the user explicitly gave the go-ahead — **code written + unit
+tests passing is NOT "complete."** Until UAT passes and the user signs off,
+keep the task at `prd-ready` and the PRD in the queue. To reopen an archived
+PRD: move it back to `docs/prd-queue/`, set the task to `prd-ready`, and
+re-point the Plan artifact path. (See decision
+[PRD moves to archive only after UAT + user go-ahead](knowledge/index.md).)
+
 **assembly_line** — CI/CD, agents, sandboxes, testing. Built YAGNI — least
 developed component.
 
