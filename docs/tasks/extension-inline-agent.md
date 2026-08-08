@@ -8,17 +8,18 @@
 
 ## Artifacts
 
-- Plan: _(will be created)_
+- Plan: [2026-08-08-extension-inline-agent.md](../prd-queue/2026-08-08-extension-inline-agent.md)
 
 ## Sessions
 
 - [planning](../knowledge/sessions/019fd8a4-73ca-7c92-bbcc-b5d74e7d0817/session.jsonl)
 
-## Open questions × scope
+## Scope notes
 
 - Browser-control tools (pi driving the live x.com page via the extension):
-  **deferred to a follow-on phase**, same bridge architecture.
-- Knowledge base store shape: deciding plain files vs derived index (see PRD).
+  **deferred to a follow-on phase**, same bridge architecture (decision 06).
+- Knowledge base store: plain files as truth + SQLite FTS5 derived index +
+  thin read API (decision 05) — no longer open.
 
 ## Decisions
 

@@ -53,6 +53,12 @@ Entries are grouped by project for progressive discovery. When the agent needs t
 - [PRD moves to archive only after UAT + user go-ahead](sessions/019fd314-9339-7a30-9b8b-f6d8892b5226/decisions/03-prd-archive-requires-uat-and-user-signoff.md)
 - [Capture artefact is a recursive node tree — a comment is a tweet](sessions/019fd314-9339-7a30-9b8b-f6d8892b5226/decisions/04-capture-recursive-node-tree-comment-is-tweet.md)
 - [Resolve t.co links robustly; restart server after schema changes](sessions/019fd314-9339-7a30-9b8b-f6d8892b5226/decisions/05-capture-resolve-links-and-restart-server.md)
+- [Agent runs on pi SDK in a local Node service; extension is the UI](sessions/019fd8a4-73ca-7c92-bbcc-b5d74e7d0817/decisions/01-pi-sdk-agent-service.md)
+- [Inference via OpenRouter; key stays server-side](sessions/019fd8a4-73ca-7c92-bbcc-b5d74e7d0817/decisions/02-openrouter-inference-server-side-key.md)
+- [Agent tools restricted to fetch_url for v1 — no bash, no web search](sessions/019fd8a4-73ca-7c92-bbcc-b5d74e7d0817/decisions/03-agent-tools-fetch-url-only.md)
+- [One artefact per capture + the full pi session as evidence](sessions/019fd8a4-73ca-7c92-bbcc-b5d74e7d0817/decisions/04-artefact-session-evidence-model.md)
+- [Twitter knowledge base — plain files as truth, SQLite FTS5 derived index, thin read API](sessions/019fd8a4-73ca-7c92-bbcc-b5d74e7d0817/decisions/05-twitter-kb-plain-files-fts5-read-api.md)
+- [Browser control by the agent deferred to a follow-on phase](sessions/019fd8a4-73ca-7c92-bbcc-b5d74e7d0817/decisions/06-browser-control-deferred.md)
 
 ### survival-infrastructure
 
