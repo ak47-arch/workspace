@@ -74,6 +74,7 @@ tasks:
     ## feed-analyser
 
     ### Pending
+    - Add @ urls also to the list of urls but not under links but under people (feed-analyser)
 
     ### Queued
     - (queued) Add an agent to the extension that will have access to the content and urls (feed-analyser) [extension-inline-agent]
