@@ -351,7 +351,11 @@ export default function (pi) {
 
   // Heartbeat — re-report session path periodically so herdr rediscovers
   // it after pane.release_agent → reattach cycles or missed events.
-  setInterval(() => {
+  // PATCH (2026-08-09): unref + clearInterval — without this the interval kept
+  // the event loop alive forever in non-interactive pi children (subagents,
+  // json mode), so completed runs never exited and subagent handovers hung.
+  // NOTE: herdr reinstalls overwrite this file — re-apply or confirm upstream.
+  const heartbeat = setInterval(() => {
     if (!rootSession) {
       return;
     }
@@ -369,6 +373,7 @@ export default function (pi) {
     }
     void reportSession();
   }, 10_000);
+  heartbeat.unref?.();
 
   pi.on("agent_start", (_event, ctx) => {
     if (!rootSession) {
@@ -405,6 +410,7 @@ export default function (pi) {
   });
 
   pi.on("session_shutdown", async (event) => {
+    clearInterval(heartbeat);
     if (!rootSession) {
       return;
     }
