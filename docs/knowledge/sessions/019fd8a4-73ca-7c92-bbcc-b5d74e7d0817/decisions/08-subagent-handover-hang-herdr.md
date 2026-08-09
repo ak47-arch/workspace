@@ -1,7 +1,7 @@
-## Decision: Subagent runs hang at handover — herdr heartbeat root cause + persist-step mitigation
+## Decision: Subagent runs hang at handover — herdr heartbeat root cause, fix applied + persist-step mitigation
 
 **Status**: accepted
-**Date**: 2026-08-09 21:18
+**Date**: 2026-08-09 21:25
 **Task**: extension-inline-agent
 **Project**: software-factory
 **Session**: sessions/019fd8a4-73ca-7c92-bbcc-b5d74e7d0817/session.jsonl
@@ -15,6 +15,9 @@ the parent; the user had to press Esc, which produced `Subagent was aborted`
 with an empty `details` object and no persisted transcript. We assumed the
 built-in subagent implementation was at fault and searched pi's compiled
 output in vain.
+
+**Update 2026-08-09 21:25**: the fix described below has been applied
+(`.pi/extensions/herdr-agent-state.ts`, commit `5bd33ec`) and verified
 
 ### Problem
 
@@ -55,16 +58,23 @@ why is its context not saved anywhere?
 
 ### Decision
 
-- **Fix the root cause** (pending): patch `herdr-agent-state.ts` — `.unref()`
-  the heartbeat interval and `clearInterval` it in `session_shutdown`
-  (mirroring the other timers). The file header warns it is managed by herdr
-  and overwritten on reinstall, so the patch must be re-appliable and/or
-  reported upstream (herdr can fix it in the integration itself).
-- **Persist-step pattern (adopted)**: any subagent whose output must survive
-  (reviews, reports) must write its deliverable **to a file inside the task**
-  (e.g. `docs/reviews/<date>-<slug>[-v2].md`) using the `write` tool rather
-  than relying on the returned tool result. The file lands mid-run, so even
-  an abort preserves the work — this is why round-2 review survived.
+- **Fix the root cause — APPLIED 2026-08-09**: patched
+  `herdr-agent-state.ts` — `heartbeat.unref?.()` on the 10 s interval and
+  `clearInterval(heartbeat)` in `session_shutdown` (mirroring the other
+  timers). The file header warns it is managed by herdr and overwritten on
+  reinstall, so the patch must be re-appliable and/or reported upstream
+  (herdr can fix it in the integration itself).
+- **Verification evidence**: the exact subagent child command
+  (`pi --mode json -p --no-session` from the workspace cwd) previously hung
+  >90 s (killed by timeout, exit 124); after the patch it exits cleanly in
+  ~3 s (exit 0, last event `agent_settled`). End-to-end proof: prd-reviewer
+  round 3 handed its report back normally — no Esc, no abort.
+- **Persist-step pattern (adopted, still recommended)**: any subagent whose
+  output must survive (reviews, reports) must write its deliverable **to a
+  file inside the task** (e.g. `docs/reviews/<date>-<slug>[-vN].md`) using
+  the `write` tool rather than relying on the returned tool result. The file
+  lands mid-run, so even an abort preserves the work — this is why rounds
+  1-2 survived the bug.
 - Treat `Subagent was aborted` as **"rerun, don't despair"** — reviewers are
   read-only and deterministic on the same inputs, so a rerun is cheap once
   the persist-step is in place.
@@ -81,10 +91,12 @@ result is just the handover.
 
 ### Consequences
 
-- Subagent runs remain unreliable until the patch lands; any new subagent
-  task in the factory should include a persist-step by default.
-- `docs/reviews/` now holds round-1 and round-2 PRD review reports as
-  artefacts (the extension-inline-agent PRD gate evidence).
+- **Subagent handover works again** (since `5bd33ec`): round-3 prd-reviewer
+  run completed with a normal tool handback — the bug class is fixed, not
+  just mitigated. Keep the persist-step anyway: it costs ~nothing and
+  decouples deliverable durability from any future handover hiccup.
+- `docs/reviews/` now holds round-1/2/3 PRD review reports as artefacts (the
+  extension-inline-agent PRD gate evidence).
 - The gdrive PRD/review flows and any future prd-reviewer invocation should
   reuse the same pattern.
 
@@ -92,7 +104,7 @@ result is just the handover.
 
 - When herdr updates `herdr-agent-state.ts` (reinstall overwrites the patch),
   re-apply the `.unref()` / `clearInterval` fix or confirm herdr shipped it
-  upstream.
+  upstream (one-line fix on their side).
 - If pi fixes json-mode exit or the abort path (returning accumulated
   `messages`/`details` on abort), the persist-step pattern can be relaxed —
   but keeping it costs little.
