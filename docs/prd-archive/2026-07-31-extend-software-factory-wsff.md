@@ -1,5 +1,5 @@
 **Date**: 2026-07-31 23:57
-**Status**: Draft
+**Status**: Final
 **Owner**: software-factory
 **Task**: extend-software-factory-wsff
 **Session**: `docs/knowledge/sessions/019fb4f8-7a69-7968-b884-f4902565e512/session.jsonl`

@@ -1,7 +1,7 @@
 # PRD: Extension Inline Agent — reason over captures, save enriched evidence
 
 **Date**: 2026-08-08 21:50
-**Status**: Review
+**Status**: Final
 **Owner**: feed_analyser / capture instrument
 **Task**: extension-inline-agent
 **Session**: `docs/knowledge/sessions/019fd8a4-73ca-7c92-bbcc-b5d74e7d0817/session.jsonl`
@@ -81,8 +81,11 @@ page is deliberately deferred to a follow-on phase.
   `capture/agent-service/`, exposing a WebSocket on `127.0.0.1:8766`. Decision 01.
 - **Inference**: OpenRouter via pi's `ModelRuntime`; key in the service's own
   env (`OPENROUTER_API_KEY`), never in the browser. Default model
-  `deepseek/deepseek-v4-flash`, thinking on, temperature ~0.2. Decision 02.
-- **Tools**: exactly one custom tool, `fetch_url` (server-side, capped). No
+  `deepseek/deepseek-v4-flash-0731` (the id recorded in the planning session;
+  exact token pricing verified against OpenRouter at implementation time), thinking
+  on, temperature ~0.2. Decision 02.
+- **Tools**: exactly one custom tool, `fetch_url` (server-side, capped at
+  ~1 MB response body / 30 s timeout). No
   bash, no coding tools, no web search in v1. The agent decides which urls to
   fetch. Decision 03.
 - **Artefact model**: one artefact = tree line with `agent` envelope +
@@ -104,7 +107,8 @@ Seams, from highest to lowest:
 - **Agent service API** (integration): the WebSocket request/response and
   stream contract is tested against a stubbed OpenRouter or recorded
   fixture — prompt in, `text_delta` events out, session.jsonl persisted.
-- **`fetch_url` tool** (unit): caps, timeouts, non-HTTP handling, error text
+- **`fetch_url` tool** (unit): caps (≈1 MB body / 30 s timeout, the agreed
+  defaults), timeouts, non-HTTP handling, error text
   returned to the model.
 - **Server read API + index** (integration): rebuild-index from a fixture
   corpus; `/search` returns ranked hits; artefact lines with an `agent`
@@ -115,8 +119,14 @@ Seams, from highest to lowest:
 - **Regression**: existing `pytest` suite for `/api/capture` keeps passing;
   save-without-agent stays byte-compatible.
 
+Concrete commands: `cd feed_analyser/capture/server && .venv/bin/python -m
+pytest tests/` (regression + new seams); `node server.js` smoke check for the
+agent service (an `ask` round-trip returns a `settled` event); `python
+capture/server/bin/rebuild-index.py` followed by a `curl` of `/search`.
+
 Done = UAT: an end-to-end capture with a multi-turn ask, save, search, and
-opening the linked session evidence all work on the user's machine.
+opening the linked session evidence all work on the user's machine
+(`run-server.sh`, extension side panel, `GET /search?q=<term>`).
 
 ## Out-of-scope
 
@@ -135,9 +145,13 @@ opening the linked session evidence all work on the user's machine.
 - `fetch_url` needs size/time caps so one huge page cannot stall a session.
 - The `agent` envelope carries model + cost metadata, useful for the training
   / RL evidence angle.
-- Storage layout (under `capture/server/data/`): `artefacts.jsonl`,
-  `sessions/<uuid>/session.jsonl`, `index.db` — mirroring the factory KB
-  structure on purpose.
+- **openwiki caveat**: `feed_analyser/openwiki/capture/{extension,server}.md`
+  describe the archived legacy architecture (React src/, SQLite captures.db,
+  /api/v1/capture) and are stale — code + this PRD are the authority;
+  OpenWiki refresh is a follow-up.
+- Storage layout (under `capture/server/data/`): `artefacts.jsonl` (moved
+  from `server/`, existing file carried over), `sessions/<uuid>/session.jsonl`,
+  `index.db` — mirroring the factory KB structure on purpose.
 
 ## Architecture
 
@@ -228,10 +242,25 @@ ordered by `bm25()`.
                 "capturedAt": "2026-08-08T…Z", "cost": 0.042 } }
   ```
 - `sessions/<uuid>/session.jsonl`: pi-native v3 session file (evidence).
+- **Storage relocation (explicit)**: `artefacts.jsonl` moves from
+  `capture/server/artefacts.jsonl` to `capture/server/data/artefacts.jsonl`.
+  The existing file is carried over on upgrade (no re-capture). `server.py`
+  `DEFAULT_DATA_PATH` becomes `Path(__file__).resolve().parent / "data" /
+  "artefacts.jsonl"`; `run-server.sh`'s documented default follows;
+  `CAPTURE_DATA` override remains honored. The `.gitignore` rule moves with
+  the file. `bin/rebuild-index.py` reads `data/artefacts.jsonl` — a single
+  store matters: two paths would mean `/search` misses freshly saved captures.
+- **Agent envelope validation**: when `agent` is present, it must carry
+  `sessionId` + `sessionFile` (server returns 400 otherwise). The server does
+  NOT verify the session file exists at save time — session persistence is
+  the agent service's contract, and capture must succeed even if an envelope's
+  session is later relocated.
 - `index.db`: `captures` table (id, tweet_url, author, tweet_text, links JSON,
   timestamp, agent envelope JSON) + FTS5 virtual table; url column tokenized
   to preserve path components (custom tokenizer or `url` column).
-- `.gitignore`: `data/sessions/`, `index.db` (derived + user data).
+- `.gitignore`: `capture/server/data/artefacts.jsonl`,
+  `capture/server/data/sessions/`, `capture/server/data/index.db` (derived +
+  user data).
 
 ## Program Design
 
@@ -256,11 +285,16 @@ capture/
     persist.js             { write session.jsonl to data/sessions/<uuid>/, return envelope }
     models.mjs             { ModelRuntime, OpenRouter provider, deepseek-v4-flash }
   server/
-    server.py              { + GET /search (FTS5 read API); validate optional agent
-                                envelope on /api/capture }
+    server.py              { + GET /search (FTS5 read API); + agent envelope
+                                validation on /api/capture;
+                                DEFAULT_DATA_PATH → data/artefacts.jsonl }
     index.py               (NEW) SQLite + FTS5 schema, insert/query helpers
-    bin/rebuild-index.py   (NEW) load artefacts.jsonl → index.db
-    data/                  { artefacts.jsonl, sessions/, index.db (gitignored) }
+    bin/rebuild-index.py   (NEW) load data/artefacts.jsonl → data/index.db
+    data/
+      artefacts.jsonl      (MOVED from server/artefacts.jsonl — carry over the
+                                existing file; .gitignore rule follows)
+      sessions/            { <uuid>/session.jsonl (evidence; gitignored) }
+      index.db             (derived; gitignored; rebuildable)
     tests/test_capture.py  { + envelope validation, + search e2e }
 ```
 

@@ -1,7 +1,7 @@
 # PRD: X Capture Instrument
 
 **Date**: 2026-08-06 (rev 4; revised from 2026-08-04, original 2026-07-25 20:01)
-**Status**: Draft
+**Status**: Final
 **Project**: feed-analyser
 **Vision**: feed_analyser/capture/docs/vision/VISION.md
 **Owner**: Feed analyser → capture pivot initiative
