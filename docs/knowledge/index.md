@@ -29,6 +29,9 @@ Entries are grouped by project for progressive discovery. When the agent needs t
 - [Rename knowledge_base Factory Component to context_engine](sessions/019fbd12-7ea3-7152-9eec-f865cf69d6f7/decisions/02-context-engine-nomenclature.md)
 - [Temporal Metadata Convention](sessions/019fc389-c171-7c69-9eeb-6100abd6bc87/decisions/01-temporal-metadata-convention.md)
 - [Reliable Lifecycle Transition Script with Test Suite](sessions/019fbd12-7ea3-7152-9eec-f865cf69d6f7/decisions/03-reliable-transition-script-with-tests.md)
+- [PRD status lifecycle — Final when the review gate passes](sessions/019fd8a4-73ca-7c92-bbcc-b5d74e7d0817/decisions/07-prd-status-lifecycle.md)
+- [Subagent runs hang at handover — herdr heartbeat root cause + persist-step mitigation](sessions/019fd8a4-73ca-7c92-bbcc-b5d74e7d0817/decisions/08-subagent-handover-hang-herdr.md)
+- [Large documents are written incrementally, never in one tool call](sessions/019fd8a4-73ca-7c92-bbcc-b5d74e7d0817/decisions/09-large-documents-written-incrementally.md)
 
 ### workspace-portability
 
