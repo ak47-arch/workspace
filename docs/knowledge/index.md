@@ -74,6 +74,10 @@ Entries are grouped by project for progressive discovery. When the agent needs t
 
 - [Herdr-Pi Session Repopulation Architecture](sessions/019fb3a9-bf84-79db-b194-c580b76e4228/decisions/01-herdr-pi-session-repopulation.md)
 
+### langfuse-agentic-operations
+
+- [Self-hosted Langfuse v3 → v4 Upgrade with Data Recovery](sessions/019fc40a-5458-7310-89c4-53e098060973/decisions/01-langfuse-v3-to-v4-upgrade.md)
+
 ### Uncategorised (topic-based)
 
 - [Browser Automation Tools: agent-browser vs web-search skill](browser-automation/2026-07-21-agent-browser-vs-web-search-skill/summary.md)
