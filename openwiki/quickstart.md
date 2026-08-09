@@ -7,7 +7,7 @@ tags: [workspace, quickstart, llm, personal-infrastructure]
 
 # Workspace Root Quickstart
 
-This workspace is the home of a personal coding-agent infrastructure ecosystem. It contains a centralized [LLM inference server](/openwiki/projects/llm-server-client.md), two downstream data pipeline apps, a context compression proxy for the pi coding agent, and comprehensive backup/restore tooling — all wired together through container networking and a shared `llm_client` package.
+This workspace is the home of a personal coding-agent infrastructure ecosystem. It contains a centralized [LLM inference server](/openwiki/projects/llm-server-client.md), downstream data pipeline apps (a [capture instrument](/openwiki/projects/feed-analyser.md) and the [survival-infrastructure](/openwiki/projects/survival-infrastructure.md) pipeline), a context compression proxy for the pi coding agent, and comprehensive backup/restore tooling — all wired together through container networking and a shared `llm_client` package. The whole workspace is developed and maintained under a [software factory](/openwiki/projects/software-factory.md) paradigm.
 
 ## Quick Navigation
 
@@ -16,9 +16,22 @@ This workspace is the home of a personal coding-agent infrastructure ecosystem. 
 | [Architecture Overview](/openwiki/architecture/overview.md) | Cross-project dependency map, data flow, shared infrastructure |
 | [LLM Server & Client](/openwiki/projects/llm-server-client.md) | Inference server, `llm_client` package, providers, prompt capture |
 | [Survival Infrastructure](/openwiki/projects/survival-infrastructure.md) | Personal intelligence pipeline (capture → extract → wiki) |
-| [Feed Analyser](/openwiki/projects/feed-analyser.md) | Feed ingestion (Twitter/YouTube), classification, sandbox |
+| [Feed Analyser](/openwiki/projects/feed-analyser.md) | X/Twitter capture instrument (Chrome extension + local server); legacy feed analyser archived |
+| [Software Factory](/openwiki/projects/software-factory.md) | Assembly-line paradigm: context engine, product layer, task lifecycle, sub-agent review gate |
 | [Operations & Infrastructure](/openwiki/operations/infrastructure.md) | Headroom compression proxy, workspace backup/restore, containers |
 | [Agent Configuration](/openwiki/reference/agent-config.md) | Skills, root config, tasks, known issues |
+
+### Task Routing
+
+| Change area / intent | Wiki page | Source entry points | Key symbols / types | Focused tests | Minimal validation |
+|----------------------|-----------|--------------------|---------------------|---------------|--------------------|
+| Task lifecycle / PRD workflow | [Software Factory](/openwiki/projects/software-factory.md) | `bin/transition-task.sh`, `docs/tasks/<slug>.md`, `docs/prd-queue/` | transition states, `--to`, `--dry-run` | `bin/test-transition-task.sh` | `bin/test-transition-task.sh` |
+| Add a plan/PRD | [Software Factory](/openwiki/projects/software-factory.md) | `/.agents/skills/product-layer/SKILL.md` | task `slug`, category Small/Medium/Large | — | follow skill: grill → capture → `transition-task.sh <slug> --to prd-ready` |
+| PRD review gate / sub-agent | [Software Factory](/openwiki/projects/software-factory.md) | `/.pi/extensions/subagent/`, `/.pi/agents/prd-reviewer.md` | `prd-reviewer`, `agentScope`, `tools` | — | live pi session: `/reload` + invoke agent |
+| herdr subagent hang fix | [Agent Configuration](/openwiki/reference/agent-config.md) | `/.pi/extensions/herdr-agent-state.ts` | heartbeat interval `unref()` + `clearInterval` | — | run a subagent in `--mode json` and confirm clean exit |
+| Pi extensions / settings | [Agent Configuration](/openwiki/reference/agent-config.md) | `/.pi/settings.json`, `/.pi/extensions/` | `langfuse-tracing` | — | `pi` starts; `git log` confirms wiring |
+
+The projects below (LLM, survival-infrastructure, feed-analyser/capture) have their own `openwiki/` inside each sub-repo; follow the per-project links for deep code-level change guidance.
 
 ## Repository Layout
 
@@ -26,57 +39,38 @@ This workspace is the home of a personal coding-agent infrastructure ecosystem. 
 workspace/                    # Root (workspace-omp-local-tools)
 ├── llm/                      # Shared inference server + llm_client package
 ├── survival-infrastructure/  # Personal intelligence pipeline
-├── feed_analyser/            # Feed ingestion & analysis
+├── feed_analyser/            # Capture instrument (extension + server); legacy app archived
 ├── headroom-pi/              # Headroom compression proxy for pi
 ├── workspace-portability/    # Backup/restore/bootstrap
 ├── emotional_architecture/   # Personal operating manual & code of conduct
 ├── resume/                   # Resume editor (Flask + PDF)
 ├── timesheetViewer/          # Timesheet viewer (Spring Boot)
-├── graphify-out/             # Code graph analysis output
-├── opensource/               # 18+ forked/referenced OSS projects
-├── skills/                   # OpenWiki skills (migrate-wiki-to-okf, write-connector)
-├── .agents/                  # Agent skills (ssh, survival-infra ops, save-knowledge)
-├── .pi/                      # Pi agent config, extensions, skills
-├── docs/                     # Project docs: tasks.txt, KNOWN_ISSUES.md, knowledge base
-├── AGENTS.md / CLAUDE.md     # OpenWiki references
-├── PLAN_shared_llm_client.md # LLM client architecture plan
-└── HEADROOM-PI-PLAN.md       # Headroom integration plan
+├── opensource/               # 25+ forked/referenced OSS projects
+├── bin/                      # Factory tooling: transition-task.sh, backfill, index sort
+├── .agents/                  # Agent skills (product-layer, save-knowledge, ssh, transcribe, ...)
+├── .pi/                      # Pi agent config, extensions (incl. subagent), agents
+├── docs/                     # factory-context, tasks, prd-queue/archive, knowledge base
+├── AGENTS.md / CLAUDE.md     # OpenWiki + software-factory references
+└── (plans live in their projects) # /llm/PLAN_shared_llm_client.md, /headroom-pi/HEADROOM-PI-PLAN.md
 ```
 
 ## High-Level Task List
 
-From [/docs/tasks.txt](/docs/tasks.txt):
+From [/docs/tasks.txt](/docs/tasks.txt) — tasks are organised **by project, then by status** (Pending / Queued / Complete). This summary reflects the state as of 2026-08-09. See the [Software Factory](/openwiki/projects/software-factory.md) page for the lifecycle model and task-tracking mechanics.
 
-1. **Common LLM API** — The shared `llm_client` package ([PLAN_shared_llm_client.md](/llm/PLAN_shared_llm_client.md)) implements this; post-migration cleanup items tracked in [KNOWN_ISSUES.md](/docs/KNOWN_ISSUES.md)
-2. **Thorough testing** — Expand test coverage across all projects
-3. **Agent containerisation** — Containerise coding agent workflows
-4. **Think about survival infrastructure extension** — Extend pipeline stages
-5. **Extend feed analyser with YouTube** — Add YouTube ingestion
-6. **Implement GitHub browser authentication flow for project restore** — (workspace-portability) In PRD queue
-7. **Set up themistocles** — Secondary Debian host to offload compute from laptop
-8. **Work on headroom-pi** — Get it working reliably and run evals
-9. **Think about automated monitoring** — Software factory monitoring automation
-10. **People profiles in survival-infrastructure** — Work on people profiles
-11. **Standardise documentation structure** — Across all apps
-12. **Vision, functional, technical documentation** — Make projects factory-ready
-13. **Plan modularisation of all apps** — Consistent project structure
-14. **Update workspace portability** — With latest opensource projects
-15. **Integrate Langfuse** — Observability/tracing for all applications
-16. **Extend software_factory architecture** — Based on learnings from advanced context engineering
-16. **Extend survival-infrastructure with Gmail and GDrive** — New instruction sources
-17. **Deprecate spec-driven process** — For all projects
-18. **Evaluate opensource/cognee integration** — Assess benefits for ecosystem
-19. **Improve shared context infrastructure** — Add architecture design step
-20. **Define projects clearly** — For efficient context infrastructure
-21. **Make feed_analyser and survival_infrastructure private repos** — With current opensource repos
-22. **Create personal website and blog** — Add toTweet, toBlog, toVideo pipeline (resume)
-23. **Set up Langfuse agentically** — Use and operate Langfuse via agents
+Cross-project (pending):
+- Thorough testing, agent containerisation, standardise documentation structure, vision/functional/technical docs, modularise all apps, integrate Langfuse with all applications, deprecate spec-driven process
 
-Completed tasks:
-- Add script to update workspace_portability with latest opensource repos
-- Create save-knowledge skill — Summarise session learnings and attach context window link
-- Clean up project root — Move open source projects to separate directory
-- Set up Langfuse — Fix langfuse-tracing.ts extension
+Selected project tasks:
+- **software-factory**: automated monitoring thinking, opensource/cognee evaluation, improve shared context infrastructure, add task-selection abstraction layer, build the implementer agent, extend the prod review agent (all pending)
+- **feed-analyser (queued)**: `extension-inline-agent` — add a pi agent to the extension with access to content and URLs
+- **survival-infrastructure**: think about extension, people profiles, audio event ingestion via whisper.cpp (pending); Gmail+GDrive instruction sources (queued)
+- **workspace-portability**: set up themistocles, update with latest opensource projects, move everything to a cloud instance (pending)
+- **headroom-pi**: work on it and run evals (pending)
+- **resume**: personal website and blog with toTweet/toBlog/toVideo pipeline (pending)
+- **langfuse**: integrate official skill and operate Langfuse agentically (pending)
+
+Recently completed: `extend-pm-assembly-line`, `x-capture-instrument` (UAT passed, PRD archived), `task-file-dashboard`, `combine-factory-context-factory-txt`, `chronological-tracking`, `extend-software-factory-wsff`, `end-to-end-traceability`, `vision-task-traceability`, `github-browser-auth-flow`, `feed-analyser-survival-infra-private-repos`.
 
 ## Backlog
 
@@ -87,28 +81,14 @@ Completed tasks:
 
 ## Knowledge Base
 
-A new session-based knowledge base at `/docs/knowledge/` captures architectural decisions, tool evaluations, and session learnings via the `save-knowledge` skill. Each entry includes a freeform summary and the full session JSONL.
+A session-based knowledge base at [`/docs/knowledge/index.md`](/docs/knowledge/index.md) captures architectural decisions, tool evaluations, and session learnings via the `save-knowledge` skill, organised **by project**. Each entry is a structured decision record (`Context` / `Decision` / `Rationale` / `Consequences` / `Revision triggers`) linking to the full session `session.jsonl`. The OKF-compliant [Agent Configuration](/openwiki/reference/agent-config.md) page and [Software Factory](/openwiki/projects/software-factory.md) page point into it; it is the deliberate "last resort" layer in the factory's progressive-disclosure chain.
 
-Current entries:
-- [Browser Automation Tools: agent-browser vs web-search skill](/docs/knowledge/browser-automation/2026-07-21-agent-browser-vs-web-search-skill/summary.md)
-- [Knowledge Base as Infrastructure Layer](/docs/knowledge/sessions/019f8faf-c8f2-7612-a79d-10e18e6f78cf/decisions/01-factory-architecture-decisions.md#1-knowledge-base-as-infrastructure-layer)
-- [Product/Architecture as UX Layer](/docs/knowledge/sessions/019f8faf-c8f2-7612-a79d-10e18e6f78cf/decisions/01-factory-architecture-decisions.md#2-productarchitecture-as-ux-layer--two-artifact-outputs)
-- [Progressive Disclosure Chain](/docs/knowledge/sessions/019f8faf-c8f2-7612-a79d-10e18e6f78cf/decisions/01-factory-architecture-decisions.md#3-progressive-disclosure-chain-for-agent-context)
-- [Structured Decision Format](/docs/knowledge/sessions/019f8faf-c8f2-7612-a79d-10e18e6f78cf/decisions/01-factory-architecture-decisions.md#4-structured-decision-capture-format)
-- [Session-Grouped Knowledge Structure](/docs/knowledge/sessions/019f8faf-c8f2-7612-a79d-10e18e6f78cf/decisions/01-factory-architecture-decisions.md#5-session-grouped-knowledge-directory-structure)
-- [Model-Proactive Capture](/docs/knowledge/sessions/019f8faf-c8f2-7612-a79d-10e18e6f78cf/decisions/01-factory-architecture-decisions.md#6-model-proactive-decision-capture)
-- [Skills as Packaging with disable-model-invocation](/docs/knowledge/sessions/019f8faf-c8f2-7612-a79d-10e18e6f78cf/decisions/01-factory-architecture-decisions.md#7-skills-as-packaging-layer-with-disable-model-invocation)
-- [GitHub Browser Auth Flow for Workspace Restore](/docs/knowledge/sessions/019f937c-9afe-731e-a70d-c88d4eb9d675/decisions/01-github-browser-auth-flow.md)
-- [Parallel Repo Clone](/docs/knowledge/sessions/019f93aa-ee32-7014-b963-8bec75928d5d/decisions/01-parallel-repo-clone.md)
-- [Capture Instrument Architecture](/docs/knowledge/sessions/019f9487-9ea0-7905-8ae6-eaa2aff6bbdd/decisions/01-capture-instrument-architecture.md)
-- [Extension Platform and UX](/docs/knowledge/sessions/019f9487-9ea0-7905-8ae6-eaa2aff6bbdd/decisions/02-extension-platform-and-ux.md)
-- [Artefact Data Model and Storage](/docs/knowledge/sessions/019f9487-9ea0-7905-8ae6-eaa2aff6bbdd/decisions/03-artefact-data-model-and-storage.md)
-- [Opensource Repo Manifest Registration Skill Design](/docs/knowledge/sessions/019fa31b-694b-7f94-ad00-bbc57a0c88df/decisions/01-opensource-repo-manifest-registration-skill.md)
-- [Legacy Feed Analyser Archiving](/docs/knowledge/sessions/019f9487-9ea0-7905-8ae6-eaa2aff6bbdd/decisions/04-legacy-feed-analyser-archiving.md)
-- [GDrive Integration Model and Source Type](/docs/knowledge/sessions/019f9a16-9363-7e5a-a9a7-f696fc32e4c6/decisions/01-gdrive-integration-model.md)
-- [GDrive Auth and Configuration Approach](/docs/knowledge/sessions/019f9a16-9363-7e5a-a9a7-f696fc32e4c6/decisions/02-gdrive-auth-and-configuration.md)
-- [GDrive File Export, Dedup, and Metadata Strategy](/docs/knowledge/sessions/019f9a16-9363-7e5a-a9a7-f696fc32e4c6/decisions/03-gdrive-file-export-and-storage.md)
-- [Voice Input to Pi via whisper.cpp](/docs/knowledge/sessions/019fa825-a262-7020-afec-0c733d21536d/decisions/01-voice-input-via-whisper-cpp.md)
+Representative decisions added since 2026-07-29:
+- **software-factory**: [PRD as Routing Document + Review Sub-Agent Gate](/docs/knowledge/sessions/019fd00b-4e86-76ed-966b-186ea09c775c/decisions/01-prd-as-routing-document-context-engine-depth.md), [Subagent Infrastructure — Official Pi Extension, Project-Local, Read-Only Reviews](/docs/knowledge/sessions/019fd00b-4e86-76ed-966b-186ea09c775c/decisions/04-subagent-infrastructure-pi-extension-project-local.md), [Temporal Metadata Convention](/docs/knowledge/sessions/019fc389-c171-7c69-9eeb-6100abd6bc87/decisions/01-temporal-metadata-convention.md), [Reliable Lifecycle Transition Script with Test Suite](/docs/knowledge/sessions/019fbd12-7ea3-7152-9eec-f865cf69d6f7/decisions/03-reliable-transition-script-with-tests.md), [PRD status lifecycle — Final when the review gate passes](/docs/knowledge/sessions/019fd8a4-73ca-7c92-bbcc-b5d74e7d0817/decisions/07-prd-status-lifecycle.md), [Subagent handover hang — herdr heartbeat fix](/docs/knowledge/sessions/019fd8a4-73ca-7c92-bbcc-b5d74e7d0817/decisions/08-subagent-handover-hang-herdr.md)
+- **feed-analyser (capture)**: [PI SDK agent service](/docs/knowledge/sessions/019fd8a4-73ca-7c92-bbcc-b5d74e7d0817/decisions/01-pi-sdk-agent-service.md), [Capture artefact is a recursive node tree](/docs/knowledge/sessions/019fd314-9339-7a30-9b8b-f6d8892b5226/decisions/04-capture-recursive-node-tree-comment-is-tweet.md), [Plain files as truth + SQLite FTS5 read API](/docs/knowledge/sessions/019fd8a4-73ca-7c92-bbcc-b5d74e7d0817/decisions/05-twitter-kb-plain-files-fts5-read-api.md)
+- **workspace-portability**: [GitHub Device Authorization Flow Implementation](/docs/knowledge/sessions/019faf44-901a-73f9-aa74-817eead12980/decisions/01-github-device-auth-flow-implementation.md), [Device Flow End-to-End Test Verification](/docs/knowledge/sessions/019faf44-901a-73f9-aa74-817eead12980/decisions/02-device-flow-test-verification.md)
+
+The full, always-current list lives in [`/docs/knowledge/index.md`](/docs/knowledge/index.md).
 
 ## Open-Source Projects (in `/opensource/`)
 
@@ -120,7 +100,7 @@ The workspace tracks 25+ external open-source projects:
 | [herdr](https://herdr.dev) | Terminal workspace manager / agent multiplexer | Core — pane management across the workspace |
 | [openwiki](https://github.com/langchain-ai/openwiki) | CLI for writing/maintaining agent wikis | Actively generating this documentation |
 | [agent-browser](https://github.com/vercel-labs/agent-browser) | Browser automation CLI for AI agents | Referenced; evaluated in knowledge base |
-| [graphify](https://github.com/ak47-arch/graphify) | Code graph analysis tool | Analysis output in /graphify-out/ |
+| [graphify](https://github.com/ak47-arch/graphify) | Code graph analysis tool | Referenced/in analysis |
 | [hermes](https://github.com/NomicOne-ai/hermes) | Multi-agent orchestration framework | Referenced |
 | [langfuse](https://github.com/langfuse/langfuse) | Observability/tracing platform for LLM apps | Planned integration; langfuse-tracing.ts extension |
 | [open-notebook](https://github.com/luminai/open-notebook) | AI-powered research notebook | Referenced |
@@ -139,6 +119,8 @@ The workspace tracks 25+ external open-source projects:
 | [docetl](https://github.com/...) | Document ETL pipeline | Referenced |
 | [pi-agent-browser-native](https://github.com/...) | Native browser agent for pi | Referenced |
 | [ponytail](https://github.com/...) | Project | Referenced |
+| [Handy](https://github.com/...) | Project | External |
+| [prime-agent](https://github.com/...) | Project | External |
 | [whisper.cpp](https://github.com/ggerganov/whisper.cpp) | C++ speech-to-text engine | Core — transcribe skill uses it for voice input to pi |
 | agent-skills | Agent skills repository (symlinked to .agents/skills/web-search) | External |
 | open-notebook | Submodule/alias | Referenced |

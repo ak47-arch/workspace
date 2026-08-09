@@ -42,12 +42,12 @@ These are agent-facing instruction files that direct coding agents to use the Op
 
 ```json
 {
-  "extensions": [],
+  "extensions": ["langfuse-tracing"],
   "enableSkillCommands": true
 }
 ```
 
-- Extensions list is currently empty (previous extensions removed in recent commits)
+- Extensions list enables `langfuse-tracing` (the only extension enabled at startup)
 - Skill commands are enabled
 
 ### Extensions (`/.pi/extensions/`)
@@ -58,17 +58,21 @@ These are agent-facing instruction files that direct coding agents to use the Op
 | `confirm-directory-delete.ts` | Asks for confirmation before deleting directories |
 | `confirm-git-push.ts` | Asks for confirmation before git push operations |
 | `database-write-guard.ts` | Guards against unintended database writes |
-| `herdr-agent-state.ts` | Tracks agent state via herdr integration |
+| `herdr-agent-state.ts` | Tracks agent state via herdr integration. Installed/managed by herdr (v6 integration); reinstalling herdr's integration overwrites this file, so local patches must be re-applied. A `2026-08-09` patch unrefs and clears the 10 s heartbeat interval so non-interactive pi children (subagents in `--mode json --no-session`) exit after `agent_settled` instead of hanging (see [Software Factory](/openwiki/projects/software-factory.md)). |
 | `langfuse-tracing.ts` | Langfuse observability integration — captures every agent turn (LLM requests/responses, tool calls) and sends to self-hosted Langfuse as traces, generations, and spans. Requires `LANGFUSE_SECRET_KEY`, `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_BASE_URL` env vars or `~/.pi/agent/langfuse-config.json`. Gracefully degrades if Langfuse is unreachable. |
+| `subagent/` | Symlinked pi subagent extension (from `opensource/pi-mono/packages/coding-agent/examples/extensions/subagent/`) — agent discovery + config for factory sub-agents. See [Software Factory](/openwiki/projects/software-factory.md). |
+
+### Sub-Agents (`/.pi/agents/`)
+
+| File | Purpose |
+|------|---------|
+| `prd-reviewer.md` | Read-only PRD verification sub-agent that gates plan documents for implementation readiness. Runs deterministic + judgment checks and returns a blocking/advisory report. Uses model `deepseek/deepseek-v4-flash-0731`; tools are `read, grep, find, ls, bash` (no write tools at the mechanism level). Invoked with `agentScope: "project"` or `"both"`. See [Software Factory](/openwiki/projects/software-factory.md). |
 
 ### Skills (`/.pi/skills/`)
 
-| Directory | Description |
-|-----------|-------------|
-| `improve-codebase-architecture/` | Skills for improving codebase architecture |
-| `workspace-backup-recovery/` | Skills for workspace backup and recovery |
+The `.pi/skills/` directory is currently empty — the `improve-codebase-architecture` and `workspace-backup-recovery` skills referenced here in earlier revisions have been deleted. Operational skills now live under `.agents/skills/` (below).
 
-(The `agent-browser`, `codebase-design`, and `karpathy-guidelines` skills were deleted in recent commits.)
+(The `agent-browser`, `codebase-design`, and `karpathy-guidelines` skills were likewise deleted in recent commits.)
 
 ## Agent Skills
 
@@ -132,52 +136,29 @@ Local speech-to-text transcription using whisper.cpp. Supports WAV, MP3, FLAC, O
 
 ### product-layer (`/.agents/skills/product-layer/SKILL.md`)
 
-Start a product/architecture session. Produces PRDs and structured design decisions. Operates the product/architecture layer of the software factory — the UX layer the user interacts with directly.
+Start a product/architecture session. Produces plan documents and structured design decisions. Operates the product/architecture layer of the [software factory](/openwiki/projects/software-factory.md) — the UX layer the user interacts with directly.
 
-- Reads `docs/factory.txt` for factory model, `docs/tasks.txt` for task selection
+- Reads `docs/factory-context.md` for the factory model, `docs/tasks.txt` for task selection
 - Grilling process using technique guides from `opensource/skills/docs/engineering/`
-- Produces two artifacts: PRD (saved to `docs/prd-queue/`) and design decisions (saved to `docs/knowledge/sessions/<uuid>/decisions/`)
-- Uses `save-knowledge` skill for decision capture
+- Produces the plan document: PRD/design (saved to `docs/prd-queue/`, archived to `docs/prd-archive/` on completion) and design decisions (saved to `docs/knowledge/sessions/<uuid>/decisions/`)
+- During grilling, categorises the task (Trivial/Small/Medium/Large), derives a slug, creates the task file `docs/tasks/<slug>.md`, and annotates `docs/tasks.txt` with `[<slug>]`
+- Uses `save-knowledge` skill for decision capture and `bin/transition-task.sh` for lifecycle bookkeeping
 - `disable-model-invocation: true` — user-invoked only
 
-**Usage:** When starting a new product/architecture task that needs a PRD and decision record.
+**Usage:** When starting a new product/architecture task that needs a plan document and decision record.
 
 ## Planning & Tasks
 
 ### tasks.txt
 
-High-level task list from `/docs/tasks.txt`:
+High-level task list from `/docs/tasks.txt`. Tasks are organised **by project, then by status** (Pending / Queued / Complete), and each line may carry a `[<slug>]` annotation linking to its task file. See [Software Factory](/openwiki/projects/software-factory.md) for the lifecycle.
 
-1. **Common LLM API** — Completed via `llm_client` migration
-2. **Thorough testing** — Expand test coverage across all projects
-3. **Agent containerisation** — Containerise coding agent workflows
-4. **Think about survival infrastructure extension** — Extend pipeline stages
-5. **Extend feed analyser with YouTube** — Add YouTube ingestion
-6. **Implement GitHub browser authentication flow for project restore** — (workspace-portability) In PRD queue
-7. **Set up themistocles** — Secondary Debian host to offload compute from laptop
-8. **Work on headroom-pi** — Get it working reliably and run evals
-9. **Think about automated monitoring** — Software factory monitoring automation
-10. **People profiles in survival-infrastructure** — Work on people profiles
-11. **Standardise documentation structure** — Across all apps
-12. **Vision, functional, technical documentation** — Make projects factory-ready
-13. **Plan modularisation of all apps** — Consistent project structure
-14. **Update workspace portability** — With latest opensource projects
-15. **Integrate Langfuse** — Observability/tracing for all applications
-16. **Extend software_factory architecture** — Based on learnings from advanced context engineering
-17. **Extend survival-infrastructure with Gmail and GDrive** — New instruction sources
-18. **Deprecate spec-driven process** — For all projects
-19. **Evaluate opensource/cognee integration** — Assess benefits for ecosystem
-20. **Improve shared context infrastructure** — Add architecture design step
-21. **Define projects clearly** — For efficient context infrastructure
-22. **Make feed_analyser and survival_infrastructure private repos** — With current opensource repos
-23. **Create personal website and blog** — Add toTweet, toBlog, toVideo pipeline (resume)
-24. **Set up Langfuse agentically** — Use and operate Langfuse via agents
-
-Completed tasks:
-- Add script to update workspace_portability with latest opensource repos
-- Create save-knowledge skill — Summarise session learnings and attach context window link
-- Clean up project root — Move open source projects to separate directory
-- Set up Langfuse — Fix langfuse-tracing.ts extension
+Current highlights (as of 2026-08-09):
+- **software-factory**: thinking about automated monitoring, cognee evaluation, building the implementer agent, extending the prod review agent (all pending)
+- **software-factory** completed: end-to-end traceability, vision-task-traceability, extend-software-factory-wsff, task-file-dashboard, combine-factory-context-factory-txt, chronological-tracking, extend-pm-assembly-line, x-capture-instrument
+- **feed-analyser (queued)**: `extension-inline-agent` — add an agent to the extension with access to content and URLs
+- **workspace-portability**: GitHub browser auth flow, make private repos both complete; cloud migration pending
+- **langfuse**: langfuse-agentic-operations (integrate official skill, operate agentically) pending
 
 ### PLAN_shared_llm_client.md
 
@@ -189,7 +170,7 @@ Architecture plan that drove the `llm_client` migration. Key decisions:
 
 ### KNOWN_ISSUES.md
 
-Post-migration technical debt tracker (4 issues):
+Reorganized as a factory-context / post-migration debt tracker. Current entries:
 
 | Issue | Severity | Status |
 |-------|----------|--------|
@@ -197,6 +178,9 @@ Post-migration technical debt tracker (4 issues):
 | 2. `llm` repo `pi_master` branch not pushed | High | ✅ Resolved |
 | 3. `start_stack.sh` references missing preflight script | High | Open |
 | 4. Reasoning parameters locked in server flags | Medium | Open |
+| 5. Resume project missing vision doc | Low | Open |
+| 6. Subagent tool description is largest single context item | Low | Open |
+| 7. Knowledge base storage is file-based, may not scale | Low | Open |
 
 ### HEADROOM-PI-PLAN.md
 
@@ -208,48 +192,42 @@ Implementation summary for headroom-pi integration, documenting:
 
 ## Git History Notes
 
-Recent commits cleaned up several legacy files and added new skills:
+Recent commits (2026-07-29 → 2026-08-09) added the software-factory assembly line, capture instrument, and subagent infrastructure:
 
 | Commit | Change |
 |--------|--------|
-| `e7eff7e` | Fixed manifest-add-repo skill: added missing YAML frontmatter with name and description |
-| `a81f00c` | Rewrote manifest-add-repo skill to auto-scan opensource/ and add missing repos |
-| `51c86ec` | Added voice-to-pi via whisper.cpp + transcribe skill |
-| `3d0dff0` | Added manifest-add-repo skill for registering new opensource repos |
-| `7149dda` | Added disable-model-invocation to all skills except web-search and save-knowledge |
-| `8112c52` | Added opensource repos — bitchat, bitchat-android, deepagents |
-| `aea743f` | GDrive instruction source ingest — PRD and design decisions |
-| `1ad1ffa` | PRD + knowledge: x-capture instrument design decisions |
-| `b62305d` | Parallel repo clone decision |
-| `e34cfcd` | Product-layer skill updates |
-| `dbb8380` | Added vscode-git-viewer-fix skill |
-| `23a2d9d` | PRD: GitHub browser auth flow |
-| `66b39df` | Product-layer skill, structured knowledge capture, factory architecture decisions |
-| `5b9f00f` | Software factory paradigm, knowledge base deep-dive, vision doc pointers |
-| `1768101` | Fixed langfuse-tracing extension no longer blocks TUI when langfuse is down |
-| `16d4a12` | Factory context index for progressive disclosure |
-| `4cd2828` | Deleted `.omp/` extension files (confirm-directory-delete, confirm-git-push, lsp-tools) |
-| `33fe99f` | Deleted `.pi-session-pane-map.json`, `HERMES_DEBUGGING_LOG.md`, `PODMAN_MIGRATION_PLAN.md` |
-| `f24c742` | Deleted `SKILLS_CONSOLIDATION_AND_QUALITY_REPORT.md` |
-| `dffb84c` | Added Mission Control PRD and session-pane mapping |
-| `cb4fc47` | Added pi skills (agent-browser, codebase-design, backup-recovery, tdd, karpathy-guidelines) — most later deleted |
-| `87fecaf` | Added survival-infrastructure-operation skill |
-| `336c496` | Added PLAN_shared_llm_client.md |
-| `a505bd1` | Added KNOWN_ISSUES.md |
-| `b784caf` | ssh-themistocles: repo count 13→14, restore tier separation |
+| `5bd33ec` | herdr-agent-state.ts: unref+clear heartbeat interval so pi children exit after `agent_settled` (fixes subagent handover hang) |
+| `36fd9bd` | extension-inline-agent task: PRD-ready with decisions (pi SDK agent service, OpenRouter server-side key, fetch-url-only tools, artefact/session evidence, FTS5 knowledge base, browser control deferred) |
+| `f0cf8a6` | extended software factory: installed pi subagent extension + project-local `prd-reviewer` sub-agent |
+| `f11aed1` | registered subagent infrastructure decision (04) in knowledge base |
+| `b689ea9` | marked reviewed/completed PRDs Final (github-browser-auth, x-capture, wsff, task-file-dashboard) |
+| `d91631a` | captured PRD status lifecycle, subagent/herdr hang root cause, and chunked-writing decisions |
+| `a209f15` | factory temporal metadata convention — backfill script, index sort, template updates |
+| `be057a2` | merged factory.txt into factory-context.md; renamed `knowledge_base` → `context_engine` |
+| `daa5ed8` / `a89df51` | added `bin/transition-task.sh` for lifecycle bookkeeping, then made it reliable with a test suite (`bin/test-transition-task.sh`) |
+| `d156ea9` | archived x-capture-instrument PRD; marked the task complete after UAT + user go-ahead |
+
 
 ## Source Files Summary
 
 | Path | Purpose |
 |------|---------|
-| `/AGENTS.md` | OpenWiki reference for coding agents |
+| `/AGENTS.md` | OpenWiki reference + software factory pointer for coding agents |
 | `/CLAUDE.md` | OpenWiki reference for coding agents (same content) |
-| `/.pi/settings.json` | Pi agent settings |
-| `/.pi/extensions/` | Pi extensions directory |
+| `/.pi/settings.json` | Pi agent settings (enables `langfuse-tracing`) |
+| `/.pi/extensions/` | Pi extensions directory (including `subagent/`) |
+| `/.pi/agents/` | Project-local sub-agent definitions (`prd-reviewer.md`) |
 | `/.pi/skills/` | Pi skills directory |
 | `/.agents/skills/` | Agent skills directory |
-| `/docs/tasks.txt` | High-level task list |
+| `/docs/tasks.txt` | High-level task list (by project + status) |
+| `/docs/tasks/<slug>.md` | Per-task reference hubs |
+| `/docs/prd-queue/` | Forward-looking plan documents for active tasks |
+| `/docs/prd-archive/` | Completed plan documents |
+| `/docs/factory-context.md` | Software factory model + link index |
+| `/docs/knowledge/index.md` | Curated decision records (by project) |
 | `/llm/PLAN_shared_llm_client.md` | LLM client migration plan |
-| `/docs/KNOWN_ISSUES.md` | Post-migration technical debt |
+| `/docs/KNOWN_ISSUES.md` | Factory/post-migration technical debt |
 | `/headroom-pi/HEADROOM-PI-PLAN.md` | Headroom integration plan |
+| `/bin/transition-task.sh` | Lifecycle bookkeeping script |
+| `/bin/test-transition-task.sh` | transition-task test suite |
 | `/package.json` | Workspace package metadata ("workspace-omp-local-tools") |

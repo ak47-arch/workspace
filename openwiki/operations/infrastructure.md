@@ -15,6 +15,7 @@ This page covers the shared operational infrastructure that keeps the workspace 
 **Project:** `/headroom-pi/`  
 **Upstream:** [Headroom OSS](https://github.com/chopratejas/headroom) (in `/opensource/headroom/`)
 
+<!-- openwiki: broken internal link [/headroom-pi] file "/headroom-pi" does not exist. Fix the href or restore the target, then delete this comment. -->
 [Headroom-pi](/headroom-pi) routes all pi coding agent traffic through Headroom's context compression proxy, achieving **60–95% fewer tokens (for JSON data), 15-20% fewer tokens (for coding agents)** with zero code changes.
 
 ### Architecture
@@ -152,4 +153,4 @@ All projects in the workspace use a consistent container strategy:
 
 - **PYTHONPATH mount hack** — `llm_client` is volume-mounted into survival-infrastructure and feed_analyser containers via `PYTHONPATH` rather than baked into images. Fragile across directory layouts.
 - **`compose_env_preflight.sh` missing** — Deleted during migration, breaking `start_stack.sh`. Workaround: `docker-compose up -d` directly.
-- See [KNOWN_ISSUES.md](/KNOWN_ISSUES.md) for full tracking.
+- See [KNOWN_ISSUES.md](/docs/KNOWN_ISSUES.md) for full tracking (now also covering factory-context issues and the file-based knowledge base).

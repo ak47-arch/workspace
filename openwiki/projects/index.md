@@ -1,11 +1,6 @@
----
-type: Documentation Index
-title: "Projects"
-description: "Files and subdirectories in Projects."
----
-
 # Files
 
-- [Feed Analyser](feed-analyser.md) - Ingests curated feeds (Twitter, YouTube), classifies them via LLM, scouts for GitHub projects, and presents results in a React dashboard.
+- [Feed Analyser (X Capture Instrument)](feed-analyser.md) - Restructured repo now led by the capture instrument — a thin Chrome MV3 extension plus a minimal local FastAPI server that saves X/Twitter posts and curated comments as recursive node trees in artefacts.jsonl. The legacy feed_analyser application is archived.
 - [LLM Inference Server and Client](llm-server-client.md) - Centralized inference server (Flask) with pluggable providers and a uniform pip-installable workflow client used by all downstream apps.
+- [Software Factory](software-factory.md) - The software factory paradigm governing the workspace — four components (context engine, product/architecture, project management, assembly line), the task lifecycle state machine, the PRD queue/archive gate, temporal metadata, and the automated task-transition tooling.
 - [Survival Infrastructure](survival-infrastructure.md) - Personal intelligence pipeline — captures freeform event narratives, extracts structured data via LLM, stores people/event nodes, and synthesizes wiki pages.

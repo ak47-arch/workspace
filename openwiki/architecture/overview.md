@@ -67,7 +67,7 @@ The `llm-client` pip package (source in `/llm/llm_client/`) provides a uniform `
 
 Both apps own a per-project `config/workflows.yaml` that defines model references, system prompts, temperature, and fallback functions. The client code is identical across projects.
 
-**Known issue:** The `llm_client` package is currently served via PYTHONPATH volume mount rather than being baked into container images. See [KNOWN_ISSUES.md](/KNOWN_ISSUES.md).
+**Known issue:** The `llm_client` package is currently served via PYTHONPATH volume mount rather than being baked into container images. See [KNOWN_ISSUES.md](/docs/KNOWN_ISSUES.md).
 
 ### Data Flow
 
@@ -97,17 +97,23 @@ The workspace defines agent skills under [/.agents/skills/](/openwiki/reference/
 
 - **ssh-themistocles** — SSH connection to a secondary Debian machine with tmux-based resilience
 - **survival-infrastructure-operation** — Full Makefile-driven ops for the pipeline app
+- **product-layer** — Operates the software factory's [product/architecture layer](/openwiki/projects/software-factory.md): grills requirements, produces plan documents, tracks tasks
+- **save-knowledge** — Captures design decisions into the session-based knowledge base
+
+### Software Factory
+
+The workspace is developed under a **software factory** paradigm (see `docs/factory-context.md` and the [Software Factory](/openwiki/projects/software-factory.md) page): a `context_engine` infrastructure spine with progressive disclosure, a `product/architecture` UX layer, a `project_management` lifecycle, and an `assembly_line` (CI/CD, agents, testing). The lifecycle tooling lives in `/bin/` (`transition-task.sh` + its test suite).
 
 ## Cross-Project Dependency Map
 
 | Project | Depends On | Consumed By |
 |---------|-----------|-------------|
 | llm/ | llama.cpp binary, GGUF model files | survival-infrastructure, feed_analyser, pi (via headroom) |
-| llm_client | llm/ server at runtime | survival-infrastructure, feed_analyser |
+| llm_client | llm/ server at runtime | survival-infrastructure, feed_analyser (legacy), pi (via headroom) |
 | headroom-pi | headroom OSS binary | pi coding agent |
 | workspace-portability | GitHub Release storage, GDrive | All projects (backup/restore) |
 | survival-infrastructure | llm/ (via llm_client) | None (end-user app) |
-| feed_analyser | llm/ (via llm_client) | None (end-user app) |
+| feed_analyser/capture | none (local-first JSONL) | downstream analysis apps (phase 2) |
 
 ## Key Differences from Monorepo
 
@@ -120,6 +126,7 @@ This is **not** a monorepo. Each sub-project is an independent git repository wi
 | LLM Server | `/llm/service_app.py`, `/llm/router.py`, `/llm/local_server_runtime.py` |
 | LLM Client | `/llm/llm_client/workflow_client.py`, `/llm/llm_client/config.py` |
 | Survival Infra | `/survival-infrastructure/app.py`, `/survival-infrastructure/config/app.yaml` |
-| Feed Analyser | `/feed_analyser/backend/`, `/feed_analyser/scripts/` |
+| Feed Analyser (legacy) | `/feed_analyser/archive/` (legacy branch) |
+| Capture Instrument | `/feed_analyser/capture/extension/`, `/feed_analyser/capture/server/` |
 | Workspace Portability | `/workspace-portability/magic-setup.sh`, `/workspace-portability/backup_artifact.sh` |
 | Headroom-pi | `/headroom-pi/install.sh`, `/headroom-pi/systemd/` |

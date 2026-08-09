@@ -143,7 +143,7 @@ See [survival-infrastructure-operation skill](/.agents/skills/survival-infrastru
 
 ## Known Issues
 
-- **`start_stack.sh` broken** — Calls missing `compose_env_preflight.sh` that was deleted during llm_client migration. Workaround: use `docker-compose up -d` directly. Tracked as Issue 3 in [KNOWN_ISSUES.md](/KNOWN_ISSUES.md).
+- **`start_stack.sh` broken** — Calls missing `compose_env_preflight.sh` that was deleted during llm_client migration. Workaround: use `docker-compose up -d` directly. Tracked as Issue 3 in [KNOWN_ISSUES.md](/docs/KNOWN_ISSUES.md).
 - **Data quality** — Comprehensive [DATA_STRUCTURES_REPORT.md](/survival-infrastructure/DATA_STRUCTURES_REPORT.md) catalogs 5 pipeline tiers with structural weaknesses and 6 prioritized improvements.
 
 ## Source Files

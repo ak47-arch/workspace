@@ -180,7 +180,7 @@ Test files are under `/llm/tests/`:
 
 ## Known Issues
 
-- **PYTHONPATH mount hack** — `llm_client` is volume-mounted into containers via `PYTHONPATH` rather than baked into Docker images. Fragile across directory layouts. Tracked in [KNOWN_ISSUES.md](/KNOWN_ISSUES.md) Issue 1.
+- **PYTHONPATH mount hack** — `llm_client` is volume-mounted into containers via `PYTHONPATH` rather than baked into Docker images. Fragile across directory layouts. Tracked in [KNOWN_ISSUES.md](/docs/KNOWN_ISSUES.md) Issue 1.
 - **Reasoning params locked at server level** — `--reasoning`, `--reasoning-budget`, `--reasoning-format` are startup-only `extra_args` in `service_models.yaml`. Cannot be controlled per-workflow. Tracked as Issue 4.
 - **`compose_env_preflight.sh` missing** — The preflight script was deleted during migration, breaking `start_stack.sh`. Issue 3.
 
