@@ -24,6 +24,7 @@ tasks:
     - think about survival infrastructure extension (survival-infrastructure)
     - in survival-infrastructure work on the people profiles (survival-infrastructure)
     - add audio event ingestion using whisper.cpp (survival_infrastructure)
+    - Clean up survival infrastructure legacy code and organise its context (survival-infrastructure)
 
     ### Queued
     - (queued) extend survival-infrastructure with gmail and gdrive (survival-infrastructure)
