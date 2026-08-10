@@ -74,6 +74,7 @@ tasks:
     ### Pending
     - create personal website and blog add the toTweet, toBlog, toVideo pipeline (resume)
     - Make the website agent first (resume)
+    - Fix GitHub profile page (resume)
 
     ## feed-analyser
 
