@@ -34,6 +34,7 @@ tasks:
     - this laptop is hitting its limits. set up thermisticles and run everything on that (workspace-portability)
     - update workspace portability with latest opensource projects (workspace-portability)
     - Move everything to a cloud instance (workspace-portability)
+    - Periodically pull latest code for all open source projects and prompt user to install latest versions (workspace-portability)
 
     ### Complete
     - (complete) add script to update workspace_portability with latest opensource repos (workspace_portability)
