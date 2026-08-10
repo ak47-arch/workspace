@@ -1,7 +1,7 @@
 # PRD: Implementer Agent — sandboxed autonomous implementation (harness + cattle container, workspace-portability integration)
 
 **Date**: 2026-08-10 20:59
-**Status**: Draft
+**Status**: Final
 **Owner**: software-factory
 **Task**: implementer-agent
 **Session**: `docs/knowledge/sessions/019fe7d2-aa31-77e6-8ea0-9df3d6b3c6ed/session.jsonl`
@@ -44,7 +44,7 @@ Locally the run uses bind-mounted host repos (**no cloning** — fastest possibl
 6. On success, the driver reads the implementer's outbox, archives the **run report + decisions** into `docs/implementations/<date>-<slug>/` (host, committed), transitions the task `prd-ready → in-progress` (it **stays in-progress until the PR is merged**, per the existing archive gate), pushes the worktree branch, and raises a PR (`base` = the repo's manifest branch) with title/body from the brief + report. The PRD **stays in the queue**.
 7. The implementer physically cannot modify `docs/tasks/`, `docs/tasks.txt`, or `docs/prd-queue/` — those are inside the read-only `/workspace` mount. There is no mechanism path to them.
 8. On failure, the driver transitions the task back to `prd-ready` (still queued and pickable), writes a partial report, and exits non-zero. No PR is raised. Re-running picks it up again.
-9. The same image + driver work identically in a cloud runtime: the worker provisions its durable workspace via the `factory-sandbox` portability profile (minimal targeted `--repos` restore into durable storage) and then runs the same driver; only the workspace *source* differs from the local bind-mount.
+9. The same image + driver work identically in a cloud runtime: the worker provisions its durable workspace via the `factory-sandbox` portability profile (minimal targeted `--repos` restore into durable storage) and then runs the same driver; only the workspace *source* differs from the local bind-mount. Locally verifiable threshold: the driver consumes only `/workspace` mount paths + config values (no runtime assumption that the workspace is bind-mounted), and the `factory-sandbox` profile parses through the portability tooling.
 10. A **disposable sample PRD** (small synthetic feature put through the review gate to Final) runs the full loop in `--dry-run` mode (worktree + report + session produced, **no push, no PR**), is inspected, and is then **discarded without residue** (PRD, task file, tasks.txt line, run dir removed).
 
 ## Implementation decisions
@@ -120,10 +120,11 @@ env (driver → container): LLM keys, LANGFUSE_* ONLY               env: NO GitH
 8. Abnormal container death: driver respawns (≤ N=3) with same run dir/brief → implementer resumes from committed worktree state.
 9. Success: driver archives report+decisions → `docs/implementations/<date>-<slug>/`; appends index entries (sort-knowledge-index.py); links impl session on task file; commits+pushes workspace root; pushes worktree branch; `gh pr create --base <manifest-branch>` (skipped on `--dry-run`).
 10. Failure: driver writes partial report, transitions task back to `prd-ready`, exits non-zero. No PR.
+11. Delivery: this task's implementation spans two repos — workspace-root changes (driver, implementer agent, skills, docs) and workspace-portability changes (container definition, profile, pi setup) — each delivered as its own PR to its repo; the run pipeline's own pushes cover the workspace root, the portability-side artifacts are shipped alongside in the same implementation phase.
 
 ### Interfaces / contracts
 
-- **Brief** (`brief.md`, both mounted-at `/workspace/../brief` context and passed via `--append-system-prompt`): PRD path, task slug, worktree path, impl session UUID, hard rules, verification commands, outbox paths.
+- **Brief** (`brief.md` at `/sandbox/brief.md` in the container — written by the driver into the run dir and passed via `--append-system-prompt /sandbox/brief.md`): PRD path, task slug, worktree path, impl session UUID, hard rules, verification commands, outbox paths.
 - **Implementer stdout protocol**: pi JSONL events (`message_end`, `tool_result_end`) — the driver's session-log input.
 - **Outbox contract** (implementer → driver): `report.md` (per-story done/not-done + evidence, verification results, UAT hand-off list, decisions-emerged) + `decisions/NN-<slug>.md` (structured decision format; driver-appended index).
 - **Driver config** (`config/implementer.json`): repo map, default model, timeouts/respawn cap, env allowlist, image tag, mount layout.
