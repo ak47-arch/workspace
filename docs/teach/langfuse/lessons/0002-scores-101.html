@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lesson 2: Scores 101 — Langfuse Teaching</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<article>
+
+<h1>Scores 101</h1>
+<p class="lesson-meta">Lesson 2 · 2026-08-09 · ~15 minutes</p>
+
+<p>
+A <strong>score</strong> is a single judgment attached to something in Langfuse — a trace, an observation, a session. It answers the question: <em>"was this good?"</em>. Scores are the currency of every evaluation. Everything you'll build later (manual review queues, LLM-as-a-judge, regression detection) reduces to scores: <em>who scored what, how, and was it right?</em>
+</p>
+
+<blockquote>
+<strong>Key insight</strong>
+A score is <em>a number or label with a name</em>. "response-quality = 4", "task-completion = True", "toxicity = 0.02". That's it. Evals are just ways of producing scores <em>at scale</em>.
+</blockquote>
+
+<h2>The two building blocks</h2>
+
+<p>
+Langfuse separates <em>what a score means</em> from <em>the score itself</em>:
+</p>
+
+<table>
+<tr>
+  <th>Block</th>
+  <th>What it is</th>
+  <th>When it exists</th>
+</tr>
+<tr>
+  <td><strong>Score config</strong></td>
+  <td>The definition — name, type (BOOLEAN / NUMERIC / CATEGORICAL), optional range</td>
+  <td>Before any scores exist. Like a column definition in a spreadsheet.</td>
+</tr>
+<tr>
+  <td><strong>Score</strong></td>
+  <td>One actual judgment — config + a value attached to a trace/observation</td>
+  <td>At evaluation time. Like a cell in that column.</td>
+</tr>
+</table>
+
+<p>
+The config's <strong>data type</strong> determines what a score <em>can</em> be:
+</p>
+
+<table>
+<tr>
+  <th>Type</th>
+  <th>Value</th>
+  <th>Use for</th>
+  <th>Example</th>
+</tr>
+<tr>
+  <td><code>BOOLEAN</code></td>
+  <td><code>True</code>/<code>False</code> (stored as 1/0)</td>
+  <td>Yes/no judgments</td>
+  <td>task-completion</td>
+</tr>
+<tr>
+  <td><code>NUMERIC</code></td>
+  <td>Number, optional min/max</td>
+  <td>Rating scales, metrics</td>
+  <td>response-quality 1–5</td>
+</tr>
+<tr>
+  <td><code>CATEGORICAL</code></td>
+  <td>Label from a fixed list</td>
+  <td>Classification, error types</td>
+  <td>failure-mode: tool_error / parsing / context</td>
+</tr>
+</table>
+
+<h2>How scores get created</h2>
+
+<p>Three ways — from most manual to most automated. You'll use all three at different times.</p>
+
+<h3>1. Config first, score later (API / CLI)</h3>
+
+<p>
+The config is the source of truth. Create it once; scores reference it. On our v4 instance (2026-08-09):
+</p>
+
+<pre>
+# via the langfuse CLI. Credentials come from .env.langfuse
+source .env.langfuse
+export LANGFUSE_HOST="$LANGFUSE_BASE_URL"
+
+# Create a BOOLEAN config — v4 auto-creates True(1)/False(0) categories
+npx -y langfuse-cli api score-configs create \
+  --name "task-completion" \
+  --dataType BOOLEAN \
+  --description "Did the agent complete the requested task?"
+
+# Create a NUMERIC config with a 1–5 range
+npx -y langfuse-cli api score-configs create \
+  --name "response-quality" \
+  --dataType NUMERIC \
+  --minValue 1 --maxValue 5
+</pre>
+
+<p>
+Both of these were run live while writing this lesson. The configs now exist in project <code>pi-agent</code> with IDs you can look up:
+</p>
+
+<pre>
+npx -y langfuse-cli api score-configs get-public
+</pre>
+
+<h3>2. Annotation queues (the human review workflow)</h3>
+
+<p>
+An <strong>annotation queue</strong> is a work queue for humans: "review these traces and score them". You point a queue at one or more score configs, add items (traces), and reviewers work through them. This is how you build labeled data by hand — the raw material for calibrating judges later.
+</p>
+
+<p>Creating a queue (v4 API — the CLI's queue schema is a step behind):</p>
+
+<pre>
+AUTH="Authorization: Basic $(echo -n "$LANGFUSE_PUBLIC_KEY:$LANGFUSE_SECRET_KEY" | base64 -w0)"
+
+curl -X POST http://localhost:3000/api/public/annotation-queues \
+  -H "$AUTH" -H "Content-Type: application/json" \
+  -d '{
+    "name": "demo-queue-2026-08",
+    "description": "Lesson 2 demo",
+    "scoreConfigIds": ["&lt;task-completion-config-id&gt;"]
+  }'
+</pre>
+
+<p>
+Then add traces to it via <code>POST /api/public/annotation-queues/&lt;queue-id&gt;/items</code> with the trace IDs. Reviewers see each trace, score it against the config, and the scores land back in Langfuse.
+</p>
+
+<h3>3. Automatic scoring (LLM-as-judge — Lesson 4)</h3>
+
+<p>
+A judge model reads a trace's input/output and emits a score — no human in the loop. Same configs, same score shape, produced at scale. This is where calibrated judges matter; that's Lesson 4's territory.
+</p>
+
+<h2>What we created live today</h2>
+
+<table>
+<tr>
+  <th>Thing</th>
+  <th>Type</th>
+  <th>ID / status</th>
+</tr>
+<tr>
+  <td><code>task-completion</code></td>
+  <td>score config, BOOLEAN</td>
+  <td>recreated (was lost in v4 migration)</td>
+</tr>
+<tr>
+  <td><code>response-quality</code></td>
+  <td>score config, NUMERIC 1–5</td>
+  <td>new</td>
+</tr>
+<tr>
+  <td><code>demo-queue-2026-08</code></td>
+  <td>annotation queue</td>
+  <td>bound to task-completion</td>
+</tr>
+</table>
+
+<p>
+<strong>No scores exist yet</strong> — configs define the shape, scores will come when you annotate or run judges. Check for yourself:
+</p>
+
+<pre>
+npx -y langfuse-cli api scores-v3s list
+# → "data": []
+</pre>
+
+<blockquote>
+<strong>Insight for your factory</strong>
+Scores attach to traces, but in v4 eval rules target <em>observations</em> (the migration doc: legacy trace-level rules must move to observation-level). When you score, think about <em>which observation</em> carries the output being judged.
+</blockquote>
+
+<div class="exercise">
+<h3>Exercise: score a real trace manually (via API)</h3>
+<p>Pick a trace from your own real data, then attach a manual numeric score to it:</p>
+<pre>
+source .env.langfuse
+AUTH="Authorization: Basic $(echo -n "$LANGFUSE_PUBLIC_KEY:$LANGFUSE_SECRET_KEY" | base64 -w0)"
+TRACE_ID="&lt;id from the Traces list&gt;"
+
+# Ingest a score event (v4 ingestion accepts score-create events even in dual mode)
+curl -X POST http://localhost:3000/api/public/ingestion \
+  -H "$AUTH" -H "Content-Type: application/json" \
+  -d '{"batch":[{
+    "id":"manual-score-1",
+    "timestamp":"'"$(date -u +%Y-%m-%dT%H:%M:%S.000Z)"'",
+    "type":"score-create",
+    "body":{
+      "traceId":"'"$TRACE_ID"'",
+      "name":"response-quality",
+      "value":4,
+      "comment":"Solid answer, one tool retry"
+    }
+  }]}'
+
+# Verify it landed
+npx -y langfuse-cli api scores-v3s list
+</pre>
+<p>That score — a real judgment on a real trace — is now queryable, filterable, and ready to compare against judge scores later.</p>
+</div>
+
+<h2>Further reading</h2>
+
+<ul>
+  <li><a href="https://langfuse.com/docs/scores/overview">Langfuse Docs — Scores overview</a> — the data model, types, and creation paths</li>
+  <li><a href="https://langfuse.com/docs/scores/annotation-queues">Annotation Queues</a> — the human review workflow</li>
+  <li>Official skill reference: <code>opensource/langfuse-skills/skills/langfuse/references/user-feedback.md</code> — user feedback as scores</li>
+  <li>v4 eval target migration: <code>trace-evaluator-upgrade.md</code> in the same folder</li>
+</ul>
+
+<p>
+<strong>Stuck? Ask the agent.</strong> You're learning in a session with full access to the Langfuse instance and the codebase. Ask anything that's unclear.
+</p>
+
+<hr>
+
+<p>Next: Lesson 3 — <strong>Annotation queues deep-dive</strong>: building your labeled dataset by hand.</p>
+
+</article>
+</body>
+</html>

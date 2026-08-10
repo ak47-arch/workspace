@@ -1,5 +1,10 @@
 # Teaching Notes — Langfuse
 
+## Lesson Log
+
+- **0001 Trace anatomy** (2026-08-03): trace = session; observations = events; GENERATION/SPAN tree from pi extension. Record: `learning-records/0001-trace-anatomy.md`.
+- **0002 Scores 101** (2026-08-09): score configs vs scores; BOOLEAN/NUMERIC/CATEGORICAL; three creation paths (config-first, annotation queues, LLM-judge); live-created `task-completion`, `response-quality` configs + `demo-queue-2026-08` queue. Record: `learning-records/0002-scores-101.md`.
+
 ## User Preferences (established session 2026-08-03)
 
 - **Pace**: slow, lesson by lesson. One concept at a time.
