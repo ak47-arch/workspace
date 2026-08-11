@@ -139,10 +139,10 @@ Local speech-to-text transcription using whisper.cpp. Supports WAV, MP3, FLAC, O
 
 The run contract for the autonomous implementer agent (headless, inside the sandbox).
 
-- Read the brief (`/sandbox/brief.md`), iterate story-by-story with **commit-early** inside the worktree
+- Read the brief (`/sandbox/brief.md`), iterate story-by-story inside the worktree (no git — the host authors the commit; a respawn continues the same pi session)
 - Run the PRD verification commands; record what could not be verified for UAT
 - Produce the outbox contract: `report.md` (per-story done/not-done + evidence) + `decisions/NN-<slug>.md`
-- Hard rules: modify only the worktree, no secrets, no push/PR (driver-owned), no index edits
+- Hard rules: modify only the worktree, no secrets, no git commands, no push/PR (driver-owned), no index edits
 
 **Usage:** loaded automatically by the implementer agent in the sandbox container.
 

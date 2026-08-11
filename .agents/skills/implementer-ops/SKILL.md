@@ -1,6 +1,6 @@
 ---
 name: implementer-ops
-description: Run contract for the autonomous implementer agent. Defines the exact operational protocol — read the brief, iterate story-by-story checkpointing via PROGRESS.md inside the worktree, run the PRD verification commands, and produce the outbox report + decisions. Use when operating as the implementer inside the sandbox.
+description: Run contract for the autonomous implementer agent. Defines the exact operational protocol — read the brief, iterate story-by-story inside the worktree, run the PRD verification commands, and produce the outbox report + decisions. Use when operating as the implementer inside the sandbox.
 ---
 
 # Implementer Ops — Run Contract
@@ -26,17 +26,17 @@ rules. The brief is authoritative for *this run*.
 - Read the PRD (read-only under `/workspace/docs/prd-queue/`) and the target
   repo's existing conventions before writing.
 
-## 2. Iterate story-by-story, checkpoint with PROGRESS.md
+## 2. Iterate story-by-story
 
 1. Pick the next user story from the PRD (stories are independently checkable).
 2. Implement it **inside `/sandbox/worktree` only**.
 3. Run the story's verification (the PRD's Testing decisions / acceptance).
-4. **Do NOT run any git command** (no add/commit/stash/push/pull). The host
-   driver authors the single commit at the end. Your edits are already durable
-   on the host disk via the mount.
-5. Update `/sandbox/outbox/PROGRESS.md`: one line per completed step — what you
-   changed and what is left. A container respawn reads PROGRESS.md + the
-   existing worktree and continues from there, so keep it current.
+4. **Do NOT run any git command** (no add/commit/stash/push/pull). Your edits are
+   already durable on the host via the mount. The host driver authors the
+   single commit at the end.
+5. If a container respawns you, your continuity is NOT lost: the driver
+   reopens the SAME pi session (same `--session-id` pointing at the host mount),
+   so you resume with full memory of prior turns and tools. Just keep working.
 
 ## 3. Verification protocol
 

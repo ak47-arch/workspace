@@ -203,7 +203,7 @@ prepare_run_dir() {
   OUTBOX="$RUN_DIR/outbox"
   SESSION_LOG="$RUN_DIR/session.jsonl"
   WORKTREE="$RUN_DIR/worktree"
-  mkdir -p "$OUTBOX/decisions"
+  mkdir -p "$OUTBOX/decisions" "$RUN_DIR/sessions"
   echo "  Run dir: $RUN_DIR" >&2
   echo "  Impl session UUID: $IMPL_UUID" >&2
 
@@ -248,7 +248,6 @@ write_brief() {
 - **Impl session UUID**: $IMPL_UUID
 - **Worktree path** (read-write; your working directory): /sandbox/worktree
 - **Outbox path** (write results here): /sandbox/outbox
-- **Progress file**: /sandbox/outbox/PROGRESS.md (you maintain it; see rule 3)
 
 ## Rules (binding)
 
@@ -256,10 +255,7 @@ write_brief() {
 2. Work ONLY inside /sandbox/worktree. Your edits are already durable on the
    host's disk via this mount — you do NOT need to commit anything.
 3. Do NOT run ANY git command (no init/add/commit/stash/push/pull/checkout).
-   The host driver performs the single commit, push, and PR at the end. If you
-   need a checkpoint, instead update /sandbox/outbox/PROGRESS.md: one line per
-   step completed, what you changed, and what is left. A respawned container
-   reads PROGRESS.md + the existing worktree and continues — so keep it current.
+   The host driver performs the single commit, push, and PR at the end.
 4. You CANNOT modify docs/tasks/, docs/tasks.txt, or docs/prd-queue/ — those
    live in the read-only /workspace mount. Do not attempt to bypass this.
 5. Do NOT write secrets, keys, or GitHub credentials anywhere.
@@ -339,6 +335,16 @@ run_container() {
 
   echo "  [attempt $attempt/$RESPAWN_CAP] podman run $IMAGE ..." >&2
 
+  # Continuity is native: pi persists its session to the host mount under the
+  # run's IMPL_UUID, and a respawn reopens that SAME session-id, so the fresh
+  # container continues the existing conversation (no PROGRESS.md needed).
+  local directive
+  if [ "$attempt" -eq 1 ]; then
+    directive="Execute your implementer run contract now. Read /sandbox/brief.md and the PRD it references, implement every user story in /sandbox/worktree (do NOT run any git commands — the host owns git), run the PRD verification commands, then write /sandbox/outbox/report.md plus any decisions to /sandbox/outbox/decisions/. Exit 0 on success."
+  else
+    directive="Resume your interrupted implementer run. You were killed mid-run; this container continues the SAME session, and your edits are already on disk in /sandbox/worktree. Continue from where you left off — do NOT restart from scratch. Finish implementing every story per /sandbox/brief.md (do NOT run any git commands — the host owns git), run verification, then write /sandbox/outbox/report.md plus any decisions to /sandbox/outbox/decisions/. Exit 0 on success."
+  fi
+
   local exit_code=0
   # Live-stream container stdout into the session log while it runs.
   (
@@ -347,11 +353,13 @@ run_container() {
       -v "$RUN_DIR:/sandbox" \
       --env-file "$envfile" \
       "$IMAGE" \
-      pi --mode json --no-session -p \
+      pi --mode json -p \
+        --session-dir /sandbox/sessions \
+        --session-id "$IMPL_UUID" \
         --append-system-prompt /sandbox/brief.md \
         --append-system-prompt /workspace/.pi/agents/implementer.md \
         "${model_arg[@]}" \
-        "Execute your implementer run contract now. Read /sandbox/brief.md and the PRD it references, implement every user story in /sandbox/worktree (keep /sandbox/outbox/PROGRESS.md current as you go; do NOT run any git commands — the host owns git), run the PRD verification commands, then write /sandbox/outbox/report.md plus any decisions to /sandbox/outbox/decisions/. Exit 0 on success."
+        "$directive"
   ) > "$container_out" 2>&1 & local pid=$!
 
   # Liveness watch: tail-running, plus a hard overall timeout. The idle watchdog
@@ -563,6 +571,20 @@ while [ $attempt -le "$RESPAWN_CAP" ]; do
   fi
   attempt=$((attempt+1))
 done
+
+# Finalize the knowledge copy of the session with the full streamed transcript
+# (the startup header above is just a stub). The pi-native session also lives on
+# the host mount under the run dir; prefer it, falling back to the tee transcript.
+finalize_session_copy() {
+  local sess="$WORKSPACE/docs/knowledge/sessions/$IMPL_UUID/session.jsonl"
+  local native="$RUN_DIR/sessions/$IMPL_UUID.jsonl"
+  if [ -s "$native" ]; then
+    cp "$native" "$sess"
+  elif [ -s "$SESSION_LOG" ]; then
+    cp "$SESSION_LOG" "$sess"
+  fi
+}
+finalize_session_copy
 
 if [ "$local_result" -eq 0 ]; then
   echo "=== Implementer success — archiving + delivering ===" >&2
