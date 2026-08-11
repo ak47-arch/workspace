@@ -1,6 +1,6 @@
 # Task: extension-inline-agent
 
-**Status**: prd-ready
+**Status**: in-progress
 **Category**: Large
 **Project**: feed_analyser
 **Created**: 2026-08-07 01:56
@@ -13,6 +13,7 @@
 ## Sessions
 
 - [planning](../knowledge/sessions/019fd8a4-73ca-7c92-bbcc-b5d74e7d0817/session.jsonl)
+- [implementation](../knowledge/sessions/60c0c537-b9c7-4c4c-8b8a-0be438950151/session.jsonl)
 
 ## Scope notes
 
