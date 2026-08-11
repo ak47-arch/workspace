@@ -1,6 +1,6 @@
 ---
 name: implementer-ops
-description: Run contract for the autonomous implementer agent. Defines the exact operational protocol — read the brief, iterate story-by-story with commit-early inside the worktree, run the PRD verification commands, and produce the outbox report + decisions. Use when operating as the implementer inside the sandbox.
+description: Run contract for the autonomous implementer agent. Defines the exact operational protocol — read the brief, iterate story-by-story checkpointing via PROGRESS.md inside the worktree, run the PRD verification commands, and produce the outbox report + decisions. Use when operating as the implementer inside the sandbox.
 ---
 
 # Implementer Ops — Run Contract
@@ -18,21 +18,25 @@ rules. The brief is authoritative for *this run*.
 
 ## 1. Orient in the worktree
 
-- Your durable workspace is `/sandbox/worktree` — a git worktree on branch
-  `factory/<slug>/<ts>` at the repo's manifest branch.
+- Your durable workspace is `/sandbox/worktree` — a repo clone on branch
+  `factory/<slug>/<ts>` at the repo's manifest branch, mounted from host disk
+  (so your edits are durable the moment you write them — no git needed).
 - Run everything with `cwd=/workspace` so pi discovers the factory's skills and
   extensions (`langfuse-tracing`).
 - Read the PRD (read-only under `/workspace/docs/prd-queue/`) and the target
   repo's existing conventions before writing.
 
-## 2. Iterate story-by-story, commit-early
+## 2. Iterate story-by-story, checkpoint with PROGRESS.md
 
 1. Pick the next user story from the PRD (stories are independently checkable).
 2. Implement it **inside `/sandbox/worktree` only**.
 3. Run the story's verification (the PRD's Testing decisions / acceptance).
-4. `git -C /sandbox/worktree add -A && git -C /sandbox/worktree commit -m "story(N): <description>"`
-5. Repeat. A fresh commit per story is your only durable memory — a container
-   respawn resumes from your last committed state.
+4. **Do NOT run any git command** (no add/commit/stash/push/pull). The host
+   driver authors the single commit at the end. Your edits are already durable
+   on the host disk via the mount.
+5. Update `/sandbox/outbox/PROGRESS.md`: one line per completed step — what you
+   changed and what is left. A container respawn reads PROGRESS.md + the
+   existing worktree and continues from there, so keep it current.
 
 ## 3. Verification protocol
 
@@ -46,6 +50,8 @@ rules. The brief is authoritative for *this run*.
 
 - Modify only `/sandbox/worktree`. `/workspace` is read-only; you **cannot**
   and **must not** touch `docs/tasks/`, `docs/tasks.txt`, `docs/prd-queue/`.
+- **Never run any git command** — no init/add/commit/stash/push/pull/checkout.
+  The host is the sole git actor.
 - No secrets, no GitHub credentials, ever.
 - No push, no PR, no amend of pushed branches — the driver owns remotes.
 - Do not append to `docs/knowledge/index.md` (driver-owned). Capture decisions
@@ -76,7 +82,9 @@ the outbox either way.
 
 ## 6. Hand-off to the driver
 
-Do not push, merge, or transition anything. When you exit, the driver:
+Do not push, merge, transition, or run any git command. When you exit, the
+host driver:
+- hosts a single commit of your worktree changes (you never touch git),
 - archives your outbox to `docs/implementations/<date>-<slug>/`,
 - appends index entries deterministically (`sort-knowledge-index.py`),
 - links your implementation session on the task file,

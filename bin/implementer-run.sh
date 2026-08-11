@@ -246,18 +246,23 @@ write_brief() {
 - **PRD path**: ${PRD#/workspace/} (read-only; also below)
 - **Task slug**: $PRD_SLUG
 - **Impl session UUID**: $IMPL_UUID
-- **Worktree path** (read-write; commit here): /sandbox/worktree
+- **Worktree path** (read-write; your working directory): /sandbox/worktree
 - **Outbox path** (write results here): /sandbox/outbox
+- **Progress file**: /sandbox/outbox/PROGRESS.md (you maintain it; see rule 3)
 
 ## Rules (binding)
 
 1. Implement EVERY user story in the PRD, one story/unit at a time.
-2. Work ONLY inside /sandbox/worktree. Commit after each completed story
-   (commit-early) so a container respawn can resume from committed state.
-3. You CANNOT modify docs/tasks/, docs/tasks.txt, or docs/prd-queue/ — those
+2. Work ONLY inside /sandbox/worktree. Your edits are already durable on the
+   host's disk via this mount — you do NOT need to commit anything.
+3. Do NOT run ANY git command (no init/add/commit/stash/push/pull/checkout).
+   The host driver performs the single commit, push, and PR at the end. If you
+   need a checkpoint, instead update /sandbox/outbox/PROGRESS.md: one line per
+   step completed, what you changed, and what is left. A respawned container
+   reads PROGRESS.md + the existing worktree and continues — so keep it current.
+4. You CANNOT modify docs/tasks/, docs/tasks.txt, or docs/prd-queue/ — those
    live in the read-only /workspace mount. Do not attempt to bypass this.
-4. Do NOT write secrets, keys, or GitHub credentials anywhere.
-5. Do NOT push to any remote. The host driver owns push/PR.
+5. Do NOT write secrets, keys, or GitHub credentials anywhere.
 6. Do NOT run builds that require network secrets you don't have.
 
 ## Verification
@@ -346,13 +351,17 @@ run_container() {
         --append-system-prompt /sandbox/brief.md \
         --append-system-prompt /workspace/.pi/agents/implementer.md \
         "${model_arg[@]}" \
-        "Execute your implementer run contract now. Read /sandbox/brief.md and the PRD it references, implement every user story in /sandbox/worktree (commit after each completed story), run the PRD verification commands, then write /sandbox/outbox/report.md plus any decisions to /sandbox/outbox/decisions/. Exit 0 on success."
+        "Execute your implementer run contract now. Read /sandbox/brief.md and the PRD it references, implement every user story in /sandbox/worktree (keep /sandbox/outbox/PROGRESS.md current as you go; do NOT run any git commands — the host owns git), run the PRD verification commands, then write /sandbox/outbox/report.md plus any decisions to /sandbox/outbox/decisions/. Exit 0 on success."
   ) > "$container_out" 2>&1 & local pid=$!
 
-  # Liveness watch: tail-running, plus a hard overall timeout.
+  # Liveness watch: tail-running, plus a hard overall timeout. The idle watchdog
+  # keys on new bytes; a long-running tool (e.g. `... | tail`) emits nothing until
+  # it finishes, so we skip the idle-kill while a tool_execution is open — the
+  # hard timeout below still bounds the run.
   local deadline=$(( $(date +%s) + TIMEOUT_SEC ))
   local last_activity=0
   local last_size=0
+  local tool_open=0
   while kill -0 "$pid" 2>/dev/null; do
     if [ $(date +%s) -ge "$deadline" ]; then
       echo "  [timeout] run exceeded ${TIMEOUT_SEC}s — terminating container." >&2
@@ -364,14 +373,20 @@ run_container() {
     if [ -f "$container_out" ]; then
       local size; size=$(wc -c < "$container_out")
       if [ "$size" -gt "$last_size" ]; then
-        tail -c +$((last_size+1)) "$container_out" >> "$SESSION_LOG"
+        local slice; slice=$(tail -c +$((last_size+1)) "$container_out")
+        printf '%s' "$slice" >> "$SESSION_LOG"
+        # Track whether a tool is currently executing (start minus end).
+        local s; s=$(printf '%s' "$slice" | grep -c '"type":"tool_execution_start"' || true)
+        local e; e=$(printf '%s' "$slice" | grep -c '"type":"tool_execution_end"' || true)
+        tool_open=$((tool_open + s - e)); [ "$tool_open" -lt 0 ] && tool_open=0
         last_size="$size"
         last_activity=$(date +%s)
       fi
     fi
-    # Idle watchdog: no new output for LIVENESS_IDLE seconds → unhealthy.
-    if [ "$last_activity" -ne 0 ] && [ $(( $(date +%s) - last_activity )) -gt "$LIVENESS_IDLE" ]; then
-      echo "  [liveness] no output for ${LIVENESS_IDLE}s — treating as stuck." >&2
+    # Idle watchdog: no new output for LIVENESS_IDLE seconds while idle (no tool
+    # execution open) → unhealthy. A quiet-but-running tool is left alone.
+    if [ "$tool_open" -eq 0 ] && [ "$last_activity" -ne 0 ] && [ $(( $(date +%s) - last_activity )) -gt "$LIVENESS_IDLE" ]; then
+      echo "  [liveness] no output for ${LIVENESS_IDLE}s (no tool running) — treating as stuck." >&2
       kill "$pid" 2>/dev/null || true
       wait "$pid" 2>/dev/null || true
       return 1
@@ -464,6 +479,12 @@ push_and_pr() {
     echo "  [dry-run] would push branch $WORKTREE_BRANCH and raise a PR against $MANIFEST_BRANCH" >&2
     return 0
   fi
+  # Host authors the single commit from the implementer's files (the implementer
+  # never touches git). Commit everything the model wrote in the worktree.
+  git -C "$WORKTREE" add -A
+  git -C "$WORKTREE" diff --cached --quiet \
+    || git -C "$WORKTREE" commit -q -m "implementer($PRD_SLUG): run $IMPL_UUID [factory]"
+  echo "  Host-authored worktree commit on $WORKTREE_BRANCH" >&2
   # Push the worktree branch (commits live in the run-dir clone, not src).
   # origin in the clone already points at the real remote.
   git -C "$WORKTREE" push -u origin "$WORKTREE_BRANCH"
