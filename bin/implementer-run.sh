@@ -336,8 +336,13 @@ run_container() {
   echo "  [attempt $attempt/$RESPAWN_CAP] podman run $IMAGE ..." >&2
 
   # Continuity is native: pi persists its session to the host mount under the
-  # run's IMPL_UUID, and a respawn reopens that SAME session-id, so the fresh
-  # container continues the existing conversation (no PROGRESS.md needed).
+  # run's session-dir, and a respawn passes --continue so the fresh container
+  # resumes the existing conversation (no PROGRESS.md needed).
+  local sess_args=(--session-dir /sandbox/sessions)
+  if [ "$attempt" -gt 1 ]; then
+    sess_args+=(--continue)
+  fi
+
   local directive
   if [ "$attempt" -eq 1 ]; then
     directive="Execute your implementer run contract now. Read /sandbox/brief.md and the PRD it references, implement every user story in /sandbox/worktree (do NOT run any git commands — the host owns git), run the PRD verification commands, then write /sandbox/outbox/report.md plus any decisions to /sandbox/outbox/decisions/. Exit 0 on success."
@@ -354,8 +359,7 @@ run_container() {
       --env-file "$envfile" \
       "$IMAGE" \
       pi --mode json -p \
-        --session-dir /sandbox/sessions \
-        --session-id "$IMPL_UUID" \
+        "${sess_args[@]}" \
         --append-system-prompt /sandbox/brief.md \
         --append-system-prompt /workspace/.pi/agents/implementer.md \
         "${model_arg[@]}" \
@@ -577,8 +581,9 @@ done
 # the host mount under the run dir; prefer it, falling back to the tee transcript.
 finalize_session_copy() {
   local sess="$WORKSPACE/docs/knowledge/sessions/$IMPL_UUID/session.jsonl"
-  local native="$RUN_DIR/sessions/$IMPL_UUID.jsonl"
-  if [ -s "$native" ]; then
+  # pi names its files  <ts>_<session-uuid>.jsonl under the session-dir mount.
+  local native; native="$(ls -t "$RUN_DIR"/sessions/*.jsonl 2>/dev/null | head -1)"
+  if [ -n "$native" ] && [ -s "$native" ]; then
     cp "$native" "$sess"
   elif [ -s "$SESSION_LOG" ]; then
     cp "$SESSION_LOG" "$sess"
