@@ -67,6 +67,7 @@ These are agent-facing instruction files that direct coding agents to use the Op
 | File | Purpose |
 |------|---------|
 | `prd-reviewer.md` | Read-only PRD verification sub-agent that gates plan documents for implementation readiness. Runs deterministic + judgment checks and returns a blocking/advisory report. Uses model `deepseek/deepseek-v4-flash-0731`; tools are `read, grep, find, ls, bash` (no write tools at the mechanism level). Invoked with `agentScope: "project"` or `"both"`. See [Software Factory](/openwiki/projects/software-factory.md). |
+| `implementer.md` | The autonomous implementation sub-agent (the "hands" of the implementer pipeline). System prompt embeds the ponytail lazy-senior-dev style (always-on) + factory-worker rules + the implementer-ops run contract. Model `openrouter/deepseek/deepseek-v4-flash-0731`; runs headless in the sandbox container (`pi --mode json --no-session -p`). See the [implementer PRD](https://github.com/ak47-arch/workspace/blob/master/docs/prd-queue/2026-08-10-implementer-agent.md). |
 
 ### Skills (`/.pi/skills/`)
 
@@ -133,6 +134,21 @@ Local speech-to-text transcription using whisper.cpp. Supports WAV, MP3, FLAC, O
 - Triggered via `Ctrl+Super+V` hotkey (xbindkeys)
 
 **Usage:** When the user wants to transcribe audio files, speak to pi, or use voice input.
+
+### implementer-ops (`/.agents/skills/implementer-ops/SKILL.md`)
+
+The run contract for the autonomous implementer agent (headless, inside the sandbox).
+
+- Read the brief (`/sandbox/brief.md`), iterate story-by-story with **commit-early** inside the worktree
+- Run the PRD verification commands; record what could not be verified for UAT
+- Produce the outbox contract: `report.md` (per-story done/not-done + evidence) + `decisions/NN-<slug>.md`
+- Hard rules: modify only the worktree, no secrets, no push/PR (driver-owned), no index edits
+
+**Usage:** loaded automatically by the implementer agent in the sandbox container.
+
+### implementer-save (`/.agents/skills/implementer-save/SKILL.md`)
+
+Scoped decision capture for the headless implementer. The `save-knowledge` session-finding heuristic is blind headless, so this skill takes the session directory explicitly from the brief and writes decisions to the outbox (`/sandbox/outbox/decisions/NN-<slug>.md`). The **driver** appends the `docs/knowledge/index.md` entry deterministically via `bin/sort-knowledge-index.py` — the model never touches the index.
 
 ### product-layer (`/.agents/skills/product-layer/SKILL.md`)
 
@@ -216,9 +232,11 @@ Recent commits (2026-07-29 → 2026-08-09) added the software-factory assembly l
 | `/CLAUDE.md` | OpenWiki reference for coding agents (same content) |
 | `/.pi/settings.json` | Pi agent settings (enables `langfuse-tracing`) |
 | `/.pi/extensions/` | Pi extensions directory (including `subagent/`) |
-| `/.pi/agents/` | Project-local sub-agent definitions (`prd-reviewer.md`) |
+| `/.pi/agents/` | Project-local sub-agent definitions (`prd-reviewer.md`, `implementer.md`) |
 | `/.pi/skills/` | Pi skills directory |
-| `/.agents/skills/` | Agent skills directory |
+| `/.agents/skills/` | Agent skills directory (`implementer-ops`, `implementer-save` are implementer-pipeline skills) |
+| `/bin/implementer-run.sh` | Implementer host driver (pick → worktree → container → report → PR) |
+| `/bin/sandbox-build.sh`, `/config/implementer.json` | Sandbox image build + driver config |
 | `/docs/tasks.txt` | High-level task list (by project + status) |
 | `/docs/tasks/<slug>.md` | Per-task reference hubs |
 | `/docs/prd-queue/` | Forward-looking plan documents for active tasks |

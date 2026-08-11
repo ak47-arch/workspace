@@ -20,7 +20,7 @@ interacts with the product/architecture layer — everything else is automation.
 | **context_engine** | Infrastructure spine; every other component reads/writes it. Progressive disclosure keeps agents lean — context loads on demand, never pre-loaded. The knowledge base (`docs/knowledge/`) is the last stop. | `docs/factory-context.md`, `docs/knowledge/` |
 | **product/architecture** | The UX layer; the only surface the user interacts with. Produces one artifact per task: a plan document that accumulates Product Design / System Architecture / Program Design sections based on task size. Invoked via the `product-layer` skill. | [`/.agents/skills/product-layer/SKILL.md`](/openwiki/reference/agent-config.md) |
 | **project_management** | Prioritisation + lifecycle tracking: task dashboard, task files (`docs/tasks/<slug>.md`), lifecycle state machine, and automated bookkeeping. | `docs/tasks.txt`, `docs/tasks/`, `bin/transition-task.sh` |
-| **assembly_line** | CI/CD, agents, sandboxes, testing. Built YAGNI — the least-developed component. | subagent extension (`/.pi/extensions/subagent/`), `.pi/agents/prd-reviewer.md` |
+| **assembly_line** | CI/CD, agents, sandboxes, testing. Built YAGNI — the least-developed component. First real component: the **implementer agent** (host driver + sandbox container). | subagent extension (`/.pi/extensions/subagent/`), `.pi/agents/prd-reviewer.md`, `bin/implementer-run.sh`, `.pi/agents/implementer.md` |
 
 These components connect: the **product/architecture** layer is invoked through
 the `product-layer` skill, which drives the **project_management** lifecycle
@@ -142,6 +142,13 @@ verification sessions, capturing the entire lifecycle. (Decisions
 | `/docs/tasks/README.md` | Task traceability + lifecycle doc |
 | `/bin/transition-task.sh` | Lifecycle bookkeeping script |
 | `/bin/test-transition-task.sh` | Test suite for the transition script |
+| `/bin/implementer-run.sh` | Host driver for the sandboxed implementer agent (pick → worktree → container → report → PR) |
+| `/bin/sandbox-build.sh` | Builds the implementer sandbox container image |
+| `/bin/test-implementer-driver.sh` | Fixture-based unit tests for the implementer driver |
+| `/config/implementer.json` | Implementer driver config (repo map, model, timeouts, env allowlist) |
+| `/.pi/agents/implementer.md` | The implementer sub-agent definition (ponytail + factory-worker rules) |
+| `/.agents/skills/implementer-ops/` | The implementer run-contract skill |
+| `/.agents/skills/implementer-save/` | Scoped decision capture for the implementer (driver-owned index) |
 | `/bin/backfill-timestamps.sh`, `/bin/sort-knowledge-index.py` | Temporal metadata tooling |
 | `/docs/prd-queue/`, `/docs/prd-archive/` | Active / archived plan documents |
 | `/docs/knowledge/` | Curated design decisions + session traces |
@@ -182,8 +189,7 @@ verification sessions, capturing the entire lifecycle. (Decisions
 
 ## Backlog / Known Open Items
 
-- The **implementer agent** ("Build the implementer agent") and extending the prod
-  review agent are pending software-factory tasks in `docs/tasks.txt`.
+- **Implementer agent** is built in `bin/implementer-run.sh` + `workspace-portability/container/` (decision 03 claims portability for a cloud worker). The live stage-2 acceptance (raise a real PR) and PR review/test/merge pipeline remain to be exercised (see the `2026-08-10-implementer-agent` PRD).
 - Headless (no user session) PRD review is not yet supported.
 - Knowledge base growth beyond ~50 entries may warrant vector search
   (`opensource/cognee`) per `KNOWN_ISSUES.md` issue 7.

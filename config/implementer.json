@@ -1,0 +1,30 @@
+{
+  "repo_map": {
+    "software-factory": ".",
+    "feed_analyser": "feed_analyser",
+    "workspace-portability": "workspace-portability",
+    "survival-infrastructure": "survival-infrastructure",
+    "llm": "llm",
+    "headroom-pi": "headroom-pi",
+    "resume": "resume",
+    "emotional_architecture": "emotional_architecture",
+    "timesheetViewer": "timesheetViewer",
+    "langfuse": "."
+  },
+  "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+  "timeout_sec": 1800,
+  "respawn_cap": 3,
+  "env_allowlist": [
+    "OPENROUTER_API_KEY",
+    "ANTHROPIC_API_KEY",
+    "LANGFUSE_SECRET_KEY",
+    "LANGFUSE_PUBLIC_KEY",
+    "LANGFUSE_BASE_URL",
+    "IMPLEMENTER_MODEL"
+  ],
+  "image": "sandbox:latest",
+  "runs_root": "~/.factory/runs",
+  "archives_root": "docs/implementations",
+  "liveness_interval_sec": 15,
+  "liveness_idle_sec": 300
+}

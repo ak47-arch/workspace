@@ -35,7 +35,13 @@ re-point the Plan artifact path. (See decision
 [PRD moves to archive only after UAT + user go-ahead](knowledge/index.md).)
 
 **assembly_line** — CI/CD, agents, sandboxes, testing. Built YAGNI — least
-developed component.
+developed component. Its first real component is the **implementer agent**: a
+decoupled brain/hands pipeline (`bin/implementer-run.sh` host driver + a
+disposable sandbox container) that picks a `Final` PRD from `docs/prd-queue/`,
+implements it in a durable host-side worktree via a headless `pi` worker, and
+raises a PR — the user only inspects/accepts the result. Durable stores:
+`~/.factory/runs/<slug>-<ts>/` (per-run) and `docs/implementations/`
+(archived reports + decisions).
 
 ## Progressive Disclosure
 

@@ -4,6 +4,8 @@
 Entries are grouped by project for progressive discovery. When the agent needs to understand design intent for a specific project, it opens the relevant section.
 
 
+
+
 ### software-factory
 
 - [Knowledge Base as Infrastructure Layer](sessions/019f8faf-c8f2-7612-a79d-10e18e6f78cf/decisions/01-factory-architecture-decisions.md#1-knowledge-base-as-infrastructure-layer)
