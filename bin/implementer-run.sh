@@ -503,7 +503,7 @@ push_and_pr() {
   echo "  Pushed branch $WORKTREE_BRANCH" >&2
 
   # Raise the PR with title/body derived from the brief + report.
-  local title="[factory] ${PRD_SLUG}: implementer run (${now_human})"
+  local title="[factory] ${PRD_SLUG}: implementer run ($(now_human))"
   local body_file="$RUN_DIR/pr-body.md"
   {
     echo "## Implementer Run"
