@@ -9,6 +9,7 @@ Entries are grouped by project for progressive discovery. When the agent needs t
 
 ### software-factory
 
+- [Organize the implementer as a pointer map, not a physical bundle — agents as a workforce roster](sessions/019fecde-70b4-78e7-ab7d-e91886af42a7/decisions/03-pointer-map-not-bundle-agents-as-roster.md)
 - [Fix silent delivery loss — configure git identity in the run-dir clone before the host commit](sessions/019fecde-70b4-78e7-ab7d-e91886af42a7/decisions/02-fix-silent-delivery-loss-git-identity.md)
 - [Implementer container false-kill — tool-aware liveness + native session continuation](sessions/019fecde-70b4-78e7-ab7d-e91886af42a7/decisions/01-implementer-false-kill-tool-liveness-session-continuation.md)
 - [Knowledge Base as Infrastructure Layer](sessions/019f8faf-c8f2-7612-a79d-10e18e6f78cf/decisions/01-factory-architecture-decisions.md#1-knowledge-base-as-infrastructure-layer)

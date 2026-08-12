@@ -43,6 +43,23 @@ raises a PR — the user only inspects/accepts the result. Durable stores:
 `~/.factory/runs/<slug>-<ts>/` (per-run) and `docs/implementations/`
 (archived reports + decisions).
 
+> **Where everything lives**: every build/runtime/config/persona artefact is
+> mapped in [`docs/reference/implementer-agent.md`](reference/implementer-agent.md) —
+> consult it to resolve any implementer artefact in one hop rather than grepping.
+
+## Agents (the workforce)
+
+Agents are the factory's employees — each staffs a stage of the SDLC. The
+roster grows as stages are staffed; a task that needs an unlisted role means a
+new agent file in `.pi/agents/<name>.md` (and a subagent/tool invocation that
+calls it). The roster lives here so the workforce is discoverable in one hop,
+never buried in grep results.
+
+| Agent (employee) | SDLC stage | Role | Where it lives / how it's run |
+|---|---|---|---|
+| **prd-reviewer** | PRD gating (before implementation) | Read-only readiness verifier — gates a plan doc with deterministic + non-deterministic checks, returns a blocking/advisory report | `.pi/agents/prd-reviewer.md` · invoked with `agentScope` project/both |
+| **implementer** | Implementation (build → PR) | Headless worker (the "hands") — implements a `Final` PRD inside the sandbox worktree, writes report + decisions to the outbox; host raises the PR | `.pi/agents/implementer.md` · run via `bin/implementer-run.sh` (full loop = driver + container image `sandbox:latest`) |
+
 ## Progressive Disclosure
 
 The agent discovers context on demand. It never loads everything at once.
@@ -158,6 +175,7 @@ project in a single `rg` call.
 ## Pointers
 
 - [Tasks → docs/tasks.txt](tasks.txt)
+- [Implementer Agent artefact map → docs/reference/implementer-agent.md](reference/implementer-agent.md)
 - [Known Issues → docs/KNOWN_ISSUES.md](KNOWN_ISSUES.md)
 - [Knowledge Base → docs/knowledge/index.md](knowledge/index.md)
 - [Architecture → openwiki/architecture/overview.md](../openwiki/architecture/overview.md)
