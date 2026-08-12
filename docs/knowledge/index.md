@@ -9,6 +9,8 @@ Entries are grouped by project for progressive discovery. When the agent needs t
 
 ### software-factory
 
+- [Fix silent delivery loss — configure git identity in the run-dir clone before the host commit](sessions/019fecde-70b4-78e7-ab7d-e91886af42a7/decisions/02-fix-silent-delivery-loss-git-identity.md)
+- [Implementer container false-kill — tool-aware liveness + native session continuation](sessions/019fecde-70b4-78e7-ab7d-e91886af42a7/decisions/01-implementer-false-kill-tool-liveness-session-continuation.md)
 - [Knowledge Base as Infrastructure Layer](sessions/019f8faf-c8f2-7612-a79d-10e18e6f78cf/decisions/01-factory-architecture-decisions.md#1-knowledge-base-as-infrastructure-layer)
 - [Product/Architecture as UX Layer](sessions/019f8faf-c8f2-7612-a79d-10e18e6f78cf/decisions/01-factory-architecture-decisions.md#2-productarchitecture-as-ux-layer--two-artifact-outputs)
 - [Progressive Disclosure Chain](sessions/019f8faf-c8f2-7612-a79d-10e18e6f78cf/decisions/01-factory-architecture-decisions.md#3-progressive-disclosure-chain-for-agent-context)
@@ -41,7 +43,6 @@ Entries are grouped by project for progressive discovery. When the agent needs t
 - [Sandbox built on workspace-portability — new profile, pi install in-scope, container definition in portability](sessions/019fe7d2-aa31-77e6-8ea0-9df3d6b3c6ed/decisions/03-sandbox-on-workspace-portability.md)
 - [Implementer runtime set — current model, langfuse-tracing, embedded ponytail, implementer-ops skill](sessions/019fe7d2-aa31-77e6-8ea0-9df3d6b3c6ed/decisions/04-implementer-runtime-config-model-skills-extensions.md)
 - [Implementer lifecycle & traceability — in-progress until merge, PRD stays queued, driver-shielded index](sessions/019fe7d2-aa31-77e6-8ea0-9df3d6b3c6ed/decisions/05-implementer-lifecycle-traceability.md)
-- [Implementer container false-kill — tool-aware liveness + native session continuation](sessions/019fecde-70b4-78e7-ab7d-e91886af42a7/decisions/01-implementer-false-kill-tool-liveness-session-continuation.md)
 
 ### workspace-portability
 
