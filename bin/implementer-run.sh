@@ -230,6 +230,11 @@ prepare_run_dir() {
   if [ -n "$real_url" ]; then
     git -C "$WORKTREE" remote set-url origin "$real_url"
   fi
+  # A fresh clone has NO git identity, so `git commit` (run by the host at
+  # delivery time) would fail with "Author identity unknown". Set local config
+  # so the host-authored commit actually lands — this is the driver's identity.
+  git -C "$WORKTREE" config user.name "${IMPL_GIT_NAME:-factory}"
+  git -C "$WORKTREE" config user.email "${IMPL_GIT_EMAIL:-factory@ak47.local}"
   WORKTREE_BRANCH="$branch"
   echo "  Worktree clone: $WORKTREE (branch $branch, base $MANIFEST_BRANCH)" >&2
 
@@ -494,8 +499,17 @@ push_and_pr() {
   # Host authors the single commit from the implementer's files (the implementer
   # never touches git). Commit everything the model wrote in the worktree.
   git -C "$WORKTREE" add -A
-  git -C "$WORKTREE" diff --cached --quiet \
-    || git -C "$WORKTREE" commit -q -m "implementer($PRD_SLUG): run $IMPL_UUID [factory]"
+  if ! git -C "$WORKTREE" diff --cached --quiet; then
+    # -c identity is belt-and-suspenders; prepare_run_dir also sets local config.
+    if ! git -C "$WORKTREE" -c user.name="${IMPL_GIT_NAME:-factory}" \
+          -c user.email="${IMPL_GIT_EMAIL:-factory@ak47.local}" commit -q \
+          -m "implementer($PRD_SLUG): run $IMPL_UUID [factory]"; then
+      echo "  ERROR: could not commit worktree changes (no diff or identity)." >&2
+      return 2
+    fi
+  else
+    echo "  [no-op] worktree has no changes beyond base — nothing to commit." >&2
+  fi
   echo "  Host-authored worktree commit on $WORKTREE_BRANCH" >&2
   # Push the worktree branch (commits live in the run-dir clone, not src).
   # origin in the clone already points at the real remote.
