@@ -9,7 +9,11 @@
 #     read-only workspace + read-write run dir, streams the implementer's
 #     JSONL event output live into a host-side session log, watches liveness,
 #     respawns on abnormal container death, and on success archives the run
-#     report + decisions, pushes the worktree branch, and raises a PR.
+#     report + decisions, pushes the worktree branch, and raises a PR. After
+#     delivery the container is shut down and the run dir is stripped of
+#     disposable residue (installed deps, raw trace logs) so the host never
+#     accretes ~300 MB of throwaway deps per task — durable artifacts (outbox,
+#     session evidence, brief, worktree source) are always kept.
 #   * CONTAINER (the hands): one headless `pi` process running the
 #     implementer agent inside a podman sandbox image. Holds nothing durable;
 #     all state exits through git / the run dir on the host.
@@ -48,6 +52,8 @@ if command -v jq >/dev/null 2>&1; then
   ARCHIVES_ROOT="$(cfg '.archives_root')"
   LIVENESS_INTERVAL="$(cfg '.liveness_interval_sec')"
   LIVENESS_IDLE="$(cfg '.liveness_idle_sec')"
+  CLEANUP_ENABLED="$(cfg '.cleanup_enabled // true')"
+  KEEP_WORKTREE="$(cfg '.keep_worktree // true')"
   repo_map_path() { cfg ".repo_map[\"$1\"] // empty"; }
   env_allowed() { jq -r '.env_allowlist[]' "$CONFIG_FILE"; }
 else
@@ -59,6 +65,8 @@ else
   ARCHIVES_ROOT="docs/implementations"
   LIVENESS_INTERVAL=15
   LIVENESS_IDLE=300
+  CLEANUP_ENABLED=true
+  KEEP_WORKTREE=true
   repo_map_path() {
     case "$1" in
       software-factory|langfuse) echo "." ;;
@@ -315,6 +323,9 @@ write_env_file() {
   local name
   while read -r name; do
     [ -z "$name" ] && continue
+    # allowlist entries must be valid environment-variable identifiers (a
+    # glob like `LANGFUSE_*` or an empty pattern must not crash ${!name}).
+    [[ "$name" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]] || continue
     if [ -n "${!name:-}" ]; then
       printf '%s=%s\n' "$name" "${!name}" >> "$envfile"
     fi
@@ -340,6 +351,14 @@ run_container() {
 
   echo "  [attempt $attempt/$RESPAWN_CAP] podman run $IMAGE ..." >&2
 
+  # Deterministic container identity so we can shut it down explicitly once the
+  # PR is raised (defensive: --rm already removes it on exit, but this also
+  # handles stale containers left by prior runs and name conflicts on respawn).
+  local cname="impl-$IMPL_UUID"
+  if command -v podman >/dev/null 2>&1; then
+    podman rm -f "$cname" >/dev/null 2>&1 || true
+  fi
+
   # Continuity is native: pi persists its session to the host mount under the
   # run's session-dir, and a respawn passes --continue so the fresh container
   # resumes the existing conversation (no PROGRESS.md needed).
@@ -359,6 +378,7 @@ run_container() {
   # Live-stream container stdout into the session log while it runs.
   (
     exec podman run --rm --network=host \
+      --name "impl-$IMPL_UUID" \
       -v "$WORKSPACE:/workspace:ro" \
       -v "$RUN_DIR:/sandbox" \
       --env-file "$envfile" \
@@ -543,10 +563,66 @@ push_and_pr() {
   echo "  PR raised." >&2
 }
 
+# ─── stop_container(): ensure the run's sandbox container is shut down ────
+# The container is cattle: once the PR is raised (or the run fails) it is no
+# longer needed. Containers run with --rm, so this is mostly defensive — it
+# also cleans stale containers from prior runs that died mid-flight.
+stop_container() {
+  local cname="impl-$IMPL_UUID"
+  if command -v podman >/dev/null 2>&1 \
+      && podman ps -a --format '{{.Names}}' 2>/dev/null | grep -qx "$cname"; then
+    echo "  Shutting down sandbox container $cname (no longer needed)." >&2
+    podman stop -t 5 "$cname" >/dev/null 2>&1 || true
+    podman rm -f "$cname" >/dev/null 2>&1 || true
+  fi
+}
+
+# ─── cleanup_run_dir(): enforce disposable-vs-durable after a run ──────────
+# Removes the throwaway residue a run accumulates (installed deps, raw trace
+# logs) so the host doesn't accrete ~300 MB of bloat per task. Everything
+# durable survives: outbox/report/decisions, the compact native session
+# evidence (sessions/), the brief, the PR body, and the worktree source (with
+# deps stripped).
+#
+# Flags: --keep-logs  preserve raw container logs + streamed transcript
+#        (used on the failure path, where logs are the diagnosis)
+# Controls: IMPL_CLEANUP=false disables; KEEP_WORKTREE=0 deletes the worktree
+#        (and its .git) completely instead of just stripping deps.
+cleanup_run_dir() {
+  local keep_logs=false
+  [ "${1:-}" = "--keep-logs" ] && keep_logs=true
+  local deps=0
+  # 1. Throwaway dependency trees inside the worktree (never committed;
+  #    rebuildable from package.json/requirements.txt).
+  if [ -d "$WORKTREE" ]; then
+    while IFS= read -r -d '' d; do
+      rm -rf "$d" && deps=$((deps+1))
+    done < <(find "$WORKTREE" -type d \( -name node_modules -o -name 'venv*' \
+      -o -name .venv -o -name __pycache__ -o -name .pytest_cache \) \
+      -prune -print0 2>/dev/null || true)
+    find "$WORKTREE" -name '*.pyc' -delete 2>/dev/null || true
+  fi
+  # 2. Raw per-run trace (the native evidence copy survives in sessions/; the
+  #    finalized transcript lives in docs/knowledge/sessions/<uuid>/).
+  if [ "$keep_logs" = false ]; then
+    rm -f "$RUN_DIR"/container-*.log "$RUN_DIR"/session.jsonl
+  fi
+  # 3. Re-injectable env file — never needed again; regenerated per run.
+  rm -f "$RUN_DIR"/secrets.env
+  if [ "$KEEP_WORKTREE" = "0" ] && [ -d "$WORKTREE" ]; then
+    rm -rf "$WORKTREE"
+  fi
+  echo "  Cleanup: removed $deps disposable dep dirs + raw trace from $RUN_DIR (durable artifacts kept)." >&2
+}
+
 # ─── failure path ──────────────────────────────────────────────────────────
 fail_run() {
   local reason="$1"
   echo "  FAILED: $reason" >&2
+  stop_container
+  if [ "$DRY_RUN" != true ] && [ "${IMPL_CLEANUP:-$CLEANUP_ENABLED}" != "false" ]; then
+    cleanup_run_dir --keep-logs
+  fi
   if [ -d "$OUTBOX" ] && [ -f "$OUTBOX/report.md" ]; then
     archive
   elif [ -d "$OUTBOX" ]; then
@@ -596,7 +672,15 @@ done
 finalize_session_copy() {
   local sess="$WORKSPACE/docs/knowledge/sessions/$IMPL_UUID/session.jsonl"
   # pi names its files  <ts>_<session-uuid>.jsonl under the session-dir mount.
-  local native; native="$(ls -t "$RUN_DIR"/sessions/*.jsonl 2>/dev/null | head -1)"
+  local native=""
+  # Guard the glob: on a failed run there may be no session file, and under
+  # `set -o pipefail` a non-matching `ls -t ... *.jsonl | head -1` makes the
+  # command-substitution assignment return non-zero, which `set -e` turns into
+  # a silent exit-2 abort BEFORE fail_run runs (no FAILED msg, no report).
+  # compgen only runs `ls` when the glob actually matches.
+  if compgen -G "$RUN_DIR/sessions/*.jsonl" >/dev/null 2>&1; then
+    native="$(ls -t "$RUN_DIR"/sessions/*.jsonl 2>/dev/null | head -1)"
+  fi
   if [ -n "$native" ] && [ -s "$native" ]; then
     cp "$native" "$sess"
   elif [ -s "$SESSION_LOG" ]; then
@@ -621,6 +705,12 @@ if [ "$local_result" -eq 0 ]; then
         docs/knowledge/index.md docs/tasks/$PRD_SLUG.md docs/tasks.txt 2>/dev/null || true
       git diff --cached --quiet || git commit -m "implementer($PRD_SLUG): archive run report + decisions [impl $IMPL_UUID]" )
     push_and_pr || true
+  fi
+  # The run is delivered: the container is no longer needed, and the host only
+  # keeps the durable artifacts (outbox, session evidence, brief, worktree).
+  stop_container
+  if [ "$DRY_RUN" != true ] && [ "${IMPL_CLEANUP:-$CLEANUP_ENABLED}" != "false" ]; then
+    cleanup_run_dir
   fi
   echo "Done (exit 0)."
   exit 0

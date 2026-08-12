@@ -237,6 +237,47 @@ else
   pass "integration: skipped (no podman/docker, acceptable)"
 fi
 
+# ─── Test 6: cleanup_run_dir (disposable vs durable) + stop_container ──────
+echo "── cleanup_run_dir + stop_container ──"
+source_driver
+CC="$(mktemp -d)"
+RUN_DIR="$CC"
+WORKTREE="$CC/worktree"
+IMPL_UUID="11111111-2222-3333-4444-555555555555"
+mkdir -p "$WORKTREE/capture/agent-service/node_modules/pkg" \
+         "$WORKTREE/capture/server/venv2/lib" \
+         "$WORKTREE/capture/server/__pycache__" \
+         "$CC/sessions" "$CC/outbox"
+touch "$WORKTREE/capture/agent-service/node_modules/pkg/index.js"
+touch "$WORKTREE/capture/server/venv2/lib/f.pyc"
+touch "$CC/container-1.log" "$CC/session.jsonl" "$CC/secrets.env"
+printf 'evidence' > "$CC/sessions/evidence.jsonl"
+printf 'report' > "$CC/outbox/report.md"
+
+cleanup_run_dir
+[ ! -d "$WORKTREE/capture/agent-service/node_modules" ] && pass "node_modules removed" || fail "node_modules still present"
+[ ! -d "$WORKTREE/capture/server/venv2" ] && pass "venv2 removed" || fail "venv2 still present"
+[ ! -d "$WORKTREE/capture/server/__pycache__" ] && pass "__pycache__ removed" || fail "__pycache__ still present"
+[ ! -f "$CC/container-1.log" ] && pass "raw container log removed" || fail "container log kept"
+[ ! -f "$CC/session.jsonl" ] && pass "streamed transcript removed" || fail "transcript kept"
+[ ! -f "$CC/secrets.env" ] && pass "secrets.env removed" || fail "secrets.env kept"
+[ -f "$CC/outbox/report.md" ] && pass "durable outbox/report kept" || fail "outbox removed!"
+[ -f "$CC/sessions/evidence.jsonl" ] && pass "durable session evidence kept" || fail "session evidence removed!"
+
+# --keep-logs preserves the diagnosis logs.
+touch "$CC/container-2.log" "$CC/session.jsonl"
+cleanup_run_dir --keep-logs
+[ -f "$CC/container-2.log" ] && pass "--keep-logs preserves container logs" || fail "--keep-logs removed logs"
+
+# stop_container is a safe no-op when no such container exists (must not fail).
+if command -v podman >/dev/null 2>&1; then
+  stop_container && pass "stop_container no-ops cleanly when container absent" \
+    || fail "stop_container errored on absent container"
+else
+  pass "stop_container: container-runtime check skipped (no podman)"
+fi
+rm -rf "$CC"
+
 # ─── Summary ───────────────────────────────────────────────────────────────
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"

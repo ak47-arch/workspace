@@ -26,5 +26,7 @@
   "runs_root": "~/.factory/runs",
   "archives_root": "docs/implementations",
   "liveness_interval_sec": 15,
-  "liveness_idle_sec": 300
+  "liveness_idle_sec": 300,
+  "cleanup_enabled": true,
+  "keep_worktree": true
 }

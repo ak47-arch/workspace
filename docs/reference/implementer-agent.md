@@ -49,9 +49,9 @@ archived report+decision, and the compact session evidence are **durable**.
 | Driver-generated task brief | `<run>/brief.md` |
 | Implementer's deliverable (report + decision) | `<run>/outbox/` |
 | pi session evidence (compact) | `<run>/sessions/` |
-| Full raw session trace + container logs | `<run>/session.jsonl`, `<run>/container-*.log` |
-| Worktree clone (the implementation) | `<run>/worktree/` |
-| Injected env (`secrets.env`, **no GitHub tokens**) | `<run>/secrets.env` |
+| Full raw session trace + container logs | `<run>/session.jsonl`, `<run>/container-*.log` — **removed on successful delivery** (kept only under `IMPL_CLEANUP=false` or on failure for diagnosis) |
+| Worktree clone (the implementation) | `<run>/worktree/` — **deps stripped on delivery** (`node_modules`, `venv*`, `__pycache__`); source + `.git` kept unless `KEEP_WORKTREE=0` |
+| Injected env (`secrets.env`, **no GitHub tokens**) | `<run>/secrets.env` — deleted after the run |
 | Archived report + decisions | `docs/implementations/<date>-<slug>/` |
 
 ## Sources of work (inputs)

@@ -9,6 +9,7 @@ Entries are grouped by project for progressive discovery. When the agent needs t
 
 ### software-factory
 
+- [Enforce disposable-vs-durable in the driver — container shutdown + automatic run-dir cleanup after delivery](sessions/019fecde-70b4-78e7-ab7d-e91886af42a7/decisions/04-cleanup-shutdown-durable-disposable.md)
 - [Organize the implementer as a pointer map, not a physical bundle — agents as a workforce roster](sessions/019fecde-70b4-78e7-ab7d-e91886af42a7/decisions/03-pointer-map-not-bundle-agents-as-roster.md)
 - [Fix silent delivery loss — configure git identity in the run-dir clone before the host commit](sessions/019fecde-70b4-78e7-ab7d-e91886af42a7/decisions/02-fix-silent-delivery-loss-git-identity.md)
 - [Implementer container false-kill — tool-aware liveness + native session continuation](sessions/019fecde-70b4-78e7-ab7d-e91886af42a7/decisions/01-implementer-false-kill-tool-liveness-session-continuation.md)
