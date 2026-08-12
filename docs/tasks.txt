@@ -57,6 +57,7 @@ tasks:
     - Add another abstraction layer on the tasks.txt that helps the user select the next task based on the overall state of the system and reasoning on priorities (software-factory) [task-selection-abstraction-layer]
     - Extend the prod review agent to make it better (software-factory)
     - Add headless herdr host to implementer gent so we can run it seperately in a separate worktree (software-factory)
+    - Add a code review agent to review pr (software-factory)
 
     ### Queued
     ### Complete
