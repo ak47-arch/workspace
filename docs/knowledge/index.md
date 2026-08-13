@@ -9,6 +9,9 @@ Entries are grouped by project for progressive discovery. When the agent needs t
 
 ### software-factory
 
+- [Code-review agent uses a manual trigger (no polling infra)](sessions/019ff79e-181d-7e8b-a869-398b6417d28a/decisions/01-code-review-manual-trigger.md)
+- [Code-review reports archive under docs/code-reviews/, not docs/reviews/](sessions/019ff79e-181d-7e8b-a869-398b6417d28a/decisions/02-code-review-archive-location.md)
+- [Review worker is read-only — may run read-only git, never gh](sessions/019ff79e-181d-7e8b-a869-398b6417d28a/decisions/03-review-worker-read-only-git.md)
 - [Enforce disposable-vs-durable in the driver — container shutdown + automatic run-dir cleanup after delivery](sessions/019fecde-70b4-78e7-ab7d-e91886af42a7/decisions/04-cleanup-shutdown-durable-disposable.md)
 - [Organize the implementer as a pointer map, not a physical bundle — agents as a workforce roster](sessions/019fecde-70b4-78e7-ab7d-e91886af42a7/decisions/03-pointer-map-not-bundle-agents-as-roster.md)
 - [Fix silent delivery loss — configure git identity in the run-dir clone before the host commit](sessions/019fecde-70b4-78e7-ab7d-e91886af42a7/decisions/02-fix-silent-delivery-loss-git-identity.md)
