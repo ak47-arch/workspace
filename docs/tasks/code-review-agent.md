@@ -1,6 +1,6 @@
 # Task: code-review-agent
 
-**Status**: in-progress
+**Status**: prd-ready
 **Category**: Large
 **Project**: software-factory
 **Created**: 2026-08-13 23:59
