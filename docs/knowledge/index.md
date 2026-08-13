@@ -7,16 +7,9 @@ Entries are grouped by project for progressive discovery. When the agent needs t
 
 
 
+
 ### software-factory
 
-- [Ponytail wired as review-worker skills via `--skill` flags — not the interactive pi-extension or MCP](sessions/019ff79e-181d-7e8b-a869-398b6417d28a/decisions/04-ponytail-review-worker-skills.md)
-- [Code-review agent uses a manual trigger (no polling infra)](sessions/019ff79e-181d-7e8b-a869-398b6417d28a/decisions/01-code-review-manual-trigger.md)
-- [Code-review reports archive under docs/code-reviews/, not docs/reviews/](sessions/019ff79e-181d-7e8b-a869-398b6417d28a/decisions/02-code-review-archive-location.md)
-- [Review worker is read-only — may run read-only git, never gh](sessions/019ff79e-181d-7e8b-a869-398b6417d28a/decisions/03-review-worker-read-only-git.md)
-- [Enforce disposable-vs-durable in the driver — container shutdown + automatic run-dir cleanup after delivery](sessions/019fecde-70b4-78e7-ab7d-e91886af42a7/decisions/04-cleanup-shutdown-durable-disposable.md)
-- [Organize the implementer as a pointer map, not a physical bundle — agents as a workforce roster](sessions/019fecde-70b4-78e7-ab7d-e91886af42a7/decisions/03-pointer-map-not-bundle-agents-as-roster.md)
-- [Fix silent delivery loss — configure git identity in the run-dir clone before the host commit](sessions/019fecde-70b4-78e7-ab7d-e91886af42a7/decisions/02-fix-silent-delivery-loss-git-identity.md)
-- [Implementer container false-kill — tool-aware liveness + native session continuation](sessions/019fecde-70b4-78e7-ab7d-e91886af42a7/decisions/01-implementer-false-kill-tool-liveness-session-continuation.md)
 - [Knowledge Base as Infrastructure Layer](sessions/019f8faf-c8f2-7612-a79d-10e18e6f78cf/decisions/01-factory-architecture-decisions.md#1-knowledge-base-as-infrastructure-layer)
 - [Product/Architecture as UX Layer](sessions/019f8faf-c8f2-7612-a79d-10e18e6f78cf/decisions/01-factory-architecture-decisions.md#2-productarchitecture-as-ux-layer--two-artifact-outputs)
 - [Progressive Disclosure Chain](sessions/019f8faf-c8f2-7612-a79d-10e18e6f78cf/decisions/01-factory-architecture-decisions.md#3-progressive-disclosure-chain-for-agent-context)
@@ -49,6 +42,15 @@ Entries are grouped by project for progressive discovery. When the agent needs t
 - [Sandbox built on workspace-portability — new profile, pi install in-scope, container definition in portability](sessions/019fe7d2-aa31-77e6-8ea0-9df3d6b3c6ed/decisions/03-sandbox-on-workspace-portability.md)
 - [Implementer runtime set — current model, langfuse-tracing, embedded ponytail, implementer-ops skill](sessions/019fe7d2-aa31-77e6-8ea0-9df3d6b3c6ed/decisions/04-implementer-runtime-config-model-skills-extensions.md)
 - [Implementer lifecycle & traceability — in-progress until merge, PRD stays queued, driver-shielded index](sessions/019fe7d2-aa31-77e6-8ea0-9df3d6b3c6ed/decisions/05-implementer-lifecycle-traceability.md)
+- [Implementer container false-kill — tool-aware liveness + native session continuation](sessions/019fecde-70b4-78e7-ab7d-e91886af42a7/decisions/01-implementer-false-kill-tool-liveness-session-continuation.md)
+- [Fix silent delivery loss — configure git identity in the run-dir clone before the host commit](sessions/019fecde-70b4-78e7-ab7d-e91886af42a7/decisions/02-fix-silent-delivery-loss-git-identity.md)
+- [Organize the implementer as a pointer map, not a physical bundle — agents as a workforce roster](sessions/019fecde-70b4-78e7-ab7d-e91886af42a7/decisions/03-pointer-map-not-bundle-agents-as-roster.md)
+- [Enforce disposable-vs-durable in the driver — container shutdown + automatic run-dir cleanup after delivery](sessions/019fecde-70b4-78e7-ab7d-e91886af42a7/decisions/04-cleanup-shutdown-durable-disposable.md)
+- [review driver gh call and test seam](sessions/d7a5fbb9-c030-4800-8f3d-fb217d36d1cd/decisions/01-review-driver-gh-call-and-test-seam.md)
+- [Code-review agent uses a manual trigger (no polling infra)](sessions/019ff79e-181d-7e8b-a869-398b6417d28a/decisions/01-code-review-manual-trigger.md)
+- [Code-review reports archive under docs/code-reviews/, not docs/reviews/](sessions/019ff79e-181d-7e8b-a869-398b6417d28a/decisions/02-code-review-archive-location.md)
+- [Review worker is read-only — may run read-only git, never gh](sessions/019ff79e-181d-7e8b-a869-398b6417d28a/decisions/03-review-worker-read-only-git.md)
+- [Ponytail wired as review-worker skills via `--skill` flags — not the interactive pi-extension or MCP](sessions/019ff79e-181d-7e8b-a869-398b6417d28a/decisions/04-ponytail-review-worker-skills.md)
 
 ### workspace-portability
 
