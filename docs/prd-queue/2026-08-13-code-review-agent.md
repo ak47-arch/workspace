@@ -9,6 +9,7 @@
   - `docs/knowledge/sessions/019ff79e-181d-7e8b-a869-398b6417d28a/decisions/01-code-review-manual-trigger.md`
   - `docs/knowledge/sessions/019ff79e-181d-7e8b-a869-398b6417d28a/decisions/02-code-review-archive-location.md`
   - `docs/knowledge/sessions/019ff79e-181d-7e8b-a869-398b6417d28a/decisions/03-review-worker-read-only-git.md`
+  - `docs/knowledge/sessions/019ff79e-181d-7e8b-a869-398b6417d28a/decisions/04-ponytail-review-worker-skills.md`
 
 ## Problem statement
 
@@ -49,6 +50,14 @@ decision conformance, edge cases, precise UAT-gap list) — and writes a structu
 report mirroring the prd-reviewer's format. The driver posts the report to the PR,
 archives it, and transitions the task.
 
+The review includes a **Ponytail over-engineering pass**: the worker loads
+`opensource/ponytail`'s skills (read-only, via pi `--skill` flags) and runs
+`ponytail-review` over the diff at `ultra` mode — findings (stdlib/native/yagni/
+delete/shrink) are reported as an **advisory subclass** (never alone blocking),
+and existing `ponytail:` shortcut markers in changed files are harvested into the
+report's UAT section. This ships the over-engineering review as a first-class,
+versioned check instead of the untracked prose found in the implementer.
+
 Review checks live in the **versioned `review-ops` skill + `code-reviewer` persona**
 (not baked into the driver), so adding a robustness step is an edit to the skill.
 The worker is read-only: it never commits, and the container holds no GitHub token.
@@ -65,7 +74,8 @@ The worker is read-only: it never commits, and the container holds no GitHub tok
 4. The worker runs deterministic checks (metadata sane; scope ⊆ PRD file-map; no
    secrets / stray deps; every PRD story maps to diff evidence; the implementer's
    archived report matches the actual diff) and judgment checks (story intent,
-   PRD-decision conformance, edge/error paths, UAT gaps).
+   PRD-decision conformance, edge/error paths, over-engineering via
+   `ponytail-review`, UAT gaps).
 5. The report is structured (per-story + per-check PASS/FAIL with evidence,
    blocking vs advisory findings, verdict) and is both posted to the PR as a comment
    and archived to `docs/code-reviews/<date>-<slug>/`.
@@ -81,6 +91,13 @@ The worker is read-only: it never commits, and the container holds no GitHub tok
    skill edit, not a driver change.
 10. The reviewer is read-only: no commits/writes to the target repo, and no GitHub
     credential enters the container; all mutations + PR comments are driver-side.
+11. The review includes a **Ponytail over-engineering pass**: the worker has the
+    six `opensource/ponytail` skills (`ponytail`, `ponytail-review`,
+    `ponytail-audit`, `ponytail-debt`, `ponytail-gain`, `ponytail-help`) loaded
+    via `--skill` at `ultra` mode; it reviews the `base...head` diff with
+    `ponytail-review` (`L<line>: <tag> <what>. <replacement>.` findings),
+    reports them as advisory (never blocking alone), and harvests existing
+    `ponytail:` shortcut markers in changed files into the report's UAT section.
 
 ## Implementation decisions
 
@@ -113,6 +130,15 @@ The worker is read-only: it never commits, and the container holds no GitHub tok
   without changing output).
 - **Lifecycle**: driver transitions the task `in-progress → in-review` + links the
   review session after a successful review; the PRD remains in the queue until UAT.
+- **Ponytail pass** (Decision 04): the worker loads the six `opensource/ponytail`
+  skills via repeatable `--skill` flags pointing at
+  `/workspace/opensource/ponytail/skills/` (read-only mount; live from the opensource
+  checkout — no vendoring, updates flow via workspace-portability).
+  `PONYTAIL_DEFAULT_MODE=ultra` is in the reviewer env allowlist. `review-ops`
+  gains the over-engineering judgment check (`ponytail-review` on `base...head`,
+  advisory subclass) + `ponytail-debt` harvest. The interactive pi-extension and
+  `ponytail-mcp` are **not** wired into the worker (headless UI risk / pi injects
+  skills natively).
 
 ## Testing decisions
 
@@ -135,6 +161,12 @@ Seams, mirroring the implementer's driver-suite approach (`bin/test-implementer-
   a REQUEST_CHANGES-shaped fixture (blocking finding) yields REQUEST_CHANGES.
 - **Guardrails**: suite asserts the worker made no commits (clean worktree), no
   `gh` call from the container, and no token env is set in the container.
+- **Ponytail seams**: driver suite asserts the six `--skill` ponytail flags and
+  `PONYTAIL_DEFAULT_MODE=ultra` appear in the podman invocation; a worker fixture
+  against an over-engineered synthetic PR must produce `ponytail-review` findings
+  in the expected `L<line>: <tag> …` format inside the report; guardrail: advisory
+  over-engineering findings alone must never flip the verdict to
+  REQUEST_CHANGES.
 - **Regression**: existing implementer driver suite + transition suite still pass;
   sandbox image reused unmodified.
 
@@ -148,6 +180,11 @@ Seams, mirroring the implementer's driver-suite approach (`bin/test-implementer-
   v1 declares checks in the versioned skill/persona.
 - **Reviewing non-factory (user-authored) PRs**: supported only via the optional
   `--pick` label seam; no bespoke review surface for them in v1.
+- **Ponytail interactive pi-extension + `ponytail-mcp` in the review worker**:
+  deferred — v1 wires only the six skills. The extension stays available for
+  interactive use from `opensource/`.
+- **Implementer-side ponytail upgrade** (prose → real skills): a separate tracked
+  task, not part of this PRD.
 
 ## Architecture
 
@@ -196,7 +233,8 @@ Seams, mirroring the implementer's driver-suite approach (`bin/test-implementer-
 
 - **Config** `config/reviewer.json` (mirrors `implementer.json`): `repo_map`,
   `model`, `timeout_sec`, `respawn_cap`, `env_allowlist`, `image` (`sandbox:latest`),
-  `runs_root`, `reviews_root` (`docs/code-reviews`).
+  `runs_root`, `reviews_root` (`docs/code-reviews`),
+  `ponytail: { skills_dir, default_mode }`
 - **brief.md** (contract): PR url · PRD path · task slug · review-session UUID ·
   worktree path · base/head refs · rules (read-only git only, no `gh`, no secrets) ·
   PRD verification commands · outbox paths.
@@ -225,11 +263,16 @@ Seams, mirroring the implementer's driver-suite approach (`bin/test-implementer-
 ### File-tree diff
 
 ```
-bin/review-run.sh                     (NEW) host driver, mirrors implementer-run.sh
+bin/review-run.sh                     (NEW) host driver, mirrors implementer-run.sh;
+                                       pi invocation carries six `--skill` ponytail
+                                       flags + `PONYTAIL_DEFAULT_MODE=ultra`
 bin/test-review-driver.sh             (NEW) driver unit suite (fixture-driven)
-config/reviewer.json                  (NEW) config (mirrors implementer.json)
+config/reviewer.json                  (NEW) config (mirrors implementer.json;
+                                       `ponytail: { skills_dir, default_mode }`)
 .pi/agents/code-reviewer.md           (NEW) worker persona (read-only reviewer)
-.agents/skills/review-ops/SKILL.md    (NEW) run contract (checks + report schema)
+.agents/skills/review-ops/SKILL.md    (NEW) run contract (checks + report schema;
+                                       includes the ponytail over-engineering
+                                       judgment check + debt harvest)
 docs/reference/reviewer-agent.md      (NEW) artefact map
 docs/factory-context.md               (EDIT) roster + assembly_line pointer
 bin/implementer-run.sh                (EDIT) `gh pr create` gains
@@ -274,7 +317,10 @@ read brief → orient (ro /workspace PRD + <run>/worktree checkout)
 review-run.sh [<pr>|--pick] [--dry-run]
 # config
 { repo_map, model, timeout_sec, respawn_cap, env_allowlist, image,
-  runs_root, reviews_root }
+  runs_root, reviews_root, ponytail: { skills_dir, default_mode } }
+# ponytail skills (read-only, live opensource checkout)
+#   /workspace/opensource/ponytail/skills/{ponytail,ponytail-review,
+#     ponytail-audit,ponytail-debt,ponytail-gain,ponytail-help}
 # brief.md (contract)
 #   PR url · PRD path · task slug · review-session UUID · worktree path
 #   base ref · head ref · rules (read-only git, no gh, no secrets)
@@ -285,7 +331,14 @@ review-run.sh [<pr>|--pick] [--dry-run]
 #   verification results (ran / remains) · blocking vs advisory findings
 #   verdict: APPROVE | REQUEST_CHANGES · UAT hand-off list
 # podman run (signature)
-#   pi --mode json -p --append-system-prompt /workspace/.pi/agents/code-reviewer.md
+#   pi --mode json -p \
+#      --skill /workspace/opensource/ponytail/skills/ponytail \
+#      --skill /workspace/opensource/ponytail/skills/ponytail-review \
+#      --skill /workspace/opensource/ponytail/skills/ponytail-audit \
+#      --skill /workspace/opensource/ponytail/skills/ponytail-debt \
+#      --skill /workspace/opensource/ponytail/skills/ponytail-gain \
+#      --skill /workspace/opensource/ponytail/skills/ponytail-help \
+#      --append-system-prompt /workspace/.pi/agents/code-reviewer.md
 #      --session-dir /sandbox/sessions [--continue] …
 ```
 

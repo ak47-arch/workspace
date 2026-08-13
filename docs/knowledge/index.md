@@ -9,6 +9,7 @@ Entries are grouped by project for progressive discovery. When the agent needs t
 
 ### software-factory
 
+- [Ponytail wired as review-worker skills via `--skill` flags — not the interactive pi-extension or MCP](sessions/019ff79e-181d-7e8b-a869-398b6417d28a/decisions/04-ponytail-review-worker-skills.md)
 - [Code-review agent uses a manual trigger (no polling infra)](sessions/019ff79e-181d-7e8b-a869-398b6417d28a/decisions/01-code-review-manual-trigger.md)
 - [Code-review reports archive under docs/code-reviews/, not docs/reviews/](sessions/019ff79e-181d-7e8b-a869-398b6417d28a/decisions/02-code-review-archive-location.md)
 - [Review worker is read-only — may run read-only git, never gh](sessions/019ff79e-181d-7e8b-a869-398b6417d28a/decisions/03-review-worker-read-only-git.md)
