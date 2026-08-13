@@ -136,7 +136,9 @@ The worker is read-only: it never commits, and the container holds no GitHub tok
   checkout — no vendoring, updates flow via workspace-portability).
   `PONYTAIL_DEFAULT_MODE=ultra` is in the reviewer env allowlist. `review-ops`
   gains the over-engineering judgment check (`ponytail-review` on `base...head`,
-  advisory subclass) + `ponytail-debt` harvest. The interactive pi-extension and
+  advisory subclass, **explicitly run at ultra** — instruction-level, not reliant
+  on the env var, since the interactive extension is out of scope) + `ponytail-debt`
+  harvest. The interactive pi-extension and
   `ponytail-mcp` are **not** wired into the worker (headless UI risk / pi injects
   skills natively).
 
@@ -340,6 +342,8 @@ review-run.sh [<pr>|--pick] [--dry-run]
 #      --skill /workspace/opensource/ponytail/skills/ponytail-help \
 #      --append-system-prompt /workspace/.pi/agents/code-reviewer.md
 #      --session-dir /sandbox/sessions [--continue] …
+#   (env carryover via --env-file: PONYTAIL_DEFAULT_MODE=ultra from
+#    config/reviewer.json env allowlist)
 ```
 
 ### Build / run notes
