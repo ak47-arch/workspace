@@ -3,10 +3,10 @@
 - **PR URL**: ak47-arch/feed_analyser#1
 - **Task slug**: extension-inline-agent
 - **PRD path** (read-only; also below): /home/anupam/Desktop/workspace/docs/prd-queue/2026-08-08-extension-inline-agent.md
-- **Review session UUID**: f8cb56ec-d6f6-4641-bf7f-126c039c3879
+- **Review session UUID**: 6f5b0d44-d1a3-41f5-b1f9-f4f1202bf1c1
 - **Worktree path** (PR head, read-only for you): /sandbox/worktree
 - **Base ref**: 1771fdce79f46b39b307ed6caa2d0c836a3c6108
-- **Head ref**: 24e60a87a6926724c2ef6037d9daf87eaea6ecf7
+- **Head ref**: 93306541dfcbe6218d40d2b8a4bc9afc4e294ab1
 - **Outbox path** (write the review report here): /sandbox/outbox
 
 ## Rules (binding)

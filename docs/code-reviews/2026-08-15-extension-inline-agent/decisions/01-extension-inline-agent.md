@@ -1,48 +1,49 @@
-# Code Review — extension-inline-agent (session f8cb56ec-d6f6-4641-bf7f-126c039c3879)
+# Decision 01 — extension-inline-agent advisory acceptance (re-review rev 1)
 
-**Decision**: REQUEST_CHANGES due to one blocking robustness/correctness gap in the save path. All 7 stories otherwise implemented, all PRD verification commands that can run in-sandbox pass, no secrets, scope contained.
-
-**Status**: accepted (reviewer gate)
-**Date**: 2026-08-14
 **Task**: extension-inline-agent
-**Project**: feed_analyser / capture instrument
+**Review session**: 6f5b0d44-d1a3-41f5-b1f9-f4f1202bf1c1
+**PR**: ak47-arch/feed_analyser#1 · Head: 93306541dfcbe6218d40d2b8a4bc9afc4e294ab1
 
 ## Context
 
-Reviewing PR ak47-arch/feed_analyser#1 against PRD
-`docs/prd-queue/2026-08-08-extension-inline-agent.md` (base 1771fdc → head 24e60a8).
-Verified: 20 pytest pass, agent-service mock smoke PASS, fetch_url caps PASS,
-rebuild-index + /search PASS, node --check PASS. Real OpenRouter run + full browser
-e2e deferred to UAT (no key/live browser in sandbox).
+The first review of this PR returned REQUEST_CHANGES for one blocking defect:
+on a fresh checkout with no `data/` dir, a plain Save with the agent
+unavailable raised an unhandled `FileNotFoundError` → HTTP 500, breaking US5
+("agent unavailable … saving still works as today"). Revision 1 fixed exactly
+that. This re-review found no remaining blocking issues.
 
-## Decision / Rationale
+## Decision
 
-1. **Blocking — `capture/server/server.py:60` `append_artefact` does not create the
-   `data/` parent dir.** On a fresh checkout `data/` is gitignored/untracked,
-   `run-server.sh` and server startup create nothing, and only `index.py.rebuild()`
-   (on `/search`) or the agent-service `persistSession` (on an agent ask) mkdir it.
-   Therefore the first **plain Save with the agent unavailable** — precisely US5's
-   guarantee ("saving still works as today") — raises an unhandled `FileNotFoundError`
-   → HTTP 500. Reproduced by a direct POST to `/api/capture` with a missing parent
-   directory. **Recommended fix**: `target.parent.mkdir(parents=True, exist_ok=True)`
-   at the top of `append_artefact` (mirrors `index.py:143`), or a startup mkdir of
-   `data/`. Trivial but required before APPROVE.
+The blocking US5 fix is accepted (verified: `append_artefact` now
+`target.parent.mkdir(parents=True, exist_ok=True)`; new regression test
+`test_save_creates_missing_data_dir`; live POST to a non-existent `data/`
+returns 200 and creates the dir + file). The advisory findings from the
+original review are re-confirmed as **non-blocking / acceptable-as-is** and
+were intentionally left unchanged per the binding "fix exactly what findings
+scope" rule:
 
-2. **Advisory (non-blocking)**: `sidepanel.js:237` inverted/ambiguous disable
-   expression; `index.py:230` `total` reflects the post-LIMIT page not true total;
-   `server.js` drops in-memory session on socket close while the panel sends an empty
-   `messages` on reconnect `ask` (follow-up context lost after a mid-capture
-   restart); `/search` auto-rebuild-of-missing-index is a small documented deviation
-   beyond the PRD "manual/cron" wording but harmless (index is derived).
+- `sidepanel.js` Ask-control disabled expression has inverted/ambiguous
+  precedence (readability only).
+- `index.py` `build_fts_query` is a ~70-line hand-rolled FTS5 MATCH translator
+  (justified by the PRD search criteria).
+- `/search.total` reflects the capped page, not the true count (COUNT(*) before
+  LIMIT if consumers rely on it).
+- Reconnect after a mid-capture service restart drops in-memory conversation
+  context (acceptable for v1 single-session flow; wire `messages` through on
+  reconnect in a later phase).
 
-3. **Accepted deviations (documented by implementer decision 01)**: `fetch_url.js`
-   instead of `.ts` (build-free ESM), `deepseek/deepseek-v4-flash` alias instead of
-   the dated `-0731` id + temperature not force-injected (pi controls inference temp
-   for reasoning models), in-memory AuthStorage/ModelRegistry (no credential files
-   on disk), global `fetch` for redirects. All overridable via `AGENT_MODEL` /
-   `models.json`; surfaced in UAT.
+None of these block release.
+
+## Options considered
+
+- Narrowing the FTS query grammar to reduce `build_fts_query` — rejected as a
+  change to this revision; grammar is justified and correct, and a rewrite
+  would violate scope.
+- Computing true total via COUNT(*) — not required by any consumer in v1;
+  deferred as a refinement.
 
 ## Consequences
 
-- Fix the `data/` mkdir (one line) and re-review; the rest of the PR is ready.
-- UAT must re-confirm Save-without-agent on a machine with no `data/` dir.
+- Task eligible to transition `in-progress → in-review` on APPROVE.
+- Real OpenRouter inference + browser side-panel e2e remain UAT items
+  (require the user's key and live x.com panel).
