@@ -312,7 +312,21 @@ case "$cmd" in
   pr)
     sub="$1"; shift
     case "$sub" in
-      view) printf '%s' "$MOCK_GH_VIEW_JSON" ;;
+      view)
+        # Harden the seam: reject fields real gh 2.45 does not support
+        # (e.g. `merged` — the host bug that hid until --revise 2 on real gh).
+        prev=""; for a in "$@"; do
+          if [ "$prev" = "--json" ]; then
+            for f in ${a//,/ }; do
+              case "$f" in
+                number|title|headRefName|baseRefName|headRefOid|state) : ;;
+                *) printf 'Unknown JSON field: "%s"\n' "$f" >&2; exit 1 ;;
+              esac
+            done
+          fi
+          prev="$a"
+        done
+        printf '%s' "$MOCK_GH_VIEW_JSON" ;;
       comment) printf 'commented\n' ;;
       create) printf 'create-called\n' ;;
       *) printf 'ok\n' ;;

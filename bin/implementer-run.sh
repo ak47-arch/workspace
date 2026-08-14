@@ -772,12 +772,15 @@ repo_owner_revise() {
   local r; r="$(default_repo_revise)"; echo "${r%%/*}"
 }
 
-# Fetch PR metadata (title, refs, shas, state, merged) and GUARD that the PR is
-# open and not merged — a revision can only target a live PR (else exit 2).
+# Fetch PR metadata (title, refs, shas, state) and GUARD that the PR is open
+# and not merged — a revision can only target a live PR (else exit 2).
+# NOTE: gh 2.45 `pr view --json merged` is NOT a valid field (whole call errors)
+# — same family as the baseRefOid dogfood bug. Merged PRs report state=MERGED,
+# so the state guard covers merged + closed without an extra field.
 pr_revision_metadata() {
   local json
   json="$(gh_call pr view "$PR_NUMBER" --repo "$PR_REPO" --json \
-      number,title,headRefName,baseRefName,headRefOid,state,merged 2>/dev/null || true)"
+      number,title,headRefName,baseRefName,headRefOid,state 2>/dev/null || true)"
   if [ -z "$json" ]; then
     die "gh could not fetch PR $PR_REPO#$PR_NUMBER (is gh authenticated on the host?)"
   fi
@@ -786,9 +789,8 @@ pr_revision_metadata() {
   PR_BASE_REF="$(printf '%s' "$json" | json_get baseRefName)"
   PR_HEAD_SHA="$(printf '%s' "$json" | json_get headRefOid)"
   PR_STATE="$(printf '%s' "$json" | json_get state)"
-  PR_MERGED="$(printf '%s' "$json" | json_get merged)"
-  if [ "$PR_STATE" != "OPEN" ] || [ "$PR_MERGED" = "True" ] || [ "$PR_MERGED" = "true" ]; then
-    die "PR $PR_REPO#$PR_NUMBER is not open (state=$PR_STATE merged=$PR_MERGED) — revision requires an open, unmerged PR."
+  if [ "$PR_STATE" != "OPEN" ]; then
+    die "PR $PR_REPO#$PR_NUMBER is not open (state=$PR_STATE) — revision requires an open, unmerged PR."
   fi
   echo "  PR #$PR_NUMBER (open) title='$PR_TITLE' head=$PR_HEAD_REF base=$PR_BASE_REF" >&2
 }
