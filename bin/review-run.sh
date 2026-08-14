@@ -211,7 +211,7 @@ PYEOF
 pr_metadata() {
   local json
   json="$(gh_call pr view "$PR_NUMBER" --repo "$PR_REPO" --json \
-      number,title,headRefName,baseRefName,headRefOid,baseRefOid 2>/dev/null || true)"
+      number,title,headRefName,baseRefName,headRefOid 2>/dev/null || true)"
   if [ -z "$json" ]; then
     die "gh could not fetch PR $PR_REPO#$PR_NUMBER (is gh authenticated on the host?)"
   fi
@@ -243,13 +243,10 @@ except Exception: d = {}
 print(d.get("headRefOid", ""))
 PYEOF
   )"
-  PR_BASE_SHA="$(python3 - "$json" <<'PYEOF'
-import json, sys
-try: d = json.loads(sys.argv[1])
-except Exception: d = {}
-print(d.get("baseRefOid", ""))
-PYEOF
-  )"
+  PR_BASE_SHA="$(gh_call api "repos/$PR_REPO/pulls/$PR_NUMBER" --jq '.base.sha' 2>/dev/null || true)"
+  if [ -z "$PR_BASE_SHA" ]; then
+    die "gh could not fetch base SHA for PR $PR_REPO#$PR_NUMBER"
+  fi
   echo "  PR #$PR_NUMBER title='$PR_TITLE' head=$PR_HEAD_REF base=$PR_BASE_REF" >&2
 }
 
@@ -681,11 +678,11 @@ if [ "${REVIEWER_RUN_SOURCED:-0}" = "1" ]; then
 fi
 
 echo "=== review-run.sh ==="
+DRY_RUN=false
 echo "  dry-run: $DRY_RUN | target: ${PR_UNSET:-unspecified}"
 
 # ─── Arg parsing ───────────────────────────────────────────────────────────
 PR_ARG=""
-DRY_RUN=false
 PICK_MODE=false
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -731,7 +728,6 @@ if [ "$local_result" -eq 0 ]; then
   echo "=== Review success — archiving + delivering ===" >&2
   archive
   # Determine verdict from the report (driver-side decision, for label + gate).
-  local verdict
   verdict="$(grep -m1 '^APPROVE\|^REQUEST_CHANGES' "$OUTBOX/report.md" 2>/dev/null \
     | tr -d '[:space:]' || true)"
   case "$verdict" in
@@ -739,6 +735,9 @@ if [ "$local_result" -eq 0 ]; then
     REQUEST_CHANGES*) REVIEW_OUTCOME="review-blocked" ;;
     *) REVIEW_OUTCOME="reviewed-ok" ;;
   esac
+  # AUTHORITY SPLIT: the reviewer NEVER merges. Merge is the user/operator's
+  # go-ahead action after UAT (decision 05-review-never-merges). This driver
+  # has no merge path by design — APPROVE only labels + transitions to in-review.
   if [ "$DRY_RUN" = true ]; then
     echo "  [dry-run] would post comment, label factory:$REVIEW_OUTCOME, and transition to in-review" >&2
   else
