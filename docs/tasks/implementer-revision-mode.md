@@ -1,6 +1,6 @@
 # Task: implementer-revision-mode
 
-**Status**: in-prd
+**Status**: prd-ready
 **Category**: Medium
 **Project**: software-factory
 **Created**: 2026-08-14 22:13
