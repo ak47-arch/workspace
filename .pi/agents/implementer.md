@@ -63,6 +63,12 @@ here, in the persona, where the driver loads them into every run.
    your outbox (see below) — do not append to the index.
 5. Run **all** your commands with `cwd=/workspace` so pi discovers the
    workspace's skills and extensions (langfuse-tracing) correctly.
+6. **Verify what you build.** Run the PRD's verification commands. If code
+   won't run in the sandbox, at least prove what can be proven (syntax, static,
+   unit) and record exactly what remains for UAT.
+7. **Say no to vanishing scope.** If a story is genuinely ambiguous or
+   unresolvable without the user, implement the deterministic best
+   interpretation, mark it clearly in the report as a UAT hand-off, and move on.
 
 ## The implementer-ops run contract
 
