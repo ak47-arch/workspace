@@ -8,8 +8,13 @@ Entries are grouped by project for progressive discovery. When the agent needs t
 
 
 
+
 ### software-factory
 
+- [Code-review agent APPROVED PR #1 but a real host run surfaced 3 driver bugs the in-container review could not see](sessions/19cb853b-a2e9-4eb6-865a-138864ba1934/decisions/02-review-simulation-blind-spot-real-driver-bugs.md)
+- [Label seam — `gh pr edit --add-label` fails on this gh (classic-Projects GraphQL error); use the REST labels API](sessions/19cb853b-a2e9-4eb6-865a-138864ba1934/decisions/03-label-seam-gh-pr-edit.md)
+- [The code-review agent never merges PRs — merge stays a human-gated operator step](sessions/019ff79e-181d-7e8b-a869-398b6417d28a/decisions/05-review-never-merges.md)
+- [Task files carry a PR-tracking section — PR↔task↔review↔merge data attached for retrospective evaluation](sessions/019ff79e-181d-7e8b-a869-398b6417d28a/decisions/06-task-pr-tracking.md)
 - [Knowledge Base as Infrastructure Layer](sessions/019f8faf-c8f2-7612-a79d-10e18e6f78cf/decisions/01-factory-architecture-decisions.md#1-knowledge-base-as-infrastructure-layer)
 - [Product/Architecture as UX Layer](sessions/019f8faf-c8f2-7612-a79d-10e18e6f78cf/decisions/01-factory-architecture-decisions.md#2-productarchitecture-as-ux-layer--two-artifact-outputs)
 - [Progressive Disclosure Chain](sessions/019f8faf-c8f2-7612-a79d-10e18e6f78cf/decisions/01-factory-architecture-decisions.md#3-progressive-disclosure-chain-for-agent-context)
@@ -51,10 +56,7 @@ Entries are grouped by project for progressive discovery. When the agent needs t
 - [Code-review reports archive under docs/code-reviews/, not docs/reviews/](sessions/019ff79e-181d-7e8b-a869-398b6417d28a/decisions/02-code-review-archive-location.md)
 - [Review worker is read-only — may run read-only git, never gh](sessions/019ff79e-181d-7e8b-a869-398b6417d28a/decisions/03-review-worker-read-only-git.md)
 - [Ponytail wired as review-worker skills via `--skill` flags — not the interactive pi-extension or MCP](sessions/019ff79e-181d-7e8b-a869-398b6417d28a/decisions/04-ponytail-review-worker-skills.md)
-- [Code-review agent APPROVED PR #1 but a real host run surfaced 3 driver bugs the in-container review could not see](sessions/19cb853b-a2e9-4eb6-865a-138864ba1934/decisions/02-review-simulation-blind-spot-real-driver-bugs.md)
-- [Label seam — `gh pr edit --add-label` fails on this gh (classic-Projects GraphQL error); use the REST labels API](sessions/19cb853b-a2e9-4eb6-865a-138864ba1934/decisions/03-label-seam-gh-pr-edit.md)
-- [The code-review agent never merges PRs — merge stays a human-gated operator step](sessions/019ff79e-181d-7e8b-a869-398b6417d28a/decisions/05-review-never-merges.md)
-- [Task files carry a PR-tracking section — PR↔task↔review↔merge data attached for retrospective evaluation](sessions/019ff79e-181d-7e8b-a869-398b6417d28a/decisions/06-task-pr-tracking.md)
+- [implementer ponytail test env](sessions/8483b243-ad9a-4e00-be82-0cdf26a8801d/decisions/01-implementer-ponytail-test-env.md)
 - [Merge is reachable only via the operator tool `bin/merge-pr.sh` — reviewer has no merge path; enforced in code + container](sessions/019ff79e-181d-7e8b-a869-398b6417d28a/decisions/07-merge-tool-operator-authority-split.md)
 
 ### workspace-portability
