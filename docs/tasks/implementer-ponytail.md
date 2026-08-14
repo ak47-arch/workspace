@@ -36,3 +36,4 @@ the code-review agent uses (see decision 04 in session
 - Base: master · Head: 212370c67833ace883e263a17941a1f2f80e84d7 (raised 2026-08-14 21:40)
 - Raised by: implementer run 8483b243-ad9a-4e00-be82-0cdf26a8801d
 - Review: session 5b63c492-0880-4411-8ff5-26575091edff · verdict REQUEST_CHANGES—theimplementerwiredthesixponytail`--skill`flagscorrectly,butthecommitcontainsan**out-of-scope`opensource->/workspace/opensource`symlink**thatisabsentfromthePRDfilemap,contradictstheimplementer'sowndecisionrecord(whichstatesit"neverentersthecommit"),andisadanglingabsolute-host-pathartifactonanyotherclone.Thefull-suite-sweepacceptanceisalsonotreproduciblygreen(implementer-driver33/34inthisworktree)andthereportoverstatestheresult(34/34). · report docs/code-reviews/2026-08-14-implementer-ponytail/
+- Revised: 20c84acbf6fd24f0f74c804513e72a8b900570ec (2026-08-15 00:15, impl session 8483b243-ad9a-4e00-be82-0cdf26a8801d, addressing review 5b63c492-0880-4411-8ff5-26575091edff)
