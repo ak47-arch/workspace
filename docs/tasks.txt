@@ -60,7 +60,6 @@ tasks:
     - Make the infrastructure so that we don’t need the prompt before delete extension (software-factory)
 
     ### Queued
-    - Add a code review agent to review pr (software-factory) [code-review-agent]
     - Integrate the real ponytail skills into the implementer agent via pi --skill flags, replacing the prose directive (software-factory) [implementer-ponytail]
     - Add an implementer revision mode (--revise <pr>) that resumes the original implementation session to address reviewer findings, injecting the review report as binding authority (software-factory) [implementer-revision-mode]
     ### Complete
@@ -73,6 +72,7 @@ tasks:
     - (complete) Add chronological tracking to task files and knowledge base entries so we save the sequence of things (software-factory) [chronological-tracking]
     - (complete) Extend project management and start work on the assembly line components (software-factory) [extend-pm-assembly-line]
     - (complete) Build the implementer agent (software-factory) [implementer-agent]
+    - (complete) Add a code review agent to review pr (software-factory) [code-review-agent]
 
     ## resume
 
