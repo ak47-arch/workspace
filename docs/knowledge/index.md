@@ -10,8 +10,10 @@ Entries are grouped by project for progressive discovery. When the agent needs t
 
 
 
+
 ### software-factory
 
+- [implementer ponytail restore vanishing scope](sessions/8483b243-ad9a-4e00-be82-0cdf26a8801d/decisions/02-implementer-ponytail-restore-vanishing-scope.md)
 - [Code-review agent APPROVED PR #1 but a real host run surfaced 3 driver bugs the in-container review could not see](sessions/19cb853b-a2e9-4eb6-865a-138864ba1934/decisions/02-review-simulation-blind-spot-real-driver-bugs.md)
 - [Label seam — `gh pr edit --add-label` fails on this gh (classic-Projects GraphQL error); use the REST labels API](sessions/19cb853b-a2e9-4eb6-865a-138864ba1934/decisions/03-label-seam-gh-pr-edit.md)
 - [The code-review agent never merges PRs — merge stays a human-gated operator step](sessions/019ff79e-181d-7e8b-a869-398b6417d28a/decisions/05-review-never-merges.md)
