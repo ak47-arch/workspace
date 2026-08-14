@@ -1,6 +1,6 @@
 # Task: extension-inline-agent
 
-**Status**: in-progress
+**Status**: in-review
 **Category**: Large
 **Project**: feed_analyser
 **Created**: 2026-08-07 01:56
@@ -38,3 +38,4 @@
 - Branch: factory/extension-inline-agent/20260812-033024
 - Base: public-release · Head: 24e60a87a6926724c2ef6037d9daf87eaea6ecf7
 - Raised by: implementer run 60c0c537 · pre-reviewer era (manual verification 2026-08-12)
+- Review: session f8cb56ec-d6f6-4641-bf7f-126c039c3879 · verdict REQUEST_CHANGES—oneblockingcorrectness/robustnessgap:onafreshcheckout(no`data/`direvercreated)aplainSavewiththeagentunavailableraisesanunhandled`FileNotFoundError`→HTTP500,breakingUS5's"savingstillworksastoday"guarantee.Everythingelse(all7stories,verificationcommands,scope,nosecrets)checksout. · report docs/code-reviews/2026-08-15-extension-inline-agent/
