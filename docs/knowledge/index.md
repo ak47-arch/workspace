@@ -117,3 +117,6 @@ Entries are grouped by project for progressive discovery. When the agent needs t
 
 - [extension inline agent](sessions/60c0c537-b9c7-4c4c-8b8a-0be438950151/decisions/01-extension-inline-agent.md)
 - [Revision mode adds the podman/gh test seams and a stable revision number as part of this task (D8 dependency resolution)](sessions/cb6a90c1-f8d0-4da5-b413-1f82a0f32376/decisions/01-implementer-revision-test-seams.md)
+- [Mock gh must reject unknown `pr view --json` fields — host-gh compatibility is a live seam](sessions/019ff79e-181d-7e8b-a869-398b6417d28a/decisions/10-mock-gh-reject-unknown-fields.md)
+- [`merge-pr.sh` operates on the checked-out branch — operator must run it on master](sessions/019ff79e-181d-7e8b-a869-398b6417d28a/decisions/11-merge-pr-requires-master-branch.md)
+- [If the implementer driver dies before host delivery, the operator completes it manually](sessions/019ff79e-181d-7e8b-a869-398b6417d28a/decisions/12-manual-host-delivery-fallback.md)
