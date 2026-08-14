@@ -39,3 +39,4 @@
 - Base: public-release · Head: 24e60a87a6926724c2ef6037d9daf87eaea6ecf7
 - Raised by: implementer run 60c0c537-b9c7-4c4c-8b8a-0be438950151 (pre-reviewer era, manual verification 2026-08-12)
 - Review: session f8cb56ec-d6f6-4641-bf7f-126c039c3879 · verdict REQUEST_CHANGES—oneblockingcorrectness/robustnessgap:onafreshcheckout(no`data/`direvercreated)aplainSavewiththeagentunavailableraisesanunhandled`FileNotFoundError`→HTTP500,breakingUS5's"savingstillworksastoday"guarantee.Everythingelse(all7stories,verificationcommands,scope,nosecrets)checksout. · report docs/code-reviews/2026-08-15-extension-inline-agent/
+- Revised: 93306541dfcbe6218d40d2b8a4bc9afc4e294ab1 (2026-08-15 01:22, impl session 60c0c537-b9c7-4c4c-8b8a-0be438950151, addressing review f8cb56ec-d6f6-4641-bf7f-126c039c3879)
