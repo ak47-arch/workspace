@@ -1,7 +1,7 @@
 # PRD: Implementer revision mode — `--revise <pr>` resumes the original session to address review findings
 
 **Date**: 2026-08-14
-**Status**: Draft
+**Status**: Final
 **Owner**: software-factory
 **Task**: implementer-revision-mode
 **Session**: `docs/knowledge/sessions/019ff79e-181d-7e8b-a869-398b6417d28a/session.jsonl`
@@ -82,7 +82,8 @@ bin/implementer-run.sh --revise <pr>
 - **Branch semantics**: the fix commits ride on top of the existing PR branch;
   push is a normal fast-forward push (the branch already exists on origin).
 - **Data model** — PR tracking schema (decision 06) gains an append-only row:
-  `- Revised: <head-sha> (<date>, impl session <uuid>, addressing review <r-session>)`.
+  `- Revised: <head-sha> (<date>, impl session <uuid>, addressing review <r-session>)`
+  where `<r-session>` comes from the task's own `Review: session <uuid>` row.
   Revision archives land in the **same** implementation dir:
   `docs/implementations/<date>-<slug>/revision-<n>-report.md` (v1 stays
   `report.md`); the revision session extends the **same**
@@ -96,13 +97,17 @@ bin/implementer-run.sh --revise <pr>
   `review/`, revision brief). Errors: closed/merged PR → exit 2; unresolvable
   slug → exit 2; no REQUEST_CHANGES review report → exit 2. (Done when the run
   dir contains the same branch, the original session file, and the review
-  report; dry-run proves it without a container.)
+  report; `--dry-run` proves it WITHOUT launching a container — revise-mode
+  dry-run stops after `prepare_revision_dir` and simulates the pi invocation.)
 - **US2 — continuation + revision directive**: the container runs with
   `--continue` + the seeded session from attempt 1 and a revision directive
   (fix exactly what the findings scope; findings win over prior reasoning; no
   restart from scratch; no re-litigation; no scope expansion; no git — host
   owns it). (Done when the pi invocation carries `--continue` and the directive
-  text encodes the binding-authority rule.)
+  text encodes the binding-authority rule.) Continuity is verified
+  **mechanically** (seeded file present + `--continue` in the invocation + a
+  vacuous-guard test); semantic recall strength is a known risk tracked by
+  decision 08's revision trigger, not asserted here.
 - **US3 — delivery on the same PR**: revision delivery commits the fix on the
   same branch, pushes `origin/<branch>` (updating PR #N), posts a PR comment
   noting the revision, and does **not** call `gh pr create`. Task stays
@@ -130,7 +135,13 @@ bin/implementer-run.sh --revise <pr>
   earlier reasoning, the findings win") — the confirmation-bias mitigation.
 - **D3 — no task transition during revision**: the task stays `in-review`
   through the revision; the re-review re-affirms or re-blocks. Revision is not
-  "being implemented" in the lifecycle sense.
+  "being implemented" in the lifecycle sense. The revise branch of `main`
+  therefore **never calls `transition`** (a real trap: v1 main calls it
+  unconditionally at ~675 and ~721 — the revise branch must skip both) and
+  never generates a fresh `new_uuid` (D1) nor calls `push_and_pr` (D4).
+  (The "Bookkeeping (via transition tooling)" file-map entry refers to THIS
+  task's own lifecycle as it flows through the gate — not a transition during
+  a revision.)
 - **D4 — no new PR, no merge**: delivery pushes the existing branch only.
   Merge remains operator-gated (decision 07); reviewer stays read-only
   (decision 03).
@@ -184,7 +195,10 @@ bin/implementer-run.sh --revise <pr>
 2. `bash bin/test-implementer-driver.sh` → all pass including the new
    revise-mode tests.
 3. Full sweep green: implementer, review (61), factory-run (22), merge-pr (8),
-   transition (45).
+   transition (45). (Known wobble: the implementer suite may be 33/34 without
+   the gitignored `workspace_restore_manifest.json` — a pre-existing
+   environmental failure unrelated to this task; the implementation must stay
+   robust to it.)
 4. `--revise <fixture-pr> --dry-run` exits 0 and the run dir proves: same
    branch checked out, seeded `sessions/` containing the original session file,
    `review/` mounted, and `--continue` in the (simulated) pi invocation.
