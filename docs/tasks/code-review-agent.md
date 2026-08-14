@@ -32,7 +32,7 @@
 - URL: https://github.com/ak47-arch/workspace/pull/1
 - Branch: factory/code-review-agent/20260814-021924
 - Base: master · Head: 56d7c29 (raised 2026-08-14 02:43)
-- Raised by: implementer run d7a5fbb9 (archived docs/implementations/2026-08-14-code-review-agent)
-- Review: session 19cb853b · verdict APPROVE · report docs/code-reviews/2026-08-14-code-review-agent/
+- Raised by: implementer run d7a5fbb9-c030-4800-8f3d-fb217d36d1cd (archived docs/implementations/2026-08-14-code-review-agent)
+- Review: session 19cb853b-a2e9-4eb6-865a-138864ba1934 · verdict APPROVE · report docs/code-reviews/2026-08-14-code-review-agent/
   (post-review host run found 3 driver defects → fix 56d7c29; blind spot = decision 02-review-simulation-blind-spot-real-driver-bugs)
 - Merge: f7f672f (2026-08-14, operator on user go-ahead — reviewer never merges, decision 05)
