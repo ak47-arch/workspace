@@ -1,6 +1,6 @@
 # Task: implementer-ponytail
 
-**Status**: in-prd
+**Status**: prd-ready
 **Category**: Small
 **Project**: software-factory
 **Created**: 2026-08-14 00:45
@@ -25,4 +25,4 @@ the code-review agent uses (see decision 04 in session
 
 ## Decisions
 
-- (none yet)
+- (none yet)- [ponytail-review-worker-skills](../knowledge/sessions/019ff79e-181d-7e8b-a869-398b6417d28a/decisions/04-ponytail-review-worker-skills.md)
