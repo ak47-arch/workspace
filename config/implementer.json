@@ -20,7 +20,8 @@
     "LANGFUSE_SECRET_KEY",
     "LANGFUSE_PUBLIC_KEY",
     "LANGFUSE_BASE_URL",
-    "IMPLEMENTER_MODEL"
+    "IMPLEMENTER_MODEL",
+    "PONYTAIL_DEFAULT_MODE"
   ],
   "image": "sandbox:latest",
   "runs_root": "~/.factory/runs",
@@ -28,5 +29,9 @@
   "liveness_interval_sec": 15,
   "liveness_idle_sec": 300,
   "cleanup_enabled": true,
-  "keep_worktree": true
+  "keep_worktree": true,
+  "ponytail": {
+    "skills_dir": "/workspace/opensource/ponytail/skills",
+    "default_mode": "ultra"
+  }
 }
