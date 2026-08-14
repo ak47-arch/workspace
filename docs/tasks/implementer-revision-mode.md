@@ -1,6 +1,6 @@
 # Task: implementer-revision-mode
 
-**Status**: prd-ready
+**Status**: in-progress
 **Category**: Medium
 **Project**: software-factory
 **Created**: 2026-08-14 22:13
@@ -26,6 +26,7 @@ target for this mode.
 ## Sessions
 
 - (planning not yet captured)
+- [implementation](../knowledge/sessions/cb6a90c1-f8d0-4da5-b413-1f82a0f32376/session.jsonl)
 
 ## Decisions
 
