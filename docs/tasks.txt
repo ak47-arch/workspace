@@ -61,6 +61,7 @@ tasks:
     - Build the software factory into its own product with evals attached (software-factory)
     - Host the applications in two environments test, main and prod (software-factory)
     - Save compressed sessions on disc not the whole session (software-factory)
+    - Bring the product layer to mobile (software-factory)
 
     ### Queued
     ### Complete
