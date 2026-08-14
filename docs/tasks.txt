@@ -59,6 +59,7 @@ tasks:
     - Add headless herdr host to implementer gent so we can run it seperately in a separate worktree (software-factory)
     - Make the infrastructure so that we don’t need the prompt before delete extension (software-factory)
     - Build the software factory into its own product with evals attached (software-factory)
+    - Host the applications in two environments test, main and prod (software-factory)
 
     ### Queued
     ### Complete
