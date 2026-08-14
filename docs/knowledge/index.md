@@ -51,6 +51,7 @@ Entries are grouped by project for progressive discovery. When the agent needs t
 - [Code-review reports archive under docs/code-reviews/, not docs/reviews/](sessions/019ff79e-181d-7e8b-a869-398b6417d28a/decisions/02-code-review-archive-location.md)
 - [Review worker is read-only — may run read-only git, never gh](sessions/019ff79e-181d-7e8b-a869-398b6417d28a/decisions/03-review-worker-read-only-git.md)
 - [Ponytail wired as review-worker skills via `--skill` flags — not the interactive pi-extension or MCP](sessions/019ff79e-181d-7e8b-a869-398b6417d28a/decisions/04-ponytail-review-worker-skills.md)
+- [Code-review agent APPROVED PR #1 but a real host run surfaced 3 driver bugs the in-container review could not see](sessions/19cb853b-a2e9-4eb6-865a-138864ba1934/decisions/02-review-simulation-blind-spot-real-driver-bugs.md)
 
 ### workspace-portability
 
