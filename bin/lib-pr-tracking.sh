@@ -12,6 +12,7 @@
 #   - Base: <branch> · Head: <sha> (raised <ts>)
 #   - Raised by: implementer run <uuid>
 #   - Review: <session uuid> · verdict <APPROVE|REQUEST_CHANGES> · report <path>
+#   - Revised: <head-sha> (<ts>, impl session <uuid>, addressing review <r-session>)
 #   - Merge: <merge sha> (<ts>, <actor>)
 
 # pr_tracking_ensure <task>: create the '## PR tracking' section if missing.
@@ -31,6 +32,18 @@ pr_tracking_has() {
   grep -Eq "$1" "$task" 2>/dev/null
 }
 
+# pr_tracking_revised <task> <head-sha> <when> <impl-uuid> <review-session>:
+# append a canonical `Revised:` row to the PR tracking section (revision mode,
+# decision 08). Idempotent on the head SHA.
+pr_tracking_revised() {
+  local task="$1" head="$2" when="$3" impl="$4" review="$5"
+  pr_tracking_ensure "$task" || return 1
+  if pr_tracking_has "$task" "Revised: $head"; then
+    return 0
+  fi
+  pr_tracking_add "$task" \
+    "- Revised: $head ($when, impl session $impl, addressing review $review)"
+}
 # pr_tracking_add <task> <line>: append <line> to the rows of the section
 # (inserted just before the next '## ' header or EOF, so rows accumulate in
 # chronological order).
