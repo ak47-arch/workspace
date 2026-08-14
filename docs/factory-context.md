@@ -39,13 +39,20 @@ developed component. Its first real component is the **implementer agent**: a
 decoupled brain/hands pipeline (`bin/implementer-run.sh` host driver + a
 disposable sandbox container) that picks a `Final` PRD from `docs/prd-queue/`,
 implements it in a durable host-side worktree via a headless `pi` worker, and
-raises a PR — the user only inspects/accepts the result. Durable stores:
-`~/.factory/runs/<slug>-<ts>/` (per-run) and `docs/implementations/`
-(archived reports + decisions).
+raises a PR — the user only inspects/accepts the result. Its twin is the
+**code-reviewer agent**: a sibling pipeline (`bin/review-run.sh` host driver +
+a read-only `pi` worker) that picks up a raised PR, checks it against its PRD
+(runs deterministic + judgment checks incl. the PRD's verification commands and
+a ponytail over-engineering pass) and returns a structured APPROVE /
+REQUEST_CHANGES report posted to the PR — it never merges or completes a task.
+Durable stores: `~/.factory/runs/<slug>-<ts>/` (per-run) and
+`docs/implementations/` (installer reports + decisions) +
+`docs/code-reviews/` (review reports + decisions).
 
 > **Where everything lives**: every build/runtime/config/persona artefact is
-> mapped in [`docs/reference/implementer-agent.md`](reference/implementer-agent.md) —
-> consult it to resolve any implementer artefact in one hop rather than grepping.
+> mapped in [`docs/reference/implementer-agent.md`](reference/implementer-agent.md) and
+> [`docs/reference/reviewer-agent.md`](reference/reviewer-agent.md) — consult them to
+> resolve any implementer/reviewer artefact in one hop rather than grepping.
 
 ## Agents (the workforce)
 
@@ -59,6 +66,7 @@ never buried in grep results.
 |---|---|---|---|
 | **prd-reviewer** | PRD gating (before implementation) | Read-only readiness verifier — gates a plan doc with deterministic + non-deterministic checks, returns a blocking/advisory report | `.pi/agents/prd-reviewer.md` · invoked with `agentScope` project/both |
 | **implementer** | Implementation (build → PR) | Headless worker (the "hands") — implements a `Final` PRD inside the sandbox worktree, writes report + decisions to the outbox; host raises the PR | `.pi/agents/implementer.md` · run via `bin/implementer-run.sh` (full loop = driver + container image `sandbox:latest`) |
+| **code-reviewer** | Post-implementation review (PR → report) | Read-only worker — checks a raised PR against its PRD (deterministic + judgment checks, runs the PRD's verification commands, ponytail over-engineering pass), writes an APPROVE/REQUEST_CHANGES report to the outbox; host posts it to the PR, labels, and transitions the task | `.pi/agents/code-reviewer.md` · `.agents/skills/review-ops/SKILL.md` · run via `bin/review-run.sh` (driver + image `sandbox:latest`; never merges/never completes) |
 
 ## Progressive Disclosure
 

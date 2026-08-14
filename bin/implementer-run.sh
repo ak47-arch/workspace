@@ -556,11 +556,15 @@ push_and_pr() {
   gh_repo="$(git -C "$WORKSPACE/$TARGET_REPO" remote get-url origin 2>/dev/null \
     | sed -E 's#.*/([^/]+)\.git#\1#; s#.*/([^/]+)#\1#' )"
   [ -z "$gh_repo" ] && gh_repo="workspace"
+  # Ensure the factory label family exists once so the --label below never
+  # fails on a fresh repo (Decision 01: inert metadata for review --pick).
+  gh label create "factory:needs-review" --repo "ak47-arch/$gh_repo" --force >/dev/null 2>&1 || true
   gh pr create \
     --repo "ak47-arch/$gh_repo" \
     --base "$MANIFEST_BRANCH" --head "$WORKTREE_BRANCH" \
-    --title "$title" --body-file "$body_file"
-  echo "  PR raised." >&2
+    --title "$title" --body-file "$body_file" \
+    --label "factory:needs-review"
+  echo "  PR raised (tagged factory:needs-review)." >&2
 }
 
 # ─── stop_container(): ensure the run's sandbox container is shut down ────
