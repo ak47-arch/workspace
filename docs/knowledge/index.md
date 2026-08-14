@@ -55,6 +55,7 @@ Entries are grouped by project for progressive discovery. When the agent needs t
 - [Label seam — `gh pr edit --add-label` fails on this gh (classic-Projects GraphQL error); use the REST labels API](sessions/19cb853b-a2e9-4eb6-865a-138864ba1934/decisions/03-label-seam-gh-pr-edit.md)
 - [The code-review agent never merges PRs — merge stays a human-gated operator step](sessions/019ff79e-181d-7e8b-a869-398b6417d28a/decisions/05-review-never-merges.md)
 - [Task files carry a PR-tracking section — PR↔task↔review↔merge data attached for retrospective evaluation](sessions/019ff79e-181d-7e8b-a869-398b6417d28a/decisions/06-task-pr-tracking.md)
+- [Merge is reachable only via the operator tool `bin/merge-pr.sh` — reviewer has no merge path; enforced in code + container](sessions/019ff79e-181d-7e8b-a869-398b6417d28a/decisions/07-merge-tool-operator-authority-split.md)
 
 ### workspace-portability
 
