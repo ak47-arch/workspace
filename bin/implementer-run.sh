@@ -559,12 +559,31 @@ push_and_pr() {
   # Ensure the factory label family exists once so the --label below never
   # fails on a fresh repo (Decision 01: inert metadata for review --pick).
   gh label create "factory:needs-review" --repo "ak47-arch/$gh_repo" --force >/dev/null 2>&1 || true
-  gh pr create \
+  local pr_url
+  pr_url="$(gh pr create \
     --repo "ak47-arch/$gh_repo" \
     --base "$MANIFEST_BRANCH" --head "$WORKTREE_BRANCH" \
     --title "$title" --body-file "$body_file" \
-    --label "factory:needs-review"
+    --label "factory:needs-review")"
   echo "  PR raised (tagged factory:needs-review)." >&2
+
+  # Decision 06: attach PR tracking to the task file (raise hook).
+  local pr_num head_sha
+  pr_num="$(printf '%s' "$pr_url" | sed -E 's#.*/pull/([0-9]+).*#\1#')"
+  head_sha="$(git -C "$WORKTREE" rev-parse HEAD 2>/dev/null || echo '?')"
+  # shellcheck disable=SC1091
+  source "$SCRIPT_DIR/bin/lib-pr-tracking.sh"
+  local task="$WORKSPACE/docs/tasks/$PRD_SLUG.md"
+  if [ -n "$pr_num" ] && pr_tracking_ensure "$task" && ! pr_tracking_has "$task" "PR: #$pr_num "; then
+    pr_tracking_add "$task" "- PR: #$pr_num (ak47-arch/$gh_repo)"
+    pr_tracking_add "$task" "- URL: $pr_url"
+    pr_tracking_add "$task" "- Branch: $WORKTREE_BRANCH"
+    pr_tracking_add "$task" "- Base: $MANIFEST_BRANCH · Head: $head_sha (raised $(date '+%Y-%m-%d %H:%M'))"
+    pr_tracking_add "$task" "- Raised by: implementer run $IMPL_UUID"
+    ( cd "$WORKSPACE" && git add "docs/tasks/$PRD_SLUG.md" 2>/dev/null || true
+      git diff --cached --quiet || git commit -q -m "task($PRD_SLUG): record PR #$pr_num (tracking)" )
+    echo "  Task PR tracking: #$pr_num recorded on docs/tasks/$PRD_SLUG.md" >&2
+  fi
 }
 
 # ─── stop_container(): ensure the run's sandbox container is shut down ────

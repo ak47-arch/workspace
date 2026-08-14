@@ -755,6 +755,18 @@ if [ "$local_result" -eq 0 ]; then
   else
     post_pr_comment || true
     update_label "$REVIEW_OUTCOME"
+    # Decision 06: attach the review row to the task file (rides the commit
+    # below). No `local` here — this is top-level scope.
+    # shellcheck disable=SC1091
+    source "$SCRIPT_DIR/bin/lib-pr-tracking.sh" 2>/dev/null || true
+    task_file="$WORKSPACE/docs/tasks/$PRD_SLUG.md"
+    if pr_tracking_ensure "$task_file"; then
+      report_rel="$REVIEWS_ROOT/$(date '+%Y-%m-%d')-$PRD_SLUG"
+      if ! pr_tracking_has "$task_file" "Review: session $REVIEW_UUID"; then
+        pr_tracking_add "$task_file" \
+          "- Review: session $REVIEW_UUID · verdict ${verdict:-n/a} · report $report_rel/"
+      fi
+    fi
     # Successful review → task in-progress → in-review with the review session.
     transition "in-review"
     ( cd "$WORKSPACE" && git add "$REVIEWS_ROOT" docs/knowledge/sessions/$REVIEW_UUID \

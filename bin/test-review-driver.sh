@@ -511,6 +511,60 @@ else
 fi
 rm -rf "$SMOKE"
 
+# ─── Test 13: non-dry deliver — Review row lands on the task file, PR comment
+# + REST label posted (mock gh), transition invoked (stub), and NO merge path.
+# ───────────────────────────────────────────────────────────────────────────
+echo "── non-dry deliver: Review row on task file + comment/label/transition, no merge ──"
+DELIVER="$(setup_fixture)"
+set -a; . "$DELIVER/fixture.env"; set +a
+export REVIEWER_DEFAULT_REPO="ak47-arch/workspace"
+export MOCK_PODMAN_LOG="$DELIVER/podman-calls.log"
+export REVIEWER_PODMAN_BIN="$DELIVER/mock-podman.sh"
+make_mock_podman "$DELIVER/mock-podman.sh"
+: > "$MOCK_GH_LOG"
+(
+  cd "$DELIVER"
+  REVIEWER_RUN_SOURCED=0 REVIEWER_WORKSPACE="$DELIVER" REVIEWER_GH_BIN="$DELIVER/mock-gh.sh" \
+  REVIEWER_RUNS_ROOT="$DELIVER/.factory/runs" REVIEWER_REVIEWS_ROOT="docs/code-reviews" \
+  bash "$DRIVER" 7
+) > "$DELIVER/deliver.out" 2>&1
+rc=$?
+[ "$rc" -eq 0 ] && pass "non-dry run exits 0" || fail "non-dry run rc=$rc: $(tail -3 "$DELIVER/deliver.out" | tr '\n' ' ')"
+if grep -Eq 'Review: session [0-9a-f-]+ · verdict APPROVE' "$DELIVER/docs/tasks/demo.md" \
+   && grep -q 'report docs/code-reviews/' "$DELIVER/docs/tasks/demo.md"; then
+  pass "Review row appended to task file (decision 06 review hook)"
+else
+  fail "Review row missing on task file: $(sed -n '/## PR tracking/,$p' "$DELIVER/docs/tasks/demo.md" | tr '\n' ' ')"
+fi
+if grep -q "<comment>" "$MOCK_GH_LOG" && grep -q "issues/7/labels" "$MOCK_GH_LOG"; then
+  pass "deliver: PR comment + REST label posted (mock gh)"
+else
+  fail "deliver: comment/label missing: $(cat "$MOCK_GH_LOG" | tr '\n' ' ')"
+fi
+# Make the transition stub observable: replace the silent stub with a logger.
+cat > "$DELIVER/bin/transition-task.sh" <<'STUB'
+#!/usr/bin/env bash
+printf 'transition %s\n' "$*" >> "$TRANSITION_LOG"
+exit 0
+STUB
+chmod +x "$DELIVER/bin/transition-task.sh"
+export TRANSITION_LOG="$DELIVER/transition.log"
+( cd "$DELIVER" && \
+  REVIEWER_RUN_SOURCED=0 REVIEWER_WORKSPACE="$DELIVER" REVIEWER_GH_BIN="$DELIVER/mock-gh.sh" \
+  REVIEWER_RUNS_ROOT="$DELIVER/.factory/runs" REVIEWER_REVIEWS_ROOT="docs/code-reviews" \
+  bash "$DRIVER" 7 ) > "$DELIVER/deliver2.out" 2>&1
+if [ -f "$TRANSITION_LOG" ] && grep -q "demo --to in-review" "$TRANSITION_LOG"; then
+  pass "deliver: transition-task invoked (demo → in-review)"
+else
+  fail "deliver: transition not invoked: $(cat "$TRANSITION_LOG" 2>/dev/null | tr '\n' ' ')"
+fi
+if ! grep -q "<merge>" "$MOCK_GH_LOG" && ! grep -q "^\\- Merge:" "$DELIVER/docs/tasks/demo.md"; then
+  pass "deliver: NO merge path executed (authority split, decision 05)"
+else
+  fail "deliver: unexpected merge"
+fi
+rm -rf "$DELIVER"
+
 # ─── Summary ───────────────────────────────────────────────────────────────
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"

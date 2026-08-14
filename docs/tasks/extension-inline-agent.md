@@ -30,3 +30,11 @@
 - [artefact-session-evidence-model](../knowledge/sessions/019fd8a4-73ca-7c92-bbcc-b5d74e7d0817/decisions/04-artefact-session-evidence-model.md)
 - [twitter-kb-plain-files-fts5-read-api](../knowledge/sessions/019fd8a4-73ca-7c92-bbcc-b5d74e7d0817/decisions/05-twitter-kb-plain-files-fts5-read-api.md)
 - [browser-control-deferred](../knowledge/sessions/019fd8a4-73ca-7c92-bbcc-b5d74e7d0817/decisions/06-browser-control-deferred.md)
+
+## PR tracking
+
+- PR: #1 (ak47-arch/feed_analyser)
+- URL: https://github.com/ak47-arch/feed_analyser/pull/1
+- Branch: factory/extension-inline-agent/20260812-033024
+- Base: public-release · Head: 24e60a87a6926724c2ef6037d9daf87eaea6ecf7
+- Raised by: implementer run 60c0c537 · pre-reviewer era (manual verification 2026-08-12)
