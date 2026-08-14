@@ -68,6 +68,7 @@ These are agent-facing instruction files that direct coding agents to use the Op
 |------|---------|
 | `prd-reviewer.md` | Read-only PRD verification sub-agent that gates plan documents for implementation readiness. Runs deterministic + judgment checks and returns a blocking/advisory report. Uses model `deepseek/deepseek-v4-flash-0731`; tools are `read, grep, find, ls, bash` (no write tools at the mechanism level). Invoked with `agentScope: "project"` or `"both"`. See [Software Factory](/openwiki/projects/software-factory.md). |
 | `implementer.md` | The autonomous implementation sub-agent (the "hands" of the implementer pipeline). System prompt embeds the ponytail lazy-senior-dev style (always-on) + factory-worker rules + the implementer-ops run contract. Model `openrouter/deepseek/deepseek-v4-flash-0731`; runs headless in the sandbox container (`pi --mode json --no-session -p`). See the [implementer PRD](https://github.com/ak47-arch/workspace/blob/master/docs/prd-queue/2026-08-10-implementer-agent.md). |
+| `code-reviewer.md` | Read-only post-implementation review sub-agent (the sibling of the implementer). Reviews a factory-raised PR against its PRD inside the sandbox, runs deterministic + judgment checks (including the PRD's own verification commands and the ponytail over-engineering pass), and writes a structured APPROVE / REQUEST_CHANGES report to the outbox. Model `openrouter/deepseek/deepseek-v4-flash-0731`; tools are `read, grep, find, ls, bash`. Never mutates the repo and never runs `gh` — the host driver owns all git mutations, gh calls, labels, comment posting, and lifecycle transitions. Runs headless via `bin/review-run.sh`. See [Software Factory](/openwiki/projects/software-factory.md). |
 
 ### Skills (`/.pi/skills/`)
 
@@ -150,6 +151,23 @@ The run contract for the autonomous implementer agent (headless, inside the sand
 
 Scoped decision capture for the headless implementer. The `save-knowledge` session-finding heuristic is blind headless, so this skill takes the session directory explicitly from the brief and writes decisions to the outbox (`/sandbox/outbox/decisions/NN-<slug>.md`). The **driver** appends the `docs/knowledge/index.md` entry deterministically via `bin/sort-knowledge-index.py` — the model never touches the index.
 
+### review-ops (`/.agents/skills/review-ops/SKILL.md`)
+
+The run contract for the autonomous code-reviewer agent (headless, inside the sandbox). Defines the exact review protocol: orient on the PR + PRD, diff `base...head` read-only, run the PRD verification commands, run the deterministic + judgment check classes (including the ponytail over-engineering pass), and assemble the fixed-schema outbox report with an APPROVE / REQUEST_CHANGES verdict.
+
+- Hard rules: the worker may run read-only git (`diff/log/show/status`) but never mutates git state, never runs `gh`, and holds no GitHub credential — all mutations + PR comments are driver-side.
+- Add robustness checks here (a skill edit), never in the host driver.
+
+**Usage:** loaded automatically by the code-reviewer agent in the sandbox container, invoked via `bin/review-run.sh`.
+
+### vscode-git-viewer-fix (`/.agents/skills/vscode-git-viewer-fix/SKILL.md`)
+
+Operational workaround skill for a local VSCode extension. See the SKILL.md for the specific fix steps.
+
+### workspace-backup (`/.agents/skills/workspace-backup/SKILL.md`)
+
+Backup/restore operational skill for the workspace. Complements the [workspace-portability](/openwiki/operations/infrastructure.md) tooling.
+
 ### product-layer (`/.agents/skills/product-layer/SKILL.md`)
 
 Start a product/architecture session. Produces plan documents and structured design decisions. Operates the product/architecture layer of the [software factory](/openwiki/projects/software-factory.md) — the UX layer the user interacts with directly.
@@ -170,11 +188,12 @@ Start a product/architecture session. Produces plan documents and structured des
 High-level task list from `/docs/tasks.txt`. Tasks are organised **by project, then by status** (Pending / Queued / Complete), and each line may carry a `[<slug>]` annotation linking to its task file. See [Software Factory](/openwiki/projects/software-factory.md) for the lifecycle.
 
 Current highlights (as of 2026-08-09):
-- **software-factory**: thinking about automated monitoring, cognee evaluation, building the implementer agent, extending the prod review agent (all pending)
-- **software-factory** completed: end-to-end traceability, vision-task-traceability, extend-software-factory-wsff, task-file-dashboard, combine-factory-context-factory-txt, chronological-tracking, extend-pm-assembly-line, x-capture-instrument
-- **feed-analyser (queued)**: `extension-inline-agent` — add an agent to the extension with access to content and URLs
-- **workspace-portability**: GitHub browser auth flow, make private repos both complete; cloud migration pending
+- **software-factory**: thinking about automated monitoring, cognee evaluation, task-selection abstraction layer, extends the prod review agent, headless herdr host, no-prompt-before-delete infrastructure, build the factory into its own product with evals, host apps in test/main/prod environments, save compressed sessions on disc (all pending)
+- **software-factory** completed: end-to-end traceability, vision-task-traceability, extend-software-factory-wsff, task-file-dashboard, combine-factory-context-factory-txt, chronological-tracking, extend-pm-assembly-line, x-capture-instrument, implementer-agent, code-review-agent, implementer-ponytail, implementer-revision-mode
+- **workspace-portability**: GitHub browser auth flow, make private repos both complete; cloud migration + themistocles setup pending
 - **langfuse**: langfuse-agentic-operations (integrate official skill, operate agentically) pending
+- **resume**: personal website/blog/toTweet-toBlog-toVideo pipeline, website agent-first, GitHub profile fix (all pending)
+- **survival-infrastructure**: extension, people profiles, whisper.cpp audio ingestion pending; Gmail+GDrive queued
 
 ### PLAN_shared_llm_client.md
 

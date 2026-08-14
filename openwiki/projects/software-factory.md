@@ -20,7 +20,7 @@ interacts with the product/architecture layer — everything else is automation.
 | **context_engine** | Infrastructure spine; every other component reads/writes it. Progressive disclosure keeps agents lean — context loads on demand, never pre-loaded. The knowledge base (`docs/knowledge/`) is the last stop. | `docs/factory-context.md`, `docs/knowledge/` |
 | **product/architecture** | The UX layer; the only surface the user interacts with. Produces one artifact per task: a plan document that accumulates Product Design / System Architecture / Program Design sections based on task size. Invoked via the `product-layer` skill. | [`/.agents/skills/product-layer/SKILL.md`](/openwiki/reference/agent-config.md) |
 | **project_management** | Prioritisation + lifecycle tracking: task dashboard, task files (`docs/tasks/<slug>.md`), lifecycle state machine, and automated bookkeeping. | `docs/tasks.txt`, `docs/tasks/`, `bin/transition-task.sh` |
-| **assembly_line** | CI/CD, agents, sandboxes, testing. Built YAGNI — the least-developed component. First real component: the **implementer agent** (host driver + sandbox container). | subagent extension (`/.pi/extensions/subagent/`), `.pi/agents/prd-reviewer.md`, `bin/implementer-run.sh`, `.pi/agents/implementer.md` |
+| **assembly_line** | CI/CD, agents, sandboxes, testing. Built YAGNI — the least-developed component until the agent pipeline. Now staffed by three sub-agents: **prd-reviewer** (PRD gating), **implementer** (build → PR), and **code-reviewer** (post-implementation review). | `bin/implementer-run.sh`, `bin/review-run.sh`, `bin/factory-run.sh`, `.pi/agents/`, `config/implementer.json`, `config/reviewer.json` |
 
 These components connect: the **product/architecture** layer is invoked through
 the `product-layer` skill, which drives the **project_management** lifecycle
@@ -132,6 +132,133 @@ connects a task from `tasks.txt` through the PRD queue to implementation and
 verification sessions, capturing the entire lifecycle. (Decisions
 `Task-Centric Storage`, `Traceability Links via Task Field`.)
 
+### PR Tracking (Decision 06)
+
+Task files carry a `## PRs` section that records PR ↔ review ↔ merge rows for
+retrospective evaluation. Convention:
+
+```
+## PRs
+| # | State | Relation | PR link | Session | Date |
+|---|---|---|---|---|---|
+| 1 | raised by implementer | factory/code-review-agent/... | #1 | <session-uuid> | 2026-08-14 |
+| 2 | reviewed | verdict: APPROVE | #1 | <review-session-uuid> | 2026-08-15 |
+```
+
+Tooling: `bin/lib-pr-tracking.sh` (shared PR-tracking functions),
+`bin/backfill-pr-tracking.sh` (backfill rows for pre-tracking tasks).
+
+## Assembly Line Pipeline
+
+The assembly line now consists of three sub-agents and supporting orchestration
+tools that together form a full implement → review → merge cycle.
+
+### Implementer Agent
+
+A decoupled brain/hands pipeline: a **host driver** (`bin/implementer-run.sh`)
+owns all git operations, while a **disposable `pi` worker** in a sandbox
+container implements a `Final` PRD against a host-side worktree. The host
+authors the single commit, pushes, and raises the PR. The user only
+inspects/accepts the PR.
+
+Key features:
+- **`--pick`** selects the oldest `prd-ready` task with a `Final` PRD (decision 09)
+- **`--revise <pr>`** resumes the original implementation session to address
+  reviewer feedback, injecting the review report as binding authority (decision 08)
+- **`--continue`** uses pi's native session continuation across container respawns
+- **Ponytail skills** injected via `--skill` flags (decision 04 — complete)
+- **Disposable-vs-durable enforcement**: container + raw logs are removed on
+  successful delivery; only the commit/PR, archived report, and compact session
+  evidence persist (decision 04 cleanup)
+- Raises PR with label `factory:needs-review`
+
+**Artefact map (full):** [`docs/reference/implementer-agent.md`](/docs/reference/implementer-agent.md)
+
+<!-- openwiki: mermaid parse failed and this diagram was converted to a text fence so it does not break rendering. Fix the diagram source and restore the mermaid fence. Parser error: Heuristic: a semicolon inside a label breaks rendering; rephrase the label. -->
+```text
+flowchart LR
+    A["bin/implementer-run.sh<br/>(host driver)"] -->|"spawns"| B["pi worker<br/>(sandbox container)"]
+    B -->|"writes to"| C["worktree + outbox/"]
+    A -->|"commits & pushes"| D["GitHub PR"]
+    A -->|"archives"| E["docs/implementations/<br/>&lt;date&gt;-&lt;slug&gt;/"]
+```
+
+### Code-Reviewer Agent
+
+The post-implementation gate on the assembly line. Structurally identical to the
+implementer: a **host driver** (`bin/review-run.sh`) owns all git mutations and
+`gh` calls, while a **disposable read-only `pi` worker** in the sandbox checks a
+raised PR against its PRD — running the PRD's own verification commands plus
+deterministic and judgment checks (including the ponytail over-engineering pass).
+It posts a structured APPROVE / REQUEST_CHANGES report to the PR.
+
+**Core rule**: the reviewer is **read-only** — may run read-only git
+(`diff/log/show/status`) but must never mutate git state, run `gh`, or hold any
+GitHub credential. All mutations + PR comments are driver-side. The six ponytail
+skills are injected reviewer-scoped via `--skill` flags.
+
+**Invocation**:
+```
+bin/review-run.sh [<pr>|--pick] [--dry-run]
+# <pr>      repo#num, owner/repo#num, or full pull-request URL
+# --pick    oldest open PR labeled factory:needs-review
+# --dry-run no gh mutations (comment/label), no transitions, no workspace-root commit
+```
+
+**Artefact map (full):** [`docs/reference/reviewer-agent.md`](/docs/reference/reviewer-agent.md)
+
+<!-- openwiki: mermaid parse failed and this diagram was converted to a text fence so it does not break rendering. Fix the diagram source and restore the mermaid fence. Parser error: Heuristic: a semicolon inside a label breaks rendering; rephrase the label. -->
+```text
+flowchart LR
+    A["bin/review-run.sh<br/>(host driver)"] -->|"spawns"| B["pi worker<br/>(sandbox, read-only)"]
+    B -->|"reviews"| C["PR head worktree"]
+    B -->|"writes"| D["outbox/ (report + decisions)"]
+    A -->|"posts to PR"| E["GitHub PR comment"]
+    A -->|"labels + transitions"| F["task -> in-review"]
+    A -->|"archives"| G["docs/code-reviews/<br/>&lt;date&gt;-&lt;slug&gt;/"]
+```
+
+### factory-run.sh Orchestrator
+
+A thin convenience wrapper (`bin/factory-run.sh`) that chains implementer →
+review back-to-back. It runs the implementer first, then prompts the user for
+UAT before running the review:
+
+```
+bin/factory-run.sh [--task <slug>] [--yes] [--implement-only] [--review <pr>] [--dry-run]
+```
+
+**Authority-split guarantees** (decisions 01/05/07):
+- This script **never merges**. After the chain, the human does UAT and runs
+  `bin/merge-pr.sh` themselves.
+- A UAT banner + prompt sits between implement and review (unless `--yes`).
+- Master is never pushed by this chain — tracking commits accumulate locally
+  and go up with the merge.
+
+Exit codes: 0 (success), 1 (implementer failed), 2 (reviewer failed), 3 (usage error).
+
+### merge-pr.sh Operator Tool
+
+`bin/merge-pr.sh` is the **only** path that pushes to master. It is a human-gated
+operator step:
+
+- Runs on the checked-out branch — operator must be on master (decision 11)
+- Does not run inside any agent container
+- The reviewer has no merge path (enforced in code + container; decision 07)
+
+**Validation:** `bin/test-merge-pr.sh` (8 tests, fixture-based).
+
+## Agent Workforce Roster
+
+The factory maintains a declarative roster in `docs/factory-context.md` so the
+full workforce is discoverable in one hop:
+
+| Agent | SDLC stage | Role | Definition |
+|---|---|---|---|
+| **prd-reviewer** | PRD gating (before implementation) | Read-only readiness verifier — gates a plan doc with deterministic + judgment checks, returns blocking/advisory report | `.pi/agents/prd-reviewer.md` |
+| **implementer** | Implementation (build → PR) | Headless worker — implements a Final PRD in sandbox worktree, writes report + decisions; host raises the PR | `.pi/agents/implementer.md` · `bin/implementer-run.sh` |
+| **code-reviewer** | Post-implementation review (PR → report) | Read-only worker — checks a raised PR against its PRD, posts APPROVE/REQUEST_CHANGES report to the PR | `.pi/agents/code-reviewer.md` · `bin/review-run.sh` |
+
 ## Source Files
 
 | Path | Purpose |
@@ -149,6 +276,20 @@ verification sessions, capturing the entire lifecycle. (Decisions
 | `/.pi/agents/implementer.md` | The implementer sub-agent definition (ponytail + factory-worker rules) |
 | `/.agents/skills/implementer-ops/` | The implementer run-contract skill |
 | `/.agents/skills/implementer-save/` | Scoped decision capture for the implementer (driver-owned index) |
+| `/bin/review-run.sh` | Host driver for the code-reviewer agent (resolve PR → read-only review → post verdict) |
+| `/bin/test-review-driver.sh` | Fixture-based unit tests for the review driver |
+| `/config/reviewer.json` | Review driver config (model, timeouts, repo_map, ponytail) |
+| `/.pi/agents/code-reviewer.md` | The code-reviewer sub-agent definition (read-only, ponytail review pass) |
+| `/.agents/skills/review-ops/` | The review run-contract skill (checks + report schema + ponytail pass) |
+| `/bin/factory-run.sh` | Thin implement → review orchestrator (UAT gate; never merges) |
+| `/bin/test-factory-run.sh` | Test suite for the factory-run orchestrator |
+| `/bin/merge-pr.sh` | Operator-only merge tool (sole master-pusher) |
+| `/bin/test-merge-pr.sh` | Test suite for the merge tool |
+| `/bin/lib-pr-tracking.sh` | Shared PR-tracking functions (raise/review/merge rows) |
+| `/bin/backfill-pr-tracking.sh` | Backfills PR-tracking rows for earlier tasks |
+| `/bin/eval-pipeline.py` | First pipeline evaluation pass (joins tasks/PR-tracking/implementations/reviews/sessions) |
+| `/docs/reference/implementer-agent.md` | Implementer artefact map (one-hop resolution) |
+| `/docs/reference/reviewer-agent.md` | Reviewer artefact map (one-hop resolution) |
 | `/bin/backfill-timestamps.sh`, `/bin/sort-knowledge-index.py` | Temporal metadata tooling |
 | `/docs/prd-queue/`, `/docs/prd-archive/` | Active / archived plan documents |
 | `/docs/knowledge/` | Curated design decisions + session traces |
@@ -186,10 +327,34 @@ verification sessions, capturing the entire lifecycle. (Decisions
 - **Deploying the review gate headlessly** → currently requires a user session
   (the `agentScope` confirmation prompt). A headless path is a known open question
   (revision trigger in decision 04).
+- **Changing the implementer driver** → the seam is `bin/implementer-run.sh`; the
+  acceptance surface is `bin/test-implementer-driver.sh` (fixture-based; includes
+  mock gh that rejects unknown `--json` fields to stay host-gh compatible — decision
+  10). Run it any time the driver, config, or PR/gh calls change. Note the real-host
+  discovery bug class: mock-gh/sourced-main simulations hid 3 real driver defects
+  (decision 02 review-simulation-blind-spot), so also dogfood on a real PR when a
+  new gh call is introduced.
+- **Changing the reviewer driver** → the seam is `bin/review-run.sh` + `config/reviewer.json`;
+  the acceptance surface is `bin/test-review-driver.sh` (56/56). The reviewer must
+  stay read-only: never add a merge/complete path or a GitHub credential to the container.
+- **Adding a factory orchestration step** → prefer `bin/factory-run.sh` (keeps the
+  enforce-review-never-merges and master-not-pushed invariants) rather than inline
+  chains in other scripts; validate with `bin/test-factory-run.sh`.
+- **Reviewing/merging a PR** → the operator tool `bin/merge-pr.sh` is the only
+  master-pusher; it must run on master (decision 11). Validate with `bin/test-merge-pr.sh`.
+  If the implementer driver died before host delivery, complete delivery manually
+  per decision 12 (manual-host-delivery-fallback).
+- **Revising an implementation for a historical/cross-repo PR** → `--revise` needs a
+  36-char impl-session UUID on the task's `Raised by` row (decision 13); add or
+  backfill it before use.
 
 ## Backlog / Known Open Items
 
-- **Implementer agent** is built in `bin/implementer-run.sh` + `workspace-portability/container/` (decision 03 claims portability for a cloud worker). The live stage-2 acceptance (raise a real PR) and PR review/test/merge pipeline remain to be exercised (see the `2026-08-10-implementer-agent` PRD).
+- **Implementer agent** live stage-2 acceptance (raise a real PR) and the end-to-end
+  PR review/test/merge pipeline are now partially exercised — implementer-ponytail,
+  implementer-revision-mode, code-review-agent, and extension-inline-agent all reached
+  `complete` via raised (and some merged) PRs. The full factory-run chain with a real
+  external PR + operator merge remains to be dogfooded end-to-end.
 - Headless (no user session) PRD review is not yet supported.
 - Knowledge base growth beyond ~50 entries may warrant vector search
   (`opensource/cognee`) per `KNOWN_ISSUES.md` issue 7.

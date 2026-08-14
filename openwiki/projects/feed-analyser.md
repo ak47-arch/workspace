@@ -70,8 +70,9 @@ Override with `CAPTURE_PORT` / `CAPTURE_DATA` env vars.
 
 ## Related Work
 
-- The **extension-inline-agent** task (queued) plans to add a pi agent to the
-  extension with access to the captured content and URLs. See the [Software
+- The **extension-inline-agent** task (now **complete** — implemented via the factory
+  implementer pipeline and merged) planned to add a pi agent to the extension with
+  access to the captured content and URLs. See the [Software
   Factory](/openwiki/projects/software-factory.md) task tracking.
 - Design decisions for the capture instrument live in the knowledge base under
   the `feed-analyser` project section (capture architecture, API contract,

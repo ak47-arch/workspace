@@ -15,8 +15,7 @@ This page covers the shared operational infrastructure that keeps the workspace 
 **Project:** `/headroom-pi/`  
 **Upstream:** [Headroom OSS](https://github.com/chopratejas/headroom) (in `/opensource/headroom/`)
 
-<!-- openwiki: broken internal link [/headroom-pi] file "/headroom-pi" does not exist. Fix the href or restore the target, then delete this comment. -->
-[Headroom-pi](/headroom-pi) routes all pi coding agent traffic through Headroom's context compression proxy, achieving **60–95% fewer tokens (for JSON data), 15-20% fewer tokens (for coding agents)** with zero code changes.
+Headroom-pi routes all pi coding agent traffic through Headroom's context compression proxy, achieving **60–95% fewer tokens (for JSON data), 15-20% fewer tokens (for coding agents)** with zero code changes.
 
 ### Architecture
 
