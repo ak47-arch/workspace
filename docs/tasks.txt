@@ -58,6 +58,7 @@ tasks:
     - Extend the prod review agent to make it better (software-factory)
     - Add headless herdr host to implementer gent so we can run it seperately in a separate worktree (software-factory)
     - Make the infrastructure so that we don’t need the prompt before delete extension (software-factory)
+    - Add an implementer revision mode (--revise <pr>) that resumes the original implementation session to address reviewer findings, injecting the review report as binding authority (software-factory) [implementer-revision-mode]
 
     ### Queued
     - Add a code review agent to review pr (software-factory) [code-review-agent]

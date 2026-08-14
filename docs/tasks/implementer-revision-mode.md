@@ -1,0 +1,32 @@
+# Task: implementer-revision-mode
+
+**Status**: in-prd
+**Category**: Medium
+**Project**: software-factory
+**Created**: 2026-08-14 22:13
+**Source**: docs/tasks.txt — `Add an implementer revision mode (--revise <pr>) that resumes the original implementation session to address reviewer findings, injecting the review report as binding authority (software-factory) [implementer-revision-mode]`
+
+## Artifacts
+
+- Plan: (not yet created)
+
+## Context
+
+Decision 08 (`docs/knowledge/sessions/019ff79e-181d-7e8b-a869-398b6417d28a/decisions/08-implementer-revision-same-session.md`)
+established that review-feedback fixes are made by the **implementer resuming
+its original implementation session** — not by the operator hand-editing the
+branch, and not by a fresh implementer session. Today `bin/implementer-run.sh`
+has no such mode: it raises a fresh PR per task, and `--resume` is reserved but
+unimplemented.
+
+The first real REQUEST_CHANGES cycle (implementer-ponytail PR #2, review
+`docs/code-reviews/2026-08-14-implementer-ponytail/report.md`) is the first
+target for this mode.
+
+## Sessions
+
+- (planning not yet captured)
+
+## Decisions
+
+- `docs/knowledge/sessions/019ff79e-181d-7e8b-a869-398b6417d28a/decisions/08-implementer-revision-same-session.md`

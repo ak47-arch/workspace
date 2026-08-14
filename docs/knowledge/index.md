@@ -58,6 +58,7 @@ Entries are grouped by project for progressive discovery. When the agent needs t
 - [Ponytail wired as review-worker skills via `--skill` flags — not the interactive pi-extension or MCP](sessions/019ff79e-181d-7e8b-a869-398b6417d28a/decisions/04-ponytail-review-worker-skills.md)
 - [implementer ponytail test env](sessions/8483b243-ad9a-4e00-be82-0cdf26a8801d/decisions/01-implementer-ponytail-test-env.md)
 - [Merge is reachable only via the operator tool `bin/merge-pr.sh` — reviewer has no merge path; enforced in code + container](sessions/019ff79e-181d-7e8b-a869-398b6417d28a/decisions/07-merge-tool-operator-authority-split.md)
+- [Review-feedback fixes are made by the implementer, resuming its original session (`--revise`); review report injected as binding authority](sessions/019ff79e-181d-7e8b-a869-398b6417d28a/decisions/08-implementer-revision-same-session.md)
 
 ### workspace-portability
 
