@@ -27,3 +27,11 @@ the code-review agent uses (see decision 04 in session
 ## Decisions
 
 - (none yet)- [ponytail-review-worker-skills](../knowledge/sessions/019ff79e-181d-7e8b-a869-398b6417d28a/decisions/04-ponytail-review-worker-skills.md)
+
+## PR tracking
+
+- PR: #2 (ak47-arch/workspace)
+- URL: https://github.com/ak47-arch/workspace/pull/2
+- Branch: factory/implementer-ponytail/20260814-212431
+- Base: master · Head: 212370c67833ace883e263a17941a1f2f80e84d7 (raised 2026-08-14 21:40)
+- Raised by: implementer run 8483b243-ad9a-4e00-be82-0cdf26a8801d
