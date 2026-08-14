@@ -49,11 +49,15 @@ setup_fixture() {
   printf '**Date**: 2026-08-02 10:00\n**Status**: Final\n' > "$dir/docs/prd-queue/2026-08-02-bbb.md"
   printf '**Date**: 2026-08-03 10:00\n**Status**: Final\n' > "$dir/docs/prd-queue/2026-08-03-ccc.md"
   printf '**Date**: 2026-08-03 11:00\n**Status**: Draft\n' > "$dir/docs/prd-queue/2026-08-03-nope.md"
+  # STALE case (decision 09): a Final PRD whose task is in-review (merged/blocked
+  # lineage) — must NOT be picked even though it is the OLDEST Final.
+  printf '**Date**: 2026-07-31 10:00\n**Status**: Final\n' > "$dir/docs/prd-queue/2026-07-31-ddd.md"
 
   # Task files (resolve_repo reads **Project**; resolve_prd reads **Status**).
   printf '**Status**: prd-ready\n**Project**: software-factory\n' > "$dir/docs/tasks/aaa.md"
   printf '**Status**: prd-ready\n**Project**: feed_analyser\n' > "$dir/docs/tasks/bbb.md"
   printf '**Status**: in-progress\n**Project**: software-factory\n' > "$dir/docs/tasks/ccc.md"
+  printf '**Status**: in-review\n**Project**: software-factory\n' > "$dir/docs/tasks/ddd.md"
 
   # Driver config (kept minimal — resolves to defaults via jq or fallback).
   cp "$(cd "$(dirname "$0")/.." && pwd)/config/implementer.json" "$dir/config/implementer.json"
@@ -98,14 +102,24 @@ WORKSPACE="$FIX"
 MODE_FLAG="--pick"
 TASK=""
 # resolve_prd sets globals in the MAIN shell (not a subshell) so they persist.
-# Its selection notes go to stderr — suppress for a clean pass/fail run.
-resolve_prd 2>/dev/null
+# Capture its stderr notes via a file — a $( ) substitution would run it in a
+# subshell and lose the globals.
+resolve_prd 2> "$FIX/pick-notes.txt"
+NOTES="$(cat "$FIX/pick-notes.txt")"
 if [ "${PRD:-}" = "$FIX/docs/prd-queue/2026-08-01-aaa.md" ]; then
-  pass "resolve_prd picks oldest Final (aaa)"
+  pass "resolve_prd picks oldest Final prd-ready (aaa)"
 else
-  fail "resolve_prd picked '$PRD' — expected aaa (oldest Final)"
+  fail "resolve_prd picked '$PRD' — expected aaa (oldest Final prd-ready)"
 fi
 if [ "$PRD_SLUG" = "aaa" ]; then pass "resolve_prd derived slug 'aaa'"; else fail "resolve_prd slug = '$PRD_SLUG'"; fi
+# Decision 09: stale lineages must be skipped — ddd (in-review, OLDEST Final)
+# and ccc (in-progress) are NOT prd-ready.
+echo "$NOTES" | grep -q "skipping ddd" \
+  && pass "resolve_prd skips in-review task (ddd — merged/blocked lineage)" \
+  || fail "resolve_prd did not skip ddd (in-review): $(echo "$NOTES" | tr '\n' ' ')"
+echo "$NOTES" | grep -q "skipping ccc" \
+  && pass "resolve_prd skips in-progress task (ccc — concurrent owner)" \
+  || fail "resolve_prd did not skip ccc (in-progress): $(echo "$NOTES" | tr '\n' ' ')"
 
 # ─── Test 2: resolve_repo (project → repo + manifest branch) ───────────────
 echo "── resolve_repo ──"

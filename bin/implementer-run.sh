@@ -118,9 +118,14 @@ while [ $# -gt 0 ]; do
 done
 
 # ─── resolve_prd(): select one Final PRD ───────────────────────────────────
-# - $MODE_FLAG=--pick: oldest `**Status**: Final` in docs/prd-queue/, skipping
-#   tasks already in-progress. Oldest = smallest date prefix in filename.
-# - --task: the PRD whose filename carries the given slug.
+# - $MODE_FLAG=--pick: oldest `**Status**: Final` in docs/prd-queue/ whose task
+#   is `**Status**: prd-ready` (the lifecycle's queued-entry state — decision 09).
+#   in-progress (concurrent owner) and in-review (merged/blocked/verifying
+#   lineages) tasks are NOT pickable; a stale Final PRD for an in-flight or
+#   merged task must never be re-implemented. Oldest = smallest date prefix in
+#   filename.
+# - --task: the PRD whose filename carries the given slug (explicit operator
+#   override — NOT gated on task status).
 resolve_prd() {
   local prd=""
   if [ -n "$MODE_FLAG" ]; then
@@ -130,9 +135,10 @@ resolve_prd() {
       [ -f "$candidate" ] || continue
       grep -q '^\*\*Status\*\*: *Final' "$candidate" || continue
       local slug; slug="$(slug_from_prd "$candidate")"
-      # Skip tasks already in-progress (a concurrent implementer owns them).
-      if grep -q '^\*\*Status\*\*: *in-progress' "$WORKSPACE/docs/tasks/$slug.md" 2>/dev/null; then
-        echo "  [pick] skipping $slug (task already in-progress)" >&2
+      local task_file="$WORKSPACE/docs/tasks/$slug.md"
+      if [ ! -f "$task_file" ] \
+         || ! grep -q '^\*\*Status\*\*: *prd-ready' "$task_file" 2>/dev/null; then
+        echo "  [pick] skipping $slug (task not prd-ready — in-flight/merged/unknown)" >&2
         continue
       fi
       [ -z "$best" ] && best="$candidate"
@@ -148,7 +154,7 @@ resolve_prd() {
 
   if [ -z "$prd" ] || [ ! -f "$prd" ]; then
     if [ -n "$MODE_FLAG" ]; then
-      die "No pickable 'Final' PRD in docs/prd-queue/ (all done or in-progress)."
+      die "No pickable 'Final' + prd-ready PRD in docs/prd-queue/ (all in-flight, merged, or not queued)."
     fi
     die "No PRD found for slug '$TASK' in docs/prd-queue/"
   fi
