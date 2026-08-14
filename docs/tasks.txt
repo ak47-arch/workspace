@@ -83,6 +83,7 @@ tasks:
     - create personal website and blog add the toTweet, toBlog, toVideo pipeline (resume)
     - Make the website agent first (resume)
     - Fix GitHub profile page (resume)
+    - Add a talk to my agent feature. Be conscious about security. (resume)
 
     ## feed-analyser
 
