@@ -1,6 +1,7 @@
 # Task: extension-inline-agent
 
-**Status**: in-review
+**Status**: complete
+**Completed**: 2026-08-15 01:36
 **Category**: Large
 **Project**: feed_analyser
 **Created**: 2026-08-07 01:56
@@ -14,6 +15,7 @@
 
 - [planning](../knowledge/sessions/019fd8a4-73ca-7c92-bbcc-b5d74e7d0817/session.jsonl)
 - [implementation](../knowledge/sessions/60c0c537-b9c7-4c4c-8b8a-0be438950151/session.jsonl)
+- [operator-completion](../knowledge/sessions/019ff79e-181d-7e8b-a869-398b6417d28a/session.jsonl)
 
 ## Scope notes
 
