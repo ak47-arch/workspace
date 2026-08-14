@@ -20,16 +20,28 @@
 #
 # Usage:
 #   bin/implementer-run.sh [--task <slug>|--pick] [--dry-run]
+#   bin/implementer-run.sh --revise <pr> [--dry-run]
 #   --task <slug>   Run a specific Final PRD (default: --pick)
 #   --pick          Select the oldest Final PRD not already in-progress
+#   --revise <pr>   Revision mode (decision 08): resume the ORIGINAL impl session
+#                   (same --session-id/--continue, same branch) to address the
+#                   review findings on an open PR. Resolves PR → slug → original
+#                   impl session UUID → newest REQUEST_CHANGES review, seeds the
+#                   run dir with the original session + mounts the review report
+#                   as binding authority, then delivers by pushing the SAME
+#                   branch (no new PR, no merge, no task transition).
 #   --dry-run       Produce worktree + brief + session log, but NO push, NO PR,
 #                   NO workspace-root commit. State transitions are simulated.
+#                   In revise mode, dry-run stops after reconstructing the run dir
+#                   and simulating the pi invocation.
 #   --resume        (reserved) Resume an interrupted run from its run dir.
 #
 # Exit codes:
-#   0  Success (PR raised, or dry-run completed)
-#   1  Failure (partial report written, task reverted to prd-ready, no PR)
-#   2  Usage / selection error (no Final PRD found, invalid slug, etc.)
+#   0  Success (PR raised / revision delivered, or dry-run completed)
+#   1  Failure (partial report written, task reverted to prd-ready / revision
+#      undelivered, no PR)
+#   2  Usage / selection / resolution error (no Final PRD, invalid slug, closed
+#      or merged PR in revise mode, unresolved review, etc.)
 # ============================================================================
 set -euo pipefail
 
@@ -85,6 +97,10 @@ else
 fi
 
 RUNS_ROOT="${RUNS_ROOT/#\~/$HOME}"
+# Test seams: allow fixture-based tests to point the run root / archive root at
+# a disposable workspace (like IMPLEMENTER_WORKSPACE) without touching real home.
+RUNS_ROOT="${IMPLEMENTER_RUNS_ROOT:-$RUNS_ROOT}"
+ARCHIVES_ROOT="${IMPLEMENTER_ARCHIVES_ROOT:-$ARCHIVES_ROOT}"
 
 # ─── Helpers ───────────────────────────────────────────────────────────────
 now_ts() { date '+%Y%m%d-%H%M%S'; }
@@ -99,6 +115,12 @@ new_uuid() {
 
 die() { echo "ERROR: $*" >&2; exit 2; }
 
+# Active gh / podman binaries (test seams: point IMPLEMENTER_GH_BIN /
+# IMPLEMENTER_PODMAN_BIN at mocks so the driver's `main` can execute without a
+# real GitHub / container runtime). Resolved at call time.
+gh_call() { "${IMPLEMENTER_GH_BIN:-gh}" "$@"; }
+podman_call() { "${IMPLEMENTER_PODMAN_BIN:-podman}" "$@"; }
+
 # Task slug from a PRD filename: yyyy-mm-dd-<slug>.md → <slug>
 slug_from_prd() { basename "$1" .md | sed -E 's/^[0-9]{4}-[0-9]{2}-[0-9]{2}-//'; }
 
@@ -106,11 +128,19 @@ slug_from_prd() { basename "$1" .md | sed -E 's/^[0-9]{4}-[0-9]{2}-[0-9]{2}-//';
 TASK=""
 DRY_RUN=false
 MODE_FLAG="--pick"
+REVISE_PR=""
+# Revision mode (decision 08): set true when --revise is active. Under revise,
+# the container resumes the original session from attempt 1 (--continue), the
+# revision directive carries the binding-authority rule, the task NEVER
+# transitions (stays in-review), no new UUID is minted, and delivery pushes the
+# same branch (no gh pr create, no merge).
+REVISION_MODE=false
 
 while [ $# -gt 0 ]; do
   case "$1" in
     --task) TASK="$2"; MODE_FLAG=""; shift 2 ;;
     --pick) MODE_FLAG="--pick"; shift ;;
+    --revise) REVISE_PR="$2"; MODE_FLAG=""; REVISION_MODE=true; shift 2 ;;
     --dry-run) DRY_RUN=true; shift ;;
     --resume) echo "WARN: --resume is reserved; not implemented in v1." >&2; shift ;;
     *) die "Unknown option: $1" ;;
@@ -361,20 +391,25 @@ run_container() {
   # PR is raised (defensive: --rm already removes it on exit, but this also
   # handles stale containers left by prior runs and name conflicts on respawn).
   local cname="impl-$IMPL_UUID"
-  if command -v podman >/dev/null 2>&1; then
-    podman rm -f "$cname" >/dev/null 2>&1 || true
+  if command -v "${IMPLEMENTER_PODMAN_BIN:-podman}" >/dev/null 2>&1; then
+    podman_call rm -f "$cname" >/dev/null 2>&1 || true
   fi
 
   # Continuity is native: pi persists its session to the host mount under the
-  # run's session-dir, and a respawn passes --continue so the fresh container
-  # resumes the existing conversation (no PROGRESS.md needed).
+  # run's session-dir, and a respawn (or a revision resuming the original
+  # session — decision 08) passes --continue so the fresh container resumes the
+  # existing conversation (no PROGRESS.md needed). In revise mode the seeded
+  # `sessions/` dir holds the original session file, so --continue is set from
+  # attempt 1.
   local sess_args=(--session-dir /sandbox/sessions)
-  if [ "$attempt" -gt 1 ]; then
+  if [ "$REVISION_MODE" = true ] || [ "$attempt" -gt 1 ]; then
     sess_args+=(--continue)
   fi
 
   local directive
-  if [ "$attempt" -eq 1 ]; then
+  if [ "$REVISION_MODE" = true ]; then
+    directive="Execute your implementer REVISION run now. Read /sandbox/brief.md and the PRD it references. The review findings at /sandbox/review/report.md (and /sandbox/review/decisions/) are the BINDING fix authority: fix EXACTLY what they scope — no more, no less — and WHERE THEY CONFLICT WITH YOUR EARLIER REASONING, THE FINDINGS WIN. Resume your original implementation session context — do NOT restart from scratch, do NOT re-litigate findings, do NOT expand scope beyond the findings. Do NOT run any git commands (the host owns git) and do NOT change the task lifecycle. Implement the fix in /sandbox/worktree (the SAME branch as the original PR), run the PRD verification commands, then write /sandbox/outbox/report.md plus any decisions to /sandbox/outbox/decisions/. Exit 0 on success."
+  elif [ "$attempt" -eq 1 ]; then
     directive="Execute your implementer run contract now. Read /sandbox/brief.md and the PRD it references, implement every user story in /sandbox/worktree (do NOT run any git commands — the host owns git), run the PRD verification commands, then write /sandbox/outbox/report.md plus any decisions to /sandbox/outbox/decisions/. Exit 0 on success."
   else
     directive="Resume your interrupted implementer run. You were killed mid-run; this container continues the SAME session, and your edits are already on disk in /sandbox/worktree. Continue from where you left off — do NOT restart from scratch. Finish implementing every story per /sandbox/brief.md (do NOT run any git commands — the host owns git), run verification, then write /sandbox/outbox/report.md plus any decisions to /sandbox/outbox/decisions/. Exit 0 on success."
@@ -382,8 +417,11 @@ run_container() {
 
   local exit_code=0
   # Live-stream container stdout into the session log while it runs.
+  # NOTE: no `exec` here — podman_call is a function seam, not an external
+  # command, so the subshell simply runs it and exits when it returns (mirrors
+  # review-run.sh podman_call).
   (
-    exec podman run --rm --network=host \
+    podman_call run --rm --network=host \
       --name "impl-$IMPL_UUID" \
       -v "$WORKSPACE:/workspace:ro" \
       -v "$RUN_DIR:/sandbox" \
@@ -598,11 +636,11 @@ push_and_pr() {
 # also cleans stale containers from prior runs that died mid-flight.
 stop_container() {
   local cname="impl-$IMPL_UUID"
-  if command -v podman >/dev/null 2>&1 \
-      && podman ps -a --format '{{.Names}}' 2>/dev/null | grep -qx "$cname"; then
+  if command -v "${IMPLEMENTER_PODMAN_BIN:-podman}" >/dev/null 2>&1 \
+      && podman_call ps -a --format '{{.Names}}' 2>/dev/null | grep -qx "$cname"; then
     echo "  Shutting down sandbox container $cname (no longer needed)." >&2
-    podman stop -t 5 "$cname" >/dev/null 2>&1 || true
-    podman rm -f "$cname" >/dev/null 2>&1 || true
+    podman_call stop -t 5 "$cname" >/dev/null 2>&1 || true
+    podman_call rm -f "$cname" >/dev/null 2>&1 || true
   fi
 }
 
@@ -662,8 +700,436 @@ fail_run() {
     echo "Run failed: $reason" >> "$OUTBOX/report.md"
     archive
   fi
-  transition "prd-ready"
+  # D3: a revision never transitions the task lifecycle — it stays in-review
+  # through the re-review. Only the normal (non-revise) failure path reverts the
+  # task to prd-ready.
+  if [ "$REVISION_MODE" != true ]; then
+    transition "prd-ready"
+  fi
   exit 1
+}
+
+# ═══════════════════════════════════════════════════════════════════════════
+# Revision mode (decision 08) — --revise <pr> resumes the ORIGINAL impl session
+# to address review findings on an open PR. The task file (decision 06 PR
+# tracking) is the join: PR → slug (title) → original impl session UUID
+# ("Raised by: implementer run <uuid>") → newest REQUEST_CHANGES review.
+# ═══════════════════════════════════════════════════════════════════════════
+
+# json_get <field>: read a scalar field from stdin JSON (tiny gh-pr-view helper).
+json_get() {
+  python3 -c 'import json,sys; d=json.loads(sys.stdin.read() or "{}"); print(d.get(sys.argv[1], ""))' "$1" 2>/dev/null || true
+}
+
+# PR argument → PR_REPO + PR_NUMBER (mirrors review-run.sh resolve_pr).
+resolve_pr_arg() {
+  local arg="$1"
+  PR_REPO=""
+  PR_NUMBER=""
+  case "$arg" in
+    http*)
+      if [[ "$arg" =~ https?://[^/]+/([^/]+)/([^/]+)/pull/([0-9]+) ]]; then
+        PR_REPO="${BASH_REMATCH[1]}/${BASH_REMATCH[2]}"
+        PR_NUMBER="${BASH_REMATCH[3]}"
+      else
+        die "Cannot parse PR URL: '$arg' (expected https://host/<owner>/<repo>/pull/<num>)"
+      fi
+      ;;
+    */*#*)
+      PR_REPO="${arg%%#*}"; PR_NUMBER="${arg##*#}"
+      ;;
+    *#*)
+      PR_REPO="$(qualify_repo_revise "${arg%%#*}")"; PR_NUMBER="${arg##*#}"
+      ;;
+    *[0-9]*)
+      PR_NUMBER="${arg//[^0-9]/}"
+      PR_REPO="$(default_repo_revise)"
+      ;;
+    *)
+      die "Cannot interpret PR argument '$arg' (expected repo#num, URL, or number)"
+      ;;
+  esac
+  [[ "$PR_NUMBER" =~ ^[0-9]+$ ]] || die "Invalid PR number: '$PR_NUMBER'"
+  [ -z "$PR_REPO" ] && die "Could not resolve a repo for '$arg'"
+  echo "  Resolved PR: $PR_REPO#$PR_NUMBER" >&2
+}
+
+qualify_repo_revise() {
+  local name="$1"
+  if [[ "$name" == *"/"* ]]; then echo "$name"; return 0; fi
+  local owner; owner="$(repo_owner_revise)"
+  if [ -n "$owner" ]; then echo "$owner/$name"; else echo "$name"; fi
+}
+
+default_repo_revise() {
+  if [ -n "${IMPLEMENTER_DEFAULT_REPO:-}" ]; then echo "$IMPLEMENTER_DEFAULT_REPO"; return 0; fi
+  local url; url="$(git -C "$WORKSPACE" remote get-url origin 2>/dev/null || true)"
+  [ -z "$url" ] && { echo ""; return 0; }
+  echo "$url" | sed -E 's#.*[:/]([^/:]+)/([^/.]+)(\.git)?#\1/\2#'
+}
+
+repo_owner_revise() {
+  local r; r="$(default_repo_revise)"; echo "${r%%/*}"
+}
+
+# Fetch PR metadata (title, refs, shas, state, merged) and GUARD that the PR is
+# open and not merged — a revision can only target a live PR (else exit 2).
+pr_revision_metadata() {
+  local json
+  json="$(gh_call pr view "$PR_NUMBER" --repo "$PR_REPO" --json \
+      number,title,headRefName,baseRefName,headRefOid,state,merged 2>/dev/null || true)"
+  if [ -z "$json" ]; then
+    die "gh could not fetch PR $PR_REPO#$PR_NUMBER (is gh authenticated on the host?)"
+  fi
+  PR_TITLE="$(printf '%s' "$json" | json_get title)"
+  PR_HEAD_REF="$(printf '%s' "$json" | json_get headRefName)"
+  PR_BASE_REF="$(printf '%s' "$json" | json_get baseRefName)"
+  PR_HEAD_SHA="$(printf '%s' "$json" | json_get headRefOid)"
+  PR_STATE="$(printf '%s' "$json" | json_get state)"
+  PR_MERGED="$(printf '%s' "$json" | json_get merged)"
+  if [ "$PR_STATE" != "OPEN" ] || [ "$PR_MERGED" = "True" ] || [ "$PR_MERGED" = "true" ]; then
+    die "PR $PR_REPO#$PR_NUMBER is not open (state=$PR_STATE merged=$PR_MERGED) — revision requires an open, unmerged PR."
+  fi
+  echo "  PR #$PR_NUMBER (open) title='$PR_TITLE' head=$PR_HEAD_REF base=$PR_BASE_REF" >&2
+}
+
+# Slug from PR title: "[factory] <slug>: …" · fall back to branch factory/<slug>/.
+resolve_revision_slug() {
+  local title="${1:-}" branch="${2:-}"
+  PRD_SLUG=""
+  if [[ "$title" =~ ^\[factory\][[:space:]]*([^:]+): ]]; then
+    PRD_SLUG="${BASH_REMATCH[1]}"
+  fi
+  if [ -z "$PRD_SLUG" ] && [[ "$branch" =~ ^factory/([^/]+)/ ]]; then
+    PRD_SLUG="${BASH_REMATCH[1]}"
+  fi
+  PRD_SLUG="$(echo "$PRD_SLUG" | tr -d '[:space:]')"
+  if [ -z "$PRD_SLUG" ]; then
+    die "Could not resolve a task slug from PR title '$title' or branch '$branch'."
+  fi
+  echo "  Resolved task slug: $PRD_SLUG" >&2
+}
+
+# Original impl session UUID + review session from the task PR tracking (decision 06).
+resolve_impl_session() {
+  local task_file="$WORKSPACE/docs/tasks/$PRD_SLUG.md"
+  [ -f "$task_file" ] || die "Task file not found: $task_file (slug: $PRD_SLUG)"
+  IMPL_UUID="$(grep -m1 'Raised by: implementer run ' "$task_file" \
+    | sed -E 's/.*implementer run ([0-9a-f-]{36}).*/\1/' )"
+  if [ -z "$IMPL_UUID" ]; then
+    die "No original implementation session ('Raised by: implementer run <uuid>') on task $PRD_SLUG."
+  fi
+  REVIEW_SESSION="$(grep -m1 'Review: session ' "$task_file" \
+    | sed -E 's/.*Review: session ([0-9a-f-]+).*/\1/' )"
+  echo "  Original impl session UUID (D1, reused): $IMPL_UUID" >&2
+}
+
+# Newest docs/code-reviews/*-<slug>/ with a REQUEST_CHANGES verdict (binding spec).
+resolve_review_report() {
+  local base="$WORKSPACE/docs/code-reviews"
+  local newest="" d
+  for d in "$base"/*-"$PRD_SLUG"; do
+    [ -f "$d/report.md" ] || continue
+    if grep -q 'REQUEST_CHANGES' "$d/report.md"; then
+      newest="$d"  # date-prefixed dirs glob in order → newest date wins
+    fi
+  done
+  if [ -z "$newest" ]; then
+    die "No REQUEST_CHANGES review report found for slug '$PRD_SLUG' in $base/ (nothing binding to fix)."
+  fi
+  REVIEW_DIR="$newest"
+  echo "  Binding review (REQUEST_CHANGES): $REVIEW_DIR" >&2
+}
+
+# Full revision resolution: PR arg → repo/number → metadata → slug → original
+# session → review. Sets PR_REPO/PR_NUMBER/PR_TITLE/PR_HEAD_REF/PRD_SLUG/
+# IMPL_UUID/REVIEW_SESSION/REVIEW_DIR/PRD.
+resolve_revision() {
+  resolve_pr_arg "$REVISE_PR"
+  pr_revision_metadata
+  resolve_revision_slug "$PR_TITLE" "$PR_HEAD_REF"
+  resolve_impl_session
+  resolve_review_report
+  PRD="$(ls "$WORKSPACE"/docs/prd-queue/*-"$PRD_SLUG.md" 2>/dev/null | head -1 || true)"
+  if [ -z "$PRD" ] || [ ! -f "$PRD" ]; then
+    die "No PRD found for slug '$PRD_SLUG' in docs/prd-queue/"
+  fi
+  echo "  PRD: $(basename "$PRD")" >&2
+}
+
+# revision_number: <n-th> revision report (1-based) for this task lineage.
+revision_number() {
+  local dest="$WORKSPACE/$ARCHIVES_ROOT/$(date '+%Y-%m-%d')-$PRD_SLUG"
+  local n=0 f
+  for f in "$dest"/revision-*.md; do
+    [ -f "$f" ] && n=$((n+1))
+  done
+  echo $((n+1))
+}
+
+# prepare_revision_dir(): reconstruct RUN_DIR with the SAME branch worktree,
+# seeded sessions/ (original session file), mounted review/, revision brief.
+# No new UUID (D1) — IMPL_UUID stays the original impl session.
+prepare_revision_dir() {
+  local ts; ts="$(now_ts)"
+  RUN_DIR="$RUNS_ROOT/$PRD_SLUG-$ts"
+  WORKTREE="$RUN_DIR/worktree"
+  OUTBOX="$RUN_DIR/outbox"
+  SESSION_LOG="$RUN_DIR/session.jsonl"
+  mkdir -p "$OUTBOX/decisions" "$RUN_DIR/sessions" "$RUN_DIR/review/decisions"
+  echo "  Run dir (revision): $RUN_DIR" >&2
+  echo "  Reusing original impl session UUID: $IMPL_UUID (decision 08, D1)" >&2
+
+  local src_repo="$WORKSPACE/$TARGET_REPO"
+  [ -d "$src_repo/.git" ] || die "Target repo not a git repo: $src_repo"
+
+  # Self-contained clone in the run dir (keeps all git metadata writable).
+  git clone --quiet --local "$src_repo" "$WORKTREE" 2>/dev/null \
+    || git clone --quiet "$src_repo" "$WORKTREE"
+  # Point origin at the REAL remote (clone --local sets it to the local path).
+  local real_url
+  real_url="$(git -C "$src_repo" remote get-url origin 2>/dev/null || true)"
+  if [ -n "$real_url" ]; then
+    git -C "$WORKTREE" remote set-url origin "$real_url"
+  fi
+  # Check out the SAME branch the PR is on, so the fix rides on top of it.
+  git -C "$WORKTREE" fetch --quiet origin "$PR_HEAD_REF" 2>/dev/null \
+    || git -C "$WORKTREE" fetch --quiet origin >/dev/null 2>&1 || true
+  git -C "$WORKTREE" checkout -q -B "$PR_HEAD_REF" "origin/$PR_HEAD_REF" 2>/dev/null \
+    || git -C "$WORKTREE" checkout -q -B "$PR_HEAD_REF" "$PR_HEAD_REF"
+  git -C "$WORKTREE" config user.name "${IMPL_GIT_NAME:-factory}"
+  git -C "$WORKTREE" config user.email "${IMPL_GIT_EMAIL:-factory@ak47.local}"
+  WORKTREE_BRANCH="$PR_HEAD_REF"
+  echo "  Worktree at SAME branch: $WORKTREE (branch $WORKTREE_BRANCH)" >&2
+
+  # Seed sessions/ with the original session file (pi-native naming, D6) so
+  # --continue in the container resumes the original conversation.
+  local sess_src="$WORKSPACE/docs/knowledge/sessions/$IMPL_UUID/session.jsonl"
+  if [ -f "$sess_src" ]; then
+    cp "$sess_src" "$RUN_DIR/sessions/${ts}_${IMPL_UUID}.jsonl"
+    echo "  Seeded sessions/ with original session: ${ts}_${IMPL_UUID}.jsonl" >&2
+  else
+    echo "  WARN: original session file missing at $sess_src — continuing without seed." >&2
+  fi
+
+  # Mount the review report + decisions as the binding fix spec.
+  cp "$REVIEW_DIR/report.md" "$RUN_DIR/review/report.md"
+  if [ -d "$REVIEW_DIR/decisions" ]; then
+    cp "$REVIEW_DIR/decisions/"*.md "$RUN_DIR/review/decisions/" 2>/dev/null || true
+  fi
+  echo "  Mounted review report+decisions → review/" >&2
+
+  REVISION_N="$(revision_number)"
+  write_revision_brief "$ts"
+}
+
+# write_revision_brief(): revision variant of the brief (binding-authority).
+write_revision_brief() {
+  local ts="$1"
+  cat > "$RUN_DIR/brief.md" <<EOF
+# Implementer Revision Brief
+
+- **PR**: $PR_REPO#$PR_NUMBER (same branch: $WORKTREE_BRANCH)
+- **Task slug**: $PRD_SLUG
+- **PRD path** (read-only; also below): ${PRD#/workspace/}
+- **Impl session UUID** (reused from the original run, decision 08): $IMPL_UUID
+- **Original review (BINDING authority)**: /sandbox/review/report.md + /sandbox/review/decisions/
+- **Worktree path** (same branch, read-write): /sandbox/worktree
+- **Outbox path** (write results here): /sandbox/outbox
+
+## Rules (binding)
+
+1. Fix EXACTLY what the review findings scope — no more, no less. No scope expansion.
+2. WHERE THE REVIEW FINDINGS CONFLICT WITH YOUR EARLIER REASONING, THE FINDINGS WIN.
+   The review report + decisions are higher-priority authority than your prior reasoning.
+3. Resume your original implementation session context (continuity) — do NOT
+   restart from scratch, do NOT re-litigate findings.
+4. Do NOT run any git commands (the host owns git). Do NOT change the task
+   lifecycle — the task stays in-review through the re-review.
+5. Do NOT write secrets, keys, or GitHub credentials anywhere.
+
+## Verification
+
+See the PRD \`## Testing decisions\` for the acceptance commands. Run them inside the worktree as the PRD specifies.
+- State evidence for each story (what you changed and how it is verified).
+
+## Completion
+
+Write /sandbox/outbox/report.md (per-story done/not-done + evidence +
+verification results + UAT hand-off list) and any emerged decisions to
+/sandbox/outbox/decisions/NN-<slug>.md (structured decision format), then exit 0.
+On partial failure, still write the report and exit 1.
+EOF
+  echo "  Revision brief written: $RUN_DIR/brief.md" >&2
+}
+
+# archive_revision(): one implementation dir per lineage (D5) — the revision
+# report lands NEXT TO v1 report.md as revision-<n>-report.md.
+archive_revision() {
+  local ts; ts="$(date '+%Y-%m-%d')"
+  local dest="$WORKSPACE/$ARCHIVES_ROOT/$ts-$PRD_SLUG"
+  mkdir -p "$dest/decisions"
+  if [ -f "$OUTBOX/report.md" ]; then
+    cp "$OUTBOX/report.md" "$dest/revision-${REVISION_N}-report.md"
+  fi
+  if [ -d "$OUTBOX/decisions" ]; then
+    cp "$OUTBOX/decisions/"*.md "$dest/decisions/" 2>/dev/null || true
+  fi
+  cp "$RUN_DIR/brief.md" "$dest/brief.md" 2>/dev/null || true
+  echo "  Archived revision ${REVISION_N} → $dest/revision-${REVISION_N}-report.md" >&2
+  ARCHIVE_DEST="$dest"
+}
+
+# deliver_revision(): commit the fix on the SAME branch, push origin/<branch>
+# (updates PR #N), post a PR comment — NO gh pr create (D4), NO merge (D4),
+# NO task transition (D3). Appends the decision-06 `Revised:` row.
+deliver_revision() {
+  if [ "$DRY_RUN" = true ]; then
+    echo "  [dry-run] would commit+push branch $WORKTREE_BRANCH, post PR comment, and append Revised row" >&2
+    return 0
+  fi
+
+  local head_sha
+  # Host authors the commit from the implementer's files (the implementer never
+  # touches git).
+  git -C "$WORKTREE" add -A
+  if ! git -C "$WORKTREE" diff --cached --quiet; then
+    if ! git -C "$WORKTREE" -c user.name="${IMPL_GIT_NAME:-factory}" \
+          -c user.email="${IMPL_GIT_EMAIL:-factory@ak47.local}" commit -q \
+          -m "implementer($PRD_SLUG): revision ${REVISION_N} [factory] run $IMPL_UUID"; then
+      echo "  ERROR: could not commit revision fix." >&2
+      return 2
+    fi
+  else
+    echo "  [no-op] revision made no changes beyond the PR head — delivering as-is." >&2
+  fi
+  head_sha="$(git -C "$WORKTREE" rev-parse HEAD 2>/dev/null || echo '?')"
+
+  # Push the SAME branch — a normal fast-forward push (the branch exists on
+  # origin), updating the open PR. No gh pr create.
+  git -C "$WORKTREE" push -u origin "$WORKTREE_BRANCH"
+  echo "  Pushed revision to $WORKTREE_BRANCH (updates PR #$PR_NUMBER)" >&2
+
+  # PR comment noting the revision.
+  local body_file="$RUN_DIR/revision-comment.md"
+  {
+    echo "## Implementer Revision ($PRD_SLUG)"
+    echo ""
+    echo "Addressed review findings from the original implementer run (session $IMPL_UUID)."
+    echo ""
+    if [ -f "$ARCHIVE_DEST/revision-${REVISION_N}-report.md" ]; then
+      cat "$ARCHIVE_DEST/revision-${REVISION_N}-report.md"
+    fi
+  } > "$body_file"
+  if command -v "${IMPLEMENTER_GH_BIN:-gh}" >/dev/null 2>&1; then
+    gh_call pr comment "$PR_NUMBER" --repo "$PR_REPO" --body-file "$body_file"
+    echo "  Posted revision comment to $PR_REPO#$PR_NUMBER." >&2
+  else
+    echo "  [warn] gh not available; revision PR comment skipped." >&2
+  fi
+
+  # Decision 06: append the `Revised:` row (append-only history).
+  # shellcheck disable=SC1091
+  source "$SCRIPT_DIR/bin/lib-pr-tracking.sh"
+  local task="$WORKSPACE/docs/tasks/$PRD_SLUG.md"
+  local now; now="$(date '+%Y-%m-%d %H:%M')"
+  if pr_tracking_ensure "$task" && ! pr_tracking_has "$task" "Revised: $head_sha"; then
+    pr_tracking_add "$task" \
+      "- Revised: $head_sha ($now, impl session $IMPL_UUID, addressing review ${REVIEW_SESSION:-?})"
+    ( cd "$WORKSPACE" && git add "docs/tasks/$PRD_SLUG.md" 2>/dev/null || true
+      git diff --cached --quiet || git commit -q -m "task($PRD_SLUG): record revision ${REVISION_N} (tracking)" )
+  fi
+  echo "  Task PR tracking: Revised row recorded on docs/tasks/$PRD_SLUG.md" >&2
+}
+
+# finalize_revision_session(): the revision extends the SAME <orig-uuid>
+# session file (D1) — the durable copy is refreshed from the streamed transcript
+# / pi-native seed, and outbox decisions are mirrored into the knowledge dir.
+finalize_revision_session() {
+  local sess="$WORKSPACE/docs/knowledge/sessions/$IMPL_UUID/session.jsonl"
+  mkdir -p "$WORKSPACE/docs/knowledge/sessions/$IMPL_UUID/decisions"
+  if [ -d "$OUTBOX/decisions" ]; then
+    cp "$OUTBOX/decisions/"*.md "$WORKSPACE/docs/knowledge/sessions/$IMPL_UUID/decisions/" 2>/dev/null || true
+    local idx="$WORKSPACE/docs/knowledge/index.md"
+    if ! grep -q "^### $PROJECT" "$idx" 2>/dev/null; then
+      printf '\n### %s\n' "$PROJECT" >> "$idx"
+    fi
+    local d
+    for d in "$WORKSPACE/docs/knowledge/sessions/$IMPL_UUID"/decisions/*.md; do
+      [ -f "$d" ] || continue
+      local base; base="$(basename "$d")"
+      local title; title="$(echo "$base" | sed -E 's/^[0-9]+-//; s/\.md$//; s/-/ /g')"
+      if ! grep -Fq "sessions/$IMPL_UUID/decisions/$base" "$idx"; then
+        python3 - "$idx" "$PROJECT" "$title" "$IMPL_UUID" "$base" <<'PYEOF'
+import sys
+path, proj, title, uuid, base = sys.argv[1:6]
+with open(path) as f:
+    lines = f.read().split('\n')
+out = []
+inserted = False
+for line in lines:
+    out.append(line)
+    if line.strip() == f'### {proj}' and not inserted:
+        out.append(f'- [{title}](sessions/{uuid}/decisions/{base})')
+        inserted = True
+with open(path, 'w') as f:
+    f.write('\n'.join(out) + '\n')
+PYEOF
+      fi
+    done
+    if [ -f "$WORKSPACE/bin/sort-knowledge-index.py" ]; then
+      python3 "$WORKSPACE/bin/sort-knowledge-index.py" >/dev/null 2>&1 || true
+    fi
+  fi
+}
+
+# ─── main_revise(): full --revise flow ─────────────────────────────────────
+# Sets REVISION_MODE already true (arg parsing). Never transitions the task
+# (D3), never mints a new UUID (D1), never calls push_and_pr (D4).
+main_revise() {
+  echo "=== implementer-run.sh (revision mode) ==="
+  echo "  dry-run: $DRY_RUN | revising PR: $REVISE_PR"
+  resolve_revision
+  resolve_repo
+  prepare_revision_dir
+
+  # ── Run the container with respawn (cattle) ──────────────────────────────
+  local_result=1
+  attempt=1
+  while [ $attempt -le "$RESPAWN_CAP" ]; do
+    if run_container "$attempt"; then
+      local_result=0
+      break
+    fi
+    if [ $attempt -lt "$RESPAWN_CAP" ]; then
+      echo "  Respawn: attempt $attempt failed; starting fresh container against same run dir." >&2
+    fi
+    attempt=$((attempt+1))
+  done
+
+  if [ "$local_result" -eq 0 ]; then
+    echo "=== Implementer revision success — archiving + delivering on the same PR ===" >&2
+    archive_revision
+    finalize_revision_session
+    if [ "$DRY_RUN" = true ]; then
+      deliver_revision  # prints the dry-run simulation line
+      echo "  [dry-run] would commit+push workspace root (archive, index, task-file session link)" >&2
+    else
+      deliver_revision
+      # Persist the archive/index/session/task on the workspace root.
+      ( cd "$WORKSPACE" && git add "$ARCHIVES_ROOT" "docs/knowledge/sessions/$IMPL_UUID" \
+          docs/knowledge/index.md docs/tasks/$PRD_SLUG.md docs/tasks.txt 2>/dev/null || true
+        git diff --cached --quiet || git commit -q -m "implementer($PRD_SLUG): archive revision ${REVISION_N} [impl $IMPL_UUID]" )
+    fi
+    stop_container
+    if [ "$DRY_RUN" != true ] && [ "${IMPL_CLEANUP:-$CLEANUP_ENABLED}" != "false" ]; then
+      cleanup_run_dir
+    fi
+    echo "Done (exit 0)."
+    exit 0
+  else
+    fail_run "revision container/implementer failed after ${RESPAWN_CAP} attempts"
+  fi
 }
 
 # ─── main ──────────────────────────────────────────────────────────────────
@@ -673,7 +1139,14 @@ if [ "${IMPLEMENTER_RUN_SOURCED:-0}" = "1" ]; then
 fi
 
 echo "=== implementer-run.sh ==="
-echo "  dry-run: $DRY_RUN | mode: ${MODE_FLAG:---task $TASK}"
+echo "  dry-run: $DRY_RUN | mode: $([ "$REVISION_MODE" = true ] && echo "--revise $REVISE_PR" || echo "${MODE_FLAG:---task $TASK}")"
+
+# Revision path (decision 08): resumes the original impl session on the same
+# branch; never transitions the task, never mints a new UUID, never raises a PR.
+if [ "$REVISION_MODE" = true ]; then
+  main_revise
+  exit 0
+fi
 
 resolve_prd
 resolve_repo

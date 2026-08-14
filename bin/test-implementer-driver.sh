@@ -1,3 +1,4 @@
+
 #!/usr/bin/env bash
 # ============================================================================
 # test-implementer-driver.sh — Unit tests for bin/implementer-run.sh
@@ -292,8 +293,340 @@ else
 fi
 rm -rf "$CC"
 
-# ─── Summary ───────────────────────────────────────────────────────────────
+# ─── Revision-mode mocks + fixture (decision 08) ───────────────────────────
+# Mock gh: records calls; answers `pr view` with the fixture JSON (state + merged
+# + title + refs). `pr create` is legal to CALL but the test asserts it is ABSENT
+# from the log (D4 — delivery never raises a new PR).
+make_mock_gh_impl() {
+  local logfile="$1"
+  cat > "$2" <<'MOCK'
+#!/usr/bin/env bash
+LOG="$MOCK_GH_LOG"
+{
+  printf 'gh'
+  for a in "$@"; do printf ' <%s>' "$a"; done
+  printf '\n'
+} >> "$LOG"
+cmd="$1"; shift
+case "$cmd" in
+  pr)
+    sub="$1"; shift
+    case "$sub" in
+      view) printf '%s' "$MOCK_GH_VIEW_JSON" ;;
+      comment) printf 'commented\n' ;;
+      create) printf 'create-called\n' ;;
+      *) printf 'ok\n' ;;
+    esac
+    ;;
+esac
+MOCK
+  chmod +x "$2"
+}
+
+# Mock podman: writes a fabricated revision report into the /sandbox outbox so
+# the driver's `main` (revise mode) executes end-to-end and records the args so
+# the test can assert the seeded-session `--continue` continuity seam.
+make_mock_podman_impl() {
+  cat > "$1" <<'MOCK'
+#!/usr/bin/env bash
+LOG="$MOCK_PODMAN_LOG"
+{
+  printf 'podman'
+  for a in "$@"; do printf ' <%s>' "$a"; done
+  printf '\n'
+} >> "$LOG"
+# Locate the /sandbox host dir from the -v mount args (the run dir).
+sandbox=""
+prev=""
+for a in "$@"; do
+  if [ "$prev" = "-v" ]; then
+    case "$a" in
+      *:/sandbox) sandbox="${a%%:/sandbox}" ;;
+    esac
+  fi
+  prev="$a"
+done
+if [ "${1:-}" = "run" ]; then
+  mkdir -p "$sandbox/outbox/decisions"
+  cat > "$sandbox/outbox/report.md" <<'RPT'
+# Implementer Revision (fixture smoke)
+
+All review findings addressed. (fabricated by mock podman for the driver smoke)
+RPT
+  # The real implementer edits the worktree; mirror that so delivery has a
+  # change to commit + push on the same branch.
+  printf '\nrevision fix (fixture)\n' >> "$sandbox/worktree/base.txt"
+fi
+exit 0
+MOCK
+  chmod +x "$1"
+}
+
+# Revision fixture: a scratch git repo with a bare `origin` remote carrying both
+# master and the PR head branch, a reviewed task file (decision 06 rows), the
+# original impl session file, and a REQUEST_CHANGES review report + decisions.
+# PRD_SLUG=demo, PR #2, branch factory/demo/20260814-120000.
+setup_revise_fixture() {
+  local slug="demo"
+  local branch="factory/demo/20260814-120000"
+  local orig="aaaaaaaa-bbbb-cccc-dddd-eeeeffff0001"
+  local rev="11111111-2222-3333-4444-555555555555"
+  local date="2026-08-14"
+  local dir
+  dir="$(mktemp -d)"
+  local remote="$dir-remote"
+  mkdir -p "$dir/config" "$dir/docs/tasks" "$dir/docs/prd-queue" \
+           "$dir/docs/code-reviews/$date-$slug/decisions" \
+           "$dir/docs/implementations" "$dir/docs/knowledge/sessions/$orig" \
+           "$dir/bin" "$dir/.factory/runs"
+
+  # Scratch repo with both master and the PR head branch.
+  ( cd "$dir" && git init -q -b master >/dev/null 2>&1 \
+      && git config user.email rev@example.com && git config user.name Rev \
+      && printf 'base\n' > base.txt && git add -A \
+      && git commit -qm 'base commit' >/dev/null 2>&1 \
+      && git checkout -qb "$branch" \
+      && printf 'change\n' >> base.txt && git add -A \
+      && git commit -qm 'PR head change' >/dev/null 2>&1 \
+      && git checkout -q master )
+  local base_sha head_sha
+  base_sha="$(git -C "$dir" rev-parse master)"
+  head_sha="$(git -C "$dir" rev-parse "$branch")"
+
+  # Bare remote that owns master + the PR branch (so a real push lands).
+  git init -q --bare "$remote" >/dev/null 2>&1
+  git -C "$dir" remote add origin "$remote"
+  git -C "$dir" push -q origin master
+  git -C "$dir" push -q origin "$branch:$branch"
+
+  # Task file: already in-review with decision-06 PR tracking rows.
+  cat > "$dir/docs/tasks/$slug.md" <<EOF
+# Task: demo
+
+**Status**: in-review
+**Project**: software-factory
+
+## PR tracking
+- PR: #2 (ak47-arch/workspace)
+- URL: https://github.com/ak47-arch/workspace/pull/2
+- Branch: $branch
+- Base: master · Head: $head_sha (raised $date 12:00)
+- Raised by: implementer run $orig
+- Review: session $rev · verdict REQUEST_CHANGES · report docs/code-reviews/$date-$slug/
+EOF
+
+  # Original implementation session (the durable pi-native file being resumed).
+  printf '{"type":"session","uuid":"%s","task":"demo"}\n' "$orig" \
+    > "$dir/docs/knowledge/sessions/$orig/session.jsonl"
+
+  # REQUEST_CHANGES review report + a review-emerged decision.
+  cat > "$dir/docs/code-reviews/$date-$slug/report.md" <<EOF
+# Code Review
+
+## Verdict
+
+REQUEST_CHANGES — fixture findings to address.
+EOF
+  printf '# Decision: fixture blocker\n\n## Decision\nDrop it.\n' \
+    > "$dir/docs/code-reviews/$date-$slug/decisions/01-demo.md"
+
+  # PRD for the slug (resolve_revision locates it).
+  printf '**Date**: %s 10:00\n**Status**: Final\n## Testing decisions\nrun the demo verification\n' "$date" \
+    > "$dir/docs/prd-queue/$date-demo.md"
+
+  # Driver config (used only when jq is present; harmless otherwise).
+  cat > "$dir/config/implementer.json" <<'CFG'
+{
+  "repo_map": { "software-factory": ".", "feed_analyser": "feed_analyser" },
+  "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+  "timeout_sec": 30, "respawn_cap": 1,
+  "env_allowlist": ["OPENROUTER_API_KEY", "ANTHROPIC_API_KEY", "IMPLEMENTER_MODEL"],
+  "image": "sandbox:latest",
+  "runs_root": ".factory/runs", "archives_root": "docs/implementations",
+  "liveness_interval_sec": 2, "liveness_idle_sec": 5
+}
+CFG
+
+  # Helpers the driver invokes from the workspace on its success path.
+  cp "$(cd "$(dirname "$0")/.." && pwd)/bin/sort-knowledge-index.py" "$dir/bin/" 2>/dev/null || true
+  printf '#!/usr/bin/env bash\nexit 0\n' > "$dir/bin/transition-task.sh"; chmod +x "$dir/bin/transition-task.sh"
+
+  local mock="$dir/mock-gh.sh" log="$dir/gh-calls.log"
+  : > "$log"
+  make_mock_gh_impl "$log" "$mock"
+
+  cat > "$dir/fixture.env" <<EOF
+export IMPLEMENTER_WORKSPACE="$dir"
+export IMPLEMENTER_GH_BIN="$dir/mock-gh.sh"
+export IMPLEMENTER_RUNS_ROOT="$dir/.factory/runs"
+export IMPLEMENTER_ARCHIVES_ROOT="docs/implementations"
+export IMPLEMENTER_DEFAULT_REPO="ak47-arch/workspace"
+export MOCK_GH_LOG="$dir/gh-calls.log"
+export MOCK_GH_VIEW_JSON='{"number":2,"title":"[factory] demo: implement","headRefName":"$branch","baseRefName":"master","headRefOid":"$head_sha","state":"OPEN","merged":false}'
+export REVISE_FIXTURE="$dir"
+export REVISE_REMOTE="$remote"
+export REVISE_ORIG="$orig"
+export REVISE_HEAD="$head_sha"
+export REVISE_BRANCH="$branch"
+export REVISE_SLUG="$slug"
+export REVISE_DATE="$date"
+EOF
+
+  echo "$dir"
+}
 echo ""
+
+# ─── Test 14: --revise <pr> --dry-run smoke — reconstructs the run dir (same
+# branch, seeded session, mounted review, revision brief), reuses the original
+# UUID, and simulates the pi invocation with --continue (US1+US2).
+# ───────────────────────────────────────────────────────────────────────────
+echo "── revise: --dry-run smoke (reconstruct + continue) ──"
+RV="$(setup_revise_fixture)"
+set -a; . "$RV/fixture.env"; set +a
+export MOCK_PODMAN_LOG="$RV/podman-calls.log"
+export IMPLEMENTER_PODMAN_BIN="$RV/mock-podman.sh"
+make_mock_podman_impl "$RV/mock-podman.sh"
+(
+  cd "$RV"
+  IMPLEMENTER_RUN_SOURCED=0 bash "$DRIVER" --revise ak47-arch/workspace#2 --dry-run
+) > "$RV/revise.out" 2>&1
+rc=$?
+[ "$rc" -eq 0 ] && pass "revise dry-run exits 0" || fail "revise dry-run rc=$rc: $(tail -3 "$RV/revise.out" | tr '\n' ' ')"
+# Same branch checked out in the run-dir worktree.
+RUNDIR="$(ls -d "$RV"/.factory/runs/demo-* 2>/dev/null | head -1)"
+if [ -d "$RUNDIR/worktree" ] && [ "$(git -C "$RUNDIR/worktree" branch --show-current 2>/dev/null)" = "$REVISE_BRANCH" ]; then
+  pass "revise dry-run: same branch checked out ($REVISE_BRANCH)"
+else
+  fail "revise dry-run: worktree branch = '$(git -C "$RUNDIR/worktree" branch --show-current 2>/dev/null)' — expected '$REVISE_BRANCH'"
+fi
+# Seeded sessions/ with the original session file (pi-native naming, D6).
+if ls "$RUNDIR"/sessions/*_${REVISE_ORIG}.jsonl >/dev/null 2>&1; then
+  pass "revise dry-run: sessions/ seeded with original session file"
+else
+  fail "revise dry-run: sessions/ not seeded with original session"
+fi
+# If a NEW uuid were minted, sessions/ would carry a different uuid; the seeded
+# file uses the ORIGINAL uuid (D1 — no new UUID).
+if grep -q "$REVISE_ORIG" "$RUNDIR/brief.md"; then
+  pass "revise dry-run: brief reuses the ORIGINAL impl session UUID (no new UUID, D1)"
+else
+  fail "revise dry-run: brief does not reference the original UUID"
+fi
+# Review mounted as the binding spec.
+if [ -f "$RUNDIR/review/report.md" ] && grep -q 'REQUEST_CHANGES' "$RUNDIR/review/report.md"; then
+  pass "revise dry-run: review report mounted (REQUEST_CHANGES)"
+else
+  fail "revise dry-run: review report not mounted"
+fi
+if [ -f "$RUNDIR/review/decisions/01-demo.md" ]; then
+  pass "revise dry-run: review decisions mounted"
+else
+  fail "revise dry-run: review decisions not mounted"
+fi
+# --continue + --session-dir in the (simulated) pi invocation — attempt 1.
+if grep -q '<--continue>' "$MOCK_PODMAN_LOG" && grep -q '<--session-dir> <' "$MOCK_PODMAN_LOG"; then
+  pass "revise dry-run: pi invocation carries --continue + --session-dir (attempt 1)"
+else
+  fail "revise dry-run: --continue missing from pi invocation: $(cat "$MOCK_PODMAN_LOG" | tr '\n' ' ')"
+fi
+# Vacuous guard: continuity is mechanically bound to the seeded session — the
+# --continue flag co-occurs with the seeded original-session file.
+if grep -q '<--continue>' "$MOCK_PODMAN_LOG" && ls "$RUNDIR"/sessions/*_${REVISE_ORIG}.jsonl >/dev/null 2>&1; then
+  pass "revise dry-run: vacuous guard — --continue present alongside the seeded session"
+else
+  fail "revise dry-run: vacuous guard failed (--continue or seed missing)"
+fi
+rm -rf "$RV" "$REVISE_REMOTE"
+
+# ─── Test 15: revise negatives — closed/merged PR, unresolvable slug, and a
+# missing REQUEST_CHANGES review each exit 2 (US1 error contract).
+# ───────────────────────────────────────────────────────────────────────────
+echo "── revise: negatives (exit 2) ──"
+# (a) merged PR.
+RV="$(setup_revise_fixture)"; set -a; . "$RV/fixture.env"; set +a
+( cd "$RV" && IMPLEMENTER_RUN_SOURCED=0 MOCK_GH_VIEW_JSON='{"number":2,"title":"[factory] demo: implement","headRefName":"fact/demo/x","headRefOid":"x","state":"MERGED","merged":true}' \
+  bash "$DRIVER" --revise ak47-arch/workspace#2 --dry-run ) > "$RV/neg1.out" 2>&1
+rc=$?
+[ "$rc" -eq 2 ] && grep -qi 'not open' "$RV/neg1.out" \
+  && pass "revise negative: merged PR → exit 2" || fail "revise negative: merged PR rc=$rc"
+rm -rf "$RV" "$REVISE_REMOTE"
+
+# (b) unresolvable slug.
+RV="$(setup_revise_fixture)"; set -a; . "$RV/fixture.env"; set +a
+( cd "$RV" && IMPLEMENTER_RUN_SOURCED=0 MOCK_GH_VIEW_JSON='{"number":2,"title":"not a factory PR","headRefName":"feature/x","headRefOid":"x","state":"OPEN","merged":false}' \
+  bash "$DRIVER" --revise ak47-arch/workspace#2 --dry-run ) > "$RV/neg2.out" 2>&1
+rc=$?
+[ "$rc" -eq 2 ] && grep -qi 'slug' "$RV/neg2.out" \
+  && pass "revise negative: unresolvable slug → exit 2" || fail "revise negative: slug rc=$rc"
+rm -rf "$RV" "$REVISE_REMOTE"
+
+# (c) missing REQUEST_CHANGES review (no binding report).
+RV="$(setup_revise_fixture)"
+rm -rf "$RV/docs/code-reviews"
+set -a; . "$RV/fixture.env"; set +a
+( cd "$RV" && IMPLEMENTER_RUN_SOURCED=0 bash "$DRIVER" --revise ak47-arch/workspace#2 --dry-run ) > "$RV/neg3.out" 2>&1
+rc=$?
+[ "$rc" -eq 2 ] && grep -qi 'REQUEST_CHANGES' "$RV/neg3.out" \
+  && pass "revise negative: missing REQUEST_CHANGES review → exit 2" || fail "revise negative: missing review rc=$rc"
+rm -rf "$RV" "$REVISE_REMOTE"
+
+# ─── Test 16: non-dry revise delivery — same-branch push, PR comment, NO pr
+# create, Revised row recorded, task unchanged (stays in-review). (US3+US4)
+# ───────────────────────────────────────────────────────────────────────────
+echo "── revise: non-dry delivery (same-branch push, no pr create, Revised row) ──"
+DEL="$(setup_revise_fixture)"
+set -a; . "$DEL/fixture.env"; set +a
+export MOCK_PODMAN_LOG="$DEL/podman-calls.log"
+export IMPLEMENTER_PODMAN_BIN="$DEL/mock-podman.sh"
+make_mock_podman_impl "$DEL/mock-podman.sh"
+: > "$MOCK_GH_LOG"
+(
+  cd "$DEL"
+  IMPLEMENTER_RUN_SOURCED=0 bash "$DRIVER" --revise ak47-arch/workspace#2
+) > "$DEL/revise2.out" 2>&1
+rc=$?
+[ "$rc" -eq 0 ] && pass "revise non-dry exits 0" || fail "revise non-dry rc=$rc: $(tail -3 "$DEL/revise2.out" | tr '\n' ' ')"
+
+# Same-branch push: the bare remote's PR branch gained a revision commit on top
+# of the ORIGINAL head (so the remote branch is a descendant of the original).
+remote_head="$(git -C "$REVISE_REMOTE" rev-parse "$REVISE_BRANCH" 2>/dev/null || echo absent)"
+if [ -n "$remote_head" ] && [ "$remote_head" != "$REVISE_HEAD" ] \
+   && git -C "$REVISE_REMOTE" merge-base --is-ancestor "$REVISE_HEAD" "$remote_head"; then
+  pass "revise non-dry: fix pushed on the SAME branch (origin/$REVISE_BRANCH advanced)"
+else
+  fail "revise non-dry: origin branch head='$remote_head' not descendant of '$REVISE_HEAD'"
+fi
+# PR comment posted; NO gh pr create.
+if grep -q '<comment>' "$MOCK_GH_LOG"; then
+  pass "revise non-dry: PR comment posted (gh pr comment)"
+else
+  fail "revise non-dry: PR comment missing: $(cat "$MOCK_GH_LOG" | tr '\n' ' ')"
+fi
+if grep -q '<create' "$MOCK_GH_LOG"; then
+  fail "revise non-dry: gh pr create was called (D4 violation — must not raise a new PR)"
+else
+  pass "revise non-dry: NO gh pr create (no new PR, D4)"
+fi
+# Revised row on the task file, and task lifecycle unchanged (stays in-review).
+if grep -q '^\- Revised: ' "$DEL/docs/tasks/$REVISE_SLUG.md"; then
+  pass "revise non-dry: Revised row appended to task PR tracking (decision 06)"
+else
+  fail "revise non-dry: Revised row missing: $(sed -n '/## PR tracking/,$p' "$DEL/docs/tasks/$REVISE_SLUG.md" | tr '\n' ' ')"
+fi
+if grep -q '\*\*Status\*\*: *in-review' "$DEL/docs/tasks/$REVISE_SLUG.md"; then
+  pass "revise non-dry: task stays in-review (no transition, D3)"
+else
+  fail "revise non-dry: task status changed"
+fi
+# Revision report archived next to v1 as revision-1-report.md (D5).
+if ls "$DEL"/docs/implementations/*-$REVISE_SLUG/revision-1-report.md >/dev/null 2>&1; then
+  pass "revise non-dry: revision-1-report.md archived in the SAME implementation dir (D5)"
+else
+  fail "revise non-dry: revision archive missing"
+fi
+rm -rf "$DEL" "$REVISE_REMOTE"
+
+# ─── Summary ───────────────────────────────────────────────────────────────
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "implementer-driver: $PASS passed, $FAIL failed"
 if [ "$FAIL" -gt 0 ]; then
