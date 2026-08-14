@@ -57,6 +57,7 @@ tasks:
     - Add another abstraction layer on the tasks.txt that helps the user select the next task based on the overall state of the system and reasoning on priorities (software-factory) [task-selection-abstraction-layer]
     - Extend the prod review agent to make it better (software-factory)
     - Add headless herdr host to implementer gent so we can run it seperately in a separate worktree (software-factory)
+    - Make the infrastructure so that we don’t need the prompt before delete extension (software-factory)
 
     ### Queued
     - Integrate the real ponytail skills into the implementer agent via pi --skill flags, replacing the prose directive (software-factory) [implementer-ponytail]
@@ -87,7 +88,7 @@ tasks:
     ### Queued
 
     ### Complete
-    - (complete) pivot feed analyser to X capture instrument — recursive capture v1 shipped, UAT passed (feed_analyser) [x-capture-instrument]
+    - (complete) pivot feed analyser to X capture instrument â recursive capture v1 shipped, UAT passed (feed_analyser) [x-capture-instrument]
 
     ## langfuse
 
