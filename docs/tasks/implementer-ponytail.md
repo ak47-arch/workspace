@@ -1,6 +1,6 @@
 # Task: implementer-ponytail
 
-**Status**: prd-ready
+**Status**: in-progress
 **Category**: Small
 **Project**: software-factory
 **Created**: 2026-08-14 00:45
@@ -22,6 +22,7 @@ the code-review agent uses (see decision 04 in session
 ## Sessions
 
 - (planning not yet captured)
+- [implementation](../knowledge/sessions/8483b243-ad9a-4e00-be82-0cdf26a8801d/session.jsonl)
 
 ## Decisions
 
