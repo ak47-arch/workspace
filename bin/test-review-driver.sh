@@ -69,9 +69,25 @@ case "$cmd" in
         printf 'commented\n'
         ;;
       edit)
-        printf 'edited\n'
+        # gh pr edit is a FAILED code path we removed (decision 07) — reject it
+        # loudly so stale callers fail tests instead of silently no-op-ing.
+        echo "mock gh: pr edit is no longer used; use the REST labels API" >&2
+        exit 1
         ;;
     esac
+    ;;
+  api)
+    # REST (decision 07): base SHA via pulls/<n>, labels via issues/<n>/labels.
+    shift
+    if [[ "$*" == *"pulls/"* ]] && [[ "$*" == *"--jq"* ]]; then
+      printf '%s' "${MOCK_GH_BASE_SHA:-deadbeefdeadbeefdeadbeefdeadbeefdeadbeef}"
+    elif [[ "$*" == *"labels"* ]]; then
+      # <api <-X> <POST> repos/..issues/<n>/labels <-f> <labels[]=factory:X>  |
+      # <api <-X> <DELETE> repos/..issues/<n>/labels/factory:needs-review <--silent>
+      printf 'labels-ok\n'
+    else
+      printf 'api-ok\n'
+    fi
     ;;
   label)
     printf 'label-created\n'
@@ -79,6 +95,43 @@ case "$cmd" in
 esac
 MOCK
   chmod +x "$2"
+}
+
+# ─── make_mock_podman(): fabricate completion so the driver's `main` executes
+# end-to-end. Records its args to a log, and for `podman run` parses the
+# `-v <host>:/sandbox` mount to write a fabricated report into the run-dir
+# outbox — which is exactly the driver's success signal.
+make_mock_podman() {
+  cat > "$1" <<'MOCK'
+#!/usr/bin/env bash
+LOG="$MOCK_PODMAN_LOG"
+{
+  printf 'podman'
+  for a in "$@"; do printf ' <%s>' "$a"; done
+  printf '\n'
+} >> "$LOG"
+# Locate the /sandbox host dir from the -v mount args (the run dir).
+sandbox=""
+prev=""
+for a in "$@"; do
+  if [ "$prev" = "-v" ]; then
+    case "$a" in
+      *:/sandbox) sandbox="${a%%:/sandbox}" ;;
+    esac
+  fi
+  prev="$a"
+done
+if [ "${1:-}" = "run" ]; then
+  mkdir -p "$sandbox/outbox/decisions"
+  cat > "$sandbox/outbox/report.md" <<'RPT'
+# Code Review (fixture smoke)
+## Verdict
+APPROVE — fabricated by mock podman for the end-to-end driver smoke.
+RPT
+fi
+exit 0
+MOCK
+  chmod +x "$1"
 }
 
 # ─── Fixture builder: disposable workspace that is a real scratch git repo ─
@@ -315,11 +368,12 @@ if printf '%s\n' "$FLAGS" | grep -q "ponytail-gain"; then pass "flag: ponytail-g
 if printf '%s\n' "$FLAGS" | grep -q "ponytail-help"; then pass "flag: ponytail-help"; else fail "missing ponytail-help flag"; fi
 COUNT="$(printf '%s\n' "$FLAGS" | wc -l | tr -d ' ')"
 if [ "$COUNT" -eq 6 ]; then pass "exactly six --skill flags ($COUNT)"; else fail "ponytail flag count = $COUNT — expected 6"; fi
-# Ponytail skills exist in the live opensource checkout (reads off config dir).
-if [ -d "$PONYTAIL_SKILLS_DIR/ponytail-review" ]; then
-  pass "ponytail-review skill present in opensource checkout"
+# Ponytail skills exist in the live opensource checkout. The container sees
+# $WORKSPACE at /workspace, so the host-side truth is the driver's own checkout.
+if [ -d "$SCRIPT_DIR/opensource/ponytail/skills/ponytail-review" ]; then
+  pass "ponytail-review skill present in opensource checkout (→ /workspace in container)"
 else
-  fail "ponytail skills dir not found: $PONYTAIL_SKILLS_DIR"
+  fail "ponytail skills dir not found at $SCRIPT_DIR/opensource/ponytail/skills"
 fi
 
 # ─── Test 8: archive to docs/code-reviews/<date>-<slug>/ ───────────────────
@@ -366,10 +420,11 @@ else
   fail "gh pr comment not invoked"
 fi
 update_label "reviewed-ok" >/dev/null 2>&1
-if grep -q "<edit>" "$MOCK_GH_LOG" && grep -q "factory:reviewed-ok" "$MOCK_GH_LOG"; then
-  pass "gh pr edit labels factory:reviewed-ok"
+if grep -q "<api>" "$MOCK_GH_LOG" && grep -q "issues/7/labels" "$MOCK_GH_LOG" \
+    && grep -q "factory:reviewed-ok" "$MOCK_GH_LOG"; then
+  pass "gh api REST labels factory:reviewed-ok (issues/<n>/labels)"
 else
-  fail "gh pr edit label not applied"
+  fail "gh api REST label not applied (pr edit is a removed path)"
 fi
 if grep -q "label" "$MOCK_GH_LOG"; then
   pass "gh label create/force called (idempotent label family)"
@@ -398,6 +453,63 @@ else
 fi
 
 rm -rf "$FIX"
+
+# ─── Test 12: end-to-end smoke — the driver's `main` is EXECUTED (not just
+# sourced) against fixture gh + podman mocks under --dry-run. This closes the
+# simulation blind spot (decision 02): unbound-before-init, top-level `local`,
+# and stale gh fields all crash here, not in the reviewer's review.
+# ───────────────────────────────────────────────────────────────────────────
+echo "── end-to-end smoke: driver main executed (mock gh + mock podman, --dry-run) ──"
+SMOKE="$(setup_fixture)"
+set -a; . "$SMOKE/fixture.env"; set +a
+export REVIEWER_DEFAULT_REPO="ak47-arch/workspace"
+export MOCK_PODMAN_LOG="$SMOKE/podman-calls.log"
+export REVIEWER_PODMAN_BIN="$SMOKE/mock-podman.sh"
+make_mock_podman "$SMOKE/mock-podman.sh"
+# Real subprocess: bash <driver> <pr> --dry-run, full main, fixture workspace.
+# NOTE: REVIEWER_RUN_SOURCED is reset to 0 — the parent test shell exported 1
+# (Test 1 sources the driver) and the subprocess would otherwise inherit it and
+# exit 0 at the source-guard without doing anything.
+(
+  cd "$SMOKE"
+  REVIEWER_RUN_SOURCED=0 REVIEWER_WORKSPACE="$SMOKE" REVIEWER_GH_BIN="$SMOKE/mock-gh.sh" \
+  REVIEWER_RUNS_ROOT="$SMOKE/.factory/runs" REVIEWER_REVIEWS_ROOT="docs/code-reviews" \
+  bash "$DRIVER" 7 --dry-run
+) > "$SMOKE/smoke.out" 2>&1
+rc=$?
+if [ "$rc" -eq 0 ]; then
+  pass "main executes end-to-end under --dry-run (exit 0)"
+else
+  fail "main crashed under --dry-run (exit $rc): $(tail -3 "$SMOKE/smoke.out" | tr '\n' ' ')"
+fi
+if grep -q "ponytail-review" "$MOCK_PODMAN_LOG" && grep -q "ponytail-help" "$MOCK_PODMAN_LOG"; then
+  pass "smoke: six ponytail --skill flags in the podman invocation"
+else
+  fail "smoke: ponytail skill flags missing from podman invocation"
+fi
+if grep -q "PONYTAIL_DEFAULT_MODE=ultra" "$SMOKE"/.factory/runs/*/secrets.env 2>/dev/null \
+   || grep -q "PONYTAIL_DEFAULT_MODE" "$MOCK_PODMAN_LOG"; then
+  pass "smoke: PONYTAIL_DEFAULT_MODE=ultra carried to the container"
+else
+  fail "smoke: ultra mode env missing"
+fi
+if grep -q "<api>" "$MOCK_GH_LOG"; then
+  pass "smoke: base SHA fetched via gh api pulls/<n> (REST)"
+else
+  fail "smoke: no gh api call — base SHA path not exercised"
+fi
+if [ -f "$SMOKE/docs/code-reviews/$(date '+%Y-%m-%d')-demo/report.md" ] \
+   && grep -q 'APPROVE' "$SMOKE/docs/code-reviews/$(date '+%Y-%m-%d')-demo/report.md"; then
+  pass "smoke: review archived under docs/code-reviews/<date>-demo/"
+else
+  fail "smoke: archive missing"
+fi
+if ! grep -q "GITHUB_TOKEN" "$SMOKE"/.factory/runs/*/secrets.env 2>/dev/null; then
+  pass "smoke: env file carries no GitHub token"
+else
+  fail "smoke: GitHub token leaked into env file"
+fi
+rm -rf "$SMOKE"
 
 # ─── Summary ───────────────────────────────────────────────────────────────
 echo ""

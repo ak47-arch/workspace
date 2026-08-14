@@ -117,6 +117,10 @@ slug_from_prd() { basename "$1" .md | sed -E 's/^[0-9]{4}-[0-9]{2}-[0-9]{2}-//';
 # call time so a fixture can set REVIEWER_GH_BIN after the driver is sourced.
 gh_call() { "${REVIEWER_GH_BIN:-gh}" "$@"; }
 
+# Active podman binary (test seam: point REVIEWER_PODMAN_BIN at a mocked podman
+# so the driver's `main` can be executed end-to-end without a real container).
+podman_call() { "${REVIEWER_PODMAN_BIN:-podman}" "$@"; }
+
 # ─── resolve_pr(): <pr> arg → PR_REPO (owner/repo) + PR_NUMBER ────────────
 # Accepts: full PR URL, owner/repo#num, repo#num (repo slug or bare name),
 #          or a bare number (defaults to the default repo). Also --pick.
@@ -473,8 +477,8 @@ run_container() {
   echo "  [attempt $attempt/$RESPAWN_CAP] podman run $IMAGE ..." >&2
 
   local cname="review-$REVIEW_UUID"
-  if command -v podman >/dev/null 2>&1; then
-    podman rm -f "$cname" >/dev/null 2>&1 || true
+  if command -v "${REVIEWER_PODMAN_BIN:-podman}" >/dev/null 2>&1; then
+    podman_call rm -f "$cname" >/dev/null 2>&1 || true
   fi
 
   local sess_args=(--session-dir /sandbox/sessions)
@@ -491,7 +495,9 @@ run_container() {
 
   local exit_code=0
   (
-    exec podman run --rm --network=host \
+    # NOTE: no `exec` here — podman_call is a function seam, not an external
+    # command, so the subshell simply runs it and exits when it returns.
+    podman_call run --rm --network=host \
       --name "review-$REVIEW_UUID" \
       -v "$WORKSPACE:/workspace:ro" \
       -v "$RUN_DIR:/sandbox" \
@@ -599,19 +605,25 @@ update_label() {
   fi
   # Ensure the label family exists once; the driver makes --label idempotent.
   gh_call label create "factory:$outcome" --repo "$PR_REPO" --force >/dev/null 2>&1 || true
-  gh_call pr edit "$PR_NUMBER" --repo "$PR_REPO" --add-label "factory:$outcome" \
-    --remove-label "factory:needs-review" >/dev/null 2>&1 || true
+  # REST label endpoints: `gh pr edit --add-label/--remove-label` fails on some
+  # accounts with the classic-Projects-deprecation GraphQL error and silently
+  # no-ops under `|| true` (see decision 07-label-seam-gh-pr-edit). Use the
+  # issue-labels REST API which bypasses projectCards.
+  gh_call api -X POST "repos/$PR_REPO/issues/$PR_NUMBER/labels" \
+    -f "labels[]=factory:$outcome" >/dev/null 2>&1 || true
+  gh_call api -X DELETE "repos/$PR_REPO/issues/$PR_NUMBER/labels/factory:needs-review" \
+    --silent >/dev/null 2>&1 || true
   echo "  Labeled $PR_REPO#$PR_NUMBER → factory:$outcome." >&2
 }
 
 # ─── stop_container(): ensure the run's sandbox container is shut down ─────
 stop_container() {
   local cname="review-$REVIEW_UUID"
-  if command -v podman >/dev/null 2>&1 \
-      && podman ps -a --format '{{.Names}}' 2>/dev/null | grep -qx "$cname"; then
+  if command -v "${REVIEWER_PODMAN_BIN:-podman}" >/dev/null 2>&1 \
+      && podman_call ps -a --format '{{.Names}}' 2>/dev/null | grep -qx "$cname"; then
     echo "  Shutting down sandbox container $cname (no longer needed)." >&2
-    podman stop -t 5 "$cname" >/dev/null 2>&1 || true
-    podman rm -f "$cname" >/dev/null 2>&1 || true
+    podman_call stop -t 5 "$cname" >/dev/null 2>&1 || true
+    podman_call rm -f "$cname" >/dev/null 2>&1 || true
   fi
 }
 

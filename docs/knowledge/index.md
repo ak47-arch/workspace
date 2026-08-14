@@ -52,6 +52,7 @@ Entries are grouped by project for progressive discovery. When the agent needs t
 - [Review worker is read-only — may run read-only git, never gh](sessions/019ff79e-181d-7e8b-a869-398b6417d28a/decisions/03-review-worker-read-only-git.md)
 - [Ponytail wired as review-worker skills via `--skill` flags — not the interactive pi-extension or MCP](sessions/019ff79e-181d-7e8b-a869-398b6417d28a/decisions/04-ponytail-review-worker-skills.md)
 - [Code-review agent APPROVED PR #1 but a real host run surfaced 3 driver bugs the in-container review could not see](sessions/19cb853b-a2e9-4eb6-865a-138864ba1934/decisions/02-review-simulation-blind-spot-real-driver-bugs.md)
+- [Label seam — `gh pr edit --add-label` fails on this gh (classic-Projects GraphQL error); use the REST labels API](sessions/19cb853b-a2e9-4eb6-865a-138864ba1934/decisions/03-label-seam-gh-pr-edit.md)
 - [The code-review agent never merges PRs — merge stays a human-gated operator step](sessions/019ff79e-181d-7e8b-a869-398b6417d28a/decisions/05-review-never-merges.md)
 - [Task files carry a PR-tracking section — PR↔task↔review↔merge data attached for retrospective evaluation](sessions/019ff79e-181d-7e8b-a869-398b6417d28a/decisions/06-task-pr-tracking.md)
 
