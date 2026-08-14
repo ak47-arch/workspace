@@ -56,6 +56,11 @@ rules. The brief is authoritative for *this run*.
 - No push, no PR, no amend of pushed branches — the driver owns remotes.
 - Do not append to `docs/knowledge/index.md` (driver-owned). Capture decisions
   to your outbox instead.
+- **Verify what you build** — run the PRD's verification commands; prove what
+  can be proven and record exactly what remains for UAT.
+- **Say no to vanishing scope** — if a story is genuinely ambiguous or
+  unresolvable without the user, implement the deterministic best
+  interpretation, mark it in the report as a UAT hand-off, and move on.
 
 ## 5. Finish — the outbox contract
 

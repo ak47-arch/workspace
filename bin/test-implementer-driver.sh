@@ -69,6 +69,43 @@ setup_fixture() {
   echo "$dir"
 }
 
+# ─── make_mock_podman(): fabricate completion so the driver's `main` executes
+# end-to-end. Records its args to a log, and for `podman run` parses the
+# `-v <host>:/sandbox` mount to write a fabricated report into the run-dir
+# outbox — which is exactly the driver's success signal.
+make_mock_podman() {
+  cat > "$1" <<'MOCK'
+#!/usr/bin/env bash
+LOG="$MOCK_PODMAN_LOG"
+{
+  printf 'podman'
+  for a in "$@"; do printf ' <%s>' "$a"; done
+  printf '\n'
+} >> "$LOG"
+# Locate the /sandbox host dir from the -v mount args (the run dir).
+sandbox=""
+prev=""
+for a in "$@"; do
+  if [ "$prev" = "-v" ]; then
+    case "$a" in
+      *:/sandbox) sandbox="${a%%:/sandbox}" ;;
+    esac
+  fi
+  prev="$a"
+done
+if [ "${1:-}" = "run" ]; then
+  mkdir -p "$sandbox/outbox/decisions"
+  cat > "$sandbox/outbox/report.md" <<'RPT'
+# Implementer (fixture smoke)
+## Summary
+All stories implemented — fabricated by mock podman for the end-to-end driver smoke.
+RPT
+fi
+exit 0
+MOCK
+  chmod +x "$1"
+}
+
 # Source the driver once per test file so functions + vars are available.
 # IMPLEMENTER_RUN_SOURCED=1 triggers the guard (skip auto main).
 source_driver() {
@@ -171,16 +208,22 @@ done
 echo "── env allowlist ──"
 export OPENROUTER_API_KEY="sk-test"
 export GITHUB_TOKEN="ghp_should_never_enter"
+export PONYTAIL_DEFAULT_MODE="ultra"
 RUN_DIR="$FIX/run-env"
 mkdir -p "$RUN_DIR"
 ENVF="$(write_env_file)"
 if grep -q "OPENROUTER_API_KEY" "$ENVF"; then pass "env file includes OPENROUTER_API_KEY"; else fail "env file missing OPENROUTER_API_KEY"; fi
+if [ -f "$ENVF" ] && grep -q "PONYTAIL_DEFAULT_MODE=ultra" "$ENVF"; then
+  pass "env file forces PONYTAIL_DEFAULT_MODE=ultra"
+else
+  fail "env file missing PONYTAIL_DEFAULT_MODE=ultra"
+fi
 if [ -f "$ENVF" ] && grep -q "GITHUB_TOKEN" "$ENVF"; then
   fail "env file leaked GITHUB_TOKEN (must not contain host secrets)"
 else
   pass "env file excludes GITHUB_TOKEN"
 fi
-unset OPENROUTER_API_KEY GITHUB_TOKEN
+unset OPENROUTER_API_KEY GITHUB_TOKEN PONYTAIL_DEFAULT_MODE
 
 # ─── Test 5: full-orchestration failure path (integration) ────────────────
 # Build a fixture that is a real git repo with a Final PRD + task, run the
@@ -252,7 +295,88 @@ else
   pass "integration: skipped (no podman/docker, acceptable)"
 fi
 
-# ─── Test 6: cleanup_run_dir (disposable vs durable) + stop_container ──────
+# ─── Test 5b: end-to-end smoke — the driver's `main` is EXECUTED (not just
+# sourced) against a mock podman (IMPLEMENTER_PODMAN_BIN) under --dry-run. This
+# proves the pi invocation carries all six ponytail --skill flags from the live
+# skills dir plus the ultra mode, AND that the env file is token-free. The
+# fixture ships bin/sort-knowledge-index.py + a writable docs/knowledge/ because
+# the implementer success path shells out to append_decisions_to_index.
+# ───────────────────────────────────────────────────────────────────────────
+echo "── end-to-end smoke: driver main executed (mock podman, --dry-run) ──"
+SMOKE="$(mktemp -d)"
+mkdir -p "$SMOKE/config" "$SMOKE/docs/tasks" "$SMOKE/docs/prd-queue" \
+         "$SMOKE/docs/implementations" "$SMOKE/docs/knowledge/sessions" "$SMOKE/bin"
+( cd "$SMOKE" && git init -q -b master >/dev/null 2>&1 \
+    && git config user.email smoke@example.com && git config user.name Smoker \
+    && echo base > base.txt && git add -A && git commit -qm base >/dev/null 2>&1 )
+printf '**Status**: prd-ready\n**Project**: software-factory\n' > "$SMOKE/docs/tasks/pony.md"
+printf '**Date**: 2026-08-14 12:00\n**Status**: Final\n## Testing decisions\nrun the demo verification\n' \
+  > "$SMOKE/docs/prd-queue/2026-08-14-pony.md"
+cat > "$SMOKE/config/implementer.json" <<'CFG'
+{
+  "repo_map": { "software-factory": ".", "feed_analyser": "feed_analyser" },
+  "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+  "timeout_sec": 30, "respawn_cap": 1,
+  "env_allowlist": ["OPENROUTER_API_KEY", "ANTHROPIC_API_KEY", "LANGFUSE_*", "IMPLEMENTER_MODEL", "PONYTAIL_DEFAULT_MODE"],
+  "image": "sandbox:latest",
+  "runs_root": ".factory/runs", "archives_root": "docs/implementations",
+  "liveness_interval_sec": 2, "liveness_idle_sec": 5,
+  "ponytail": { "skills_dir": "/workspace/opensource/ponytail/skills", "default_mode": "ultra" }
+}
+CFG
+# The success path shells out to append_decisions_to_index → sort-knowledge-index.
+cp "$(cd "$(dirname "$0")" && pwd)/sort-knowledge-index.py" "$SMOKE/bin/sort-knowledge-index.py"
+# A stub transition-task.sh so any accidental non-dry-run call is a no-op.
+printf '#!/usr/bin/env bash\nexit 0\n' > "$SMOKE/bin/transition-task.sh"
+chmod +x "$SMOKE/bin/transition-task.sh"
+
+export MOCK_PODMAN_LOG="$SMOKE/podman-calls.log"
+make_mock_podman "$SMOKE/mock-podman.sh"
+# Real subprocess: bash <driver> --task pony --dry-run, full main, fixture workspace.
+# IMPLEMENTER_RUN_SOURCED is reset to 0 — the parent shell sourced the driver
+# (exporting 1) and the subprocess would otherwise exit at the source-guard on 0.
+(
+  cd "$SMOKE"
+  # HOME is pinned to the fixture so the driver's jq-less fallback runs root
+  # ($HOME/.factory/runs) lands inside the fixture just like the config path.
+  HOME="$SMOKE" IMPLEMENTER_RUN_SOURCED=0 IMPLEMENTER_WORKSPACE="$SMOKE" \
+  IMPLEMENTER_PODMAN_BIN="$SMOKE/mock-podman.sh" \
+  bash "$DRIVER" --task pony --dry-run
+) > "$SMOKE/smoke.out" 2>&1
+rc=$?
+if [ "$rc" -eq 0 ]; then
+  pass "main executes end-to-end under --dry-run (exit 0)"
+else
+  fail "main crashed under --dry-run (exit $rc): $(tail -3 "$SMOKE/smoke.out" | tr '\n' ' ')"
+fi
+# All six --skill flags, resolving under the live skills dir. The mock log
+# wraps each argv element in angle brackets (`<arg>`), so match the skill path
+# (which always carries the `--skill` prefix in the diagnostic line below).
+flag_ok=1
+for sk in ponytail ponytail-review ponytail-audit ponytail-debt ponytail-gain ponytail-help; do
+  grep -q -- "--skill> </workspace/opensource/ponytail/skills/$sk>" "$MOCK_PODMAN_LOG" \
+    || flag_ok=0
+done
+if [ "$flag_ok" -eq 1 ]; then
+  pass "smoke: six ponytail --skill flags from the live skills dir in the podman invocation"
+else
+  fail "smoke: ponytail --skill flags missing from podman invocation: $(cat "$MOCK_PODMAN_LOG" | tr '\n' ' ')"
+fi
+echo "  smoke: flag count = $(grep -o -- '--skill' "$MOCK_PODMAN_LOG" | wc -l)" >&2
+if grep -q "PONYTAIL_DEFAULT_MODE=ultra" "$SMOKE"/.factory/runs/*/secrets.env 2>/dev/null \
+   || grep -q "PONYTAIL_DEFAULT_MODE=ultra" "$MOCK_PODMAN_LOG"; then
+  pass "smoke: PONYTAIL_DEFAULT_MODE=ultra carried to the container"
+else
+  fail "smoke: ultra mode env missing"
+fi
+if ! grep -q "GITHUB_TOKEN" "$SMOKE"/.factory/runs/*/secrets.env 2>/dev/null; then
+  pass "smoke: env file carries no GitHub token"
+else
+  fail "smoke: GitHub token leaked into env file"
+fi
+rm -rf "$SMOKE"
+
+# ─── Test 6: cleanup worktree (disposable vs durable) + stop_container ──────
 echo "── cleanup_run_dir + stop_container ──"
 source_driver
 CC="$(mktemp -d)"

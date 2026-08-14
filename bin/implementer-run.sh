@@ -66,6 +66,8 @@ if command -v jq >/dev/null 2>&1; then
   LIVENESS_IDLE="$(cfg '.liveness_idle_sec')"
   CLEANUP_ENABLED="$(cfg '.cleanup_enabled // true')"
   KEEP_WORKTREE="$(cfg '.keep_worktree // true')"
+  PONYTAIL_SKILLS_DIR="$(cfg '.ponytail.skills_dir')"
+  PONYTAIL_DEFAULT_MODE="$(cfg '.ponytail.default_mode')"
   repo_map_path() { cfg ".repo_map[\"$1\"] // empty"; }
   env_allowed() { jq -r '.env_allowlist[]' "$CONFIG_FILE"; }
 else
@@ -79,6 +81,8 @@ else
   LIVENESS_IDLE=300
   CLEANUP_ENABLED=true
   KEEP_WORKTREE=true
+  PONYTAIL_SKILLS_DIR="/workspace/opensource/ponytail/skills"
+  PONYTAIL_DEFAULT_MODE="ultra"
   repo_map_path() {
     case "$1" in
       software-factory|langfuse) echo "." ;;
@@ -93,7 +97,8 @@ else
     esac
   }
   env_allowed() { printf '%s\n' OPENROUTER_API_KEY ANTHROPIC_API_KEY \
-    LANGFUSE_SECRET_KEY LANGFUSE_PUBLIC_KEY LANGFUSE_BASE_URL IMPLEMENTER_MODEL; }
+    LANGFUSE_SECRET_KEY LANGFUSE_PUBLIC_KEY LANGFUSE_BASE_URL \
+    IMPLEMENTER_MODEL PONYTAIL_DEFAULT_MODE; }
 fi
 
 RUNS_ROOT="${RUNS_ROOT/#\~/$HOME}"
@@ -119,6 +124,11 @@ die() { echo "ERROR: $*" >&2; exit 2; }
 # IMPLEMENTER_PODMAN_BIN at mocks so the driver's `main` can execute without a
 # real GitHub / container runtime). Resolved at call time.
 gh_call() { "${IMPLEMENTER_GH_BIN:-gh}" "$@"; }
+
+# Active podman binary (test seam: point IMPLEMENTER_PODMAN_BIN at a mocked
+# podman so the driver's `main` can be executed end-to-end without a real
+# container runtime). Resolved at call time so a fixture can set it after the
+# driver is sourced.
 podman_call() { "${IMPLEMENTER_PODMAN_BIN:-podman}" "$@"; }
 
 # Task slug from a PRD filename: yyyy-mm-dd-<slug>.md → <slug>
@@ -366,8 +376,24 @@ write_env_file() {
       printf '%s=%s\n' "$name" "${!name}" >> "$envfile"
     fi
   done < <(env_allowed)
-  # Env must contain ONLY LLM + Langfuse credentials — never GH tokens.
+  # Force the ponytail default mode into the container (config-driven).
+  if [ -n "$PONYTAIL_DEFAULT_MODE" ]; then
+    printf 'PONYTAIL_DEFAULT_MODE=%s\n' "$PONYTAIL_DEFAULT_MODE" >> "$envfile"
+  fi
+  # Env must contain ONLY LLM + Langfuse credentials + the mode variable —
+  # never GH tokens.
   echo "$envfile"
+}
+
+# ─── ponytail_skill_flags(): the six implementer `--skill` flags (Decision 04)
+# Testable seam + used by run_container. Loads read-only from the live
+# opensource checkout; implementer-scoped, never touches shared .pi/settings.json.
+PONYTAIL_SKILL_NAMES=(ponytail ponytail-review ponytail-audit ponytail-debt ponytail-gain ponytail-help)
+ponytail_skill_flags() {
+  local s
+  for s in "${PONYTAIL_SKILL_NAMES[@]}"; do
+    printf '%s\n' "--skill $PONYTAIL_SKILLS_DIR/$s"
+  done
 }
 
 # ─── run_container(): one podman attempt, streamed live ────────────────────
@@ -382,6 +408,10 @@ run_container() {
   else
     model_arg=(--model "$MODEL")
   fi
+
+  # The six ponytail skills, loaded read-only from the live opensource checkout.
+  local pony=()
+  while IFS= read -r flag; do pony+=($flag); done < <(ponytail_skill_flags)
 
   local container_out="$RUN_DIR/container-$attempt.log"
 
@@ -429,6 +459,7 @@ run_container() {
       "$IMAGE" \
       pi --mode json -p \
         "${sess_args[@]}" \
+        "${pony[@]}" \
         --append-system-prompt /sandbox/brief.md \
         --append-system-prompt /workspace/.pi/agents/implementer.md \
         "${model_arg[@]}" \
