@@ -55,6 +55,10 @@ coverage.xml
 # Cloned repos (not part of workspace source)
 /opensource/Handy/
 /opensource/whisper.cpp/
-# Ignore embedded git repos to prevent accidental submodule re-addition
-opensource/
+# Ignore embedded git repos to prevent accidental submodule re-addition.
+# NOTE: `opensource` (no trailing slash) deliberately matches BOTH the dir and
+# a bare `opensource` symlink/file — a directory-only `opensource/` pattern does
+# NOT match a symlink (mode 120000) and would let an env-bootstrap symlink get
+# committed (see decision 01-implementer-ponytail-test-env).
+opensource
 emotional_architecture/
