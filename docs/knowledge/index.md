@@ -113,3 +113,4 @@ Entries are grouped by project for progressive discovery. When the agent needs t
 ### feed_analyser
 
 - [extension inline agent](sessions/60c0c537-b9c7-4c4c-8b8a-0be438950151/decisions/01-extension-inline-agent.md)
+- [Revision mode adds the podman/gh test seams and a stable revision number as part of this task (D8 dependency resolution)](sessions/cb6a90c1-f8d0-4da5-b413-1f82a0f32376/decisions/01-implementer-revision-test-seams.md)
