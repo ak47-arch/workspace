@@ -1,7 +1,7 @@
 # PRD: Implementer ponytail wiring — real skills via `--skill` flags, replacing the prose directive
 
 **Date**: 2026-08-14
-**Status**: Draft
+**Status**: Final
 **Owner**: software-factory
 **Task**: implementer-ponytail
 **Session**: `docs/knowledge/sessions/019ff79e-181d-7e8b-a869-398b6417d28a/session.jsonl`
@@ -57,8 +57,9 @@ exactly like the reviewer.
   ponytail-debt ponytail-gain ponytail-help)` and a `ponytail_skill_flags()`
   seam emitting `--skill <skills_dir>/<name>` per name (same six + same live
   dir as `review-run.sh`), and injects them into the pi command between the
-  session args and the persona append. (Done when the container's pi invocation
-  contains all six `--skill` flags resolving under `/workspace/opensource/`.)
+  session args and the brief append (same position as `review-run.sh`
+  ~506-510). (Done when the container's pi invocation contains all six
+  `--skill` flags resolving under `/workspace/opensource/`.)
 - **US4 — persona prose → loaded-skills pointer**: `.pi/agents/implementer.md`
   — the "Working style: ponytail (always-on directive)" section is rewritten to
   state the discipline is loaded as real skills via `--skill` (ponytail =
@@ -90,9 +91,10 @@ exactly like the reviewer.
   `REVIEWER_PODMAN_BIN` so the container invocation is testable end-to-end
   without a container runtime. `run_container()` currently uses bare `podman`
   (incl. `exec podman run` inside its subshell) and `stop_container()` too; all
-  call sites go through the seam. Note: `exec` must be dropped for the
-  subshell-invoked seam (a function cannot be `exec`'d — same fix already made
-  in `review-run.sh`).
+  call sites go through a `podman_call()` wrapper function (same name as
+  `review-run.sh` ~122). Note: `exec` must be dropped for the subshell-invoked
+  seam (a function cannot be `exec`'d — same fix already made in
+  `review-run.sh`).
 - **D4 — default mode `ultra`**, same as the reviewer; do not change the
   implementer directive string semantics beyond what the loaded skills imply.
 - **D5 — keep the persona's binding rules**: the skills layer replaces only the
@@ -104,6 +106,11 @@ exactly like the reviewer.
 
 - Extend `bin/test-implementer-driver.sh` (existing fixture + mock-gh pattern;
   add `make_mock_podman` style mock driven by `IMPLEMENTER_PODMAN_BIN`).
+- Fixture note (implementer-specific, unlike the review suite): the implementer
+  success path calls `append_decisions_to_index`, which shells out to
+  `python3 "$WORKSPACE/bin/sort-knowledge-index.py"` — the smoke fixture must
+  ship that script + a writable `docs/knowledge/` so the driver's main path
+  completes.
 - Positive assertions for env-file and the six flags; the full factory suite
   sweep must stay green (`test-implementer-driver`, `test-review-driver`,
   `test-factory-run`, `test-merge-pr`, `test-transition-task`).
@@ -135,7 +142,7 @@ exactly like the reviewer.
 
 1. `bash -n bin/implementer-run.sh` and `bash -n config/implementer.json` (JSON parses).
 2. `bash bin/test-implementer-driver.sh` → all pass including the new
-   env-file and six-flag smoke assertions (count grows above 33).
+   env-file and six-flag smoke assertions.
 3. Full suite sweep green: implementer, review (61), factory-run (22),
    merge-pr (8), transition (45).
 4. `grep` proves the pi invocation in `run_container()` carries all six
