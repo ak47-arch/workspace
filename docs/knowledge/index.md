@@ -9,6 +9,7 @@ Entries are grouped by project for progressive discovery. When the agent needs t
 
 
 
+
 ### software-factory
 
 - [Code-review agent APPROVED PR #1 but a real host run surfaced 3 driver bugs the in-container review could not see](sessions/19cb853b-a2e9-4eb6-865a-138864ba1934/decisions/02-review-simulation-blind-spot-real-driver-bugs.md)
@@ -56,8 +57,8 @@ Entries are grouped by project for progressive discovery. When the agent needs t
 - [Code-review reports archive under docs/code-reviews/, not docs/reviews/](sessions/019ff79e-181d-7e8b-a869-398b6417d28a/decisions/02-code-review-archive-location.md)
 - [Review worker is read-only — may run read-only git, never gh](sessions/019ff79e-181d-7e8b-a869-398b6417d28a/decisions/03-review-worker-read-only-git.md)
 - [Ponytail wired as review-worker skills via `--skill` flags — not the interactive pi-extension or MCP](sessions/019ff79e-181d-7e8b-a869-398b6417d28a/decisions/04-ponytail-review-worker-skills.md)
-- [implementer ponytail test env](sessions/8483b243-ad9a-4e00-be82-0cdf26a8801d/decisions/01-implementer-ponytail-test-env.md)
 - [Merge is reachable only via the operator tool `bin/merge-pr.sh` — reviewer has no merge path; enforced in code + container](sessions/019ff79e-181d-7e8b-a869-398b6417d28a/decisions/07-merge-tool-operator-authority-split.md)
+- [implementer ponytail test env](sessions/8483b243-ad9a-4e00-be82-0cdf26a8801d/decisions/01-implementer-ponytail-test-env.md)
 - [Review-feedback fixes are made by the implementer, resuming its original session (`--revise`); review report injected as binding authority](sessions/019ff79e-181d-7e8b-a869-398b6417d28a/decisions/08-implementer-revision-same-session.md)
 - [`--pick` selects only `prd-ready` tasks with Final PRDs; `--task` is the explicit operator override](sessions/019ff79e-181d-7e8b-a869-398b6417d28a/decisions/09-pick-prd-ready-only.md)
 
