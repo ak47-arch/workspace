@@ -121,3 +121,4 @@ Entries are grouped by project for progressive discovery. When the agent needs t
 - [Mock gh must reject unknown `pr view --json` fields — host-gh compatibility is a live seam](sessions/019ff79e-181d-7e8b-a869-398b6417d28a/decisions/10-mock-gh-reject-unknown-fields.md)
 - [`merge-pr.sh` operates on the checked-out branch — operator must run it on master](sessions/019ff79e-181d-7e8b-a869-398b6417d28a/decisions/11-merge-pr-requires-master-branch.md)
 - [If the implementer driver dies before host delivery, the operator completes it manually](sessions/019ff79e-181d-7e8b-a869-398b6417d28a/decisions/12-manual-host-delivery-fallback.md)
+- [`--revise` supports cross-repo / pre-reviewer-era PRs — requires a 36-char impl-session UUID on the task's `Raised by` row](sessions/019ff79e-181d-7e8b-a869-398b6417d28a/decisions/13-revise-cross-repo-uuid-join.md)
