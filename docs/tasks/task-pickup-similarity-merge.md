@@ -1,6 +1,7 @@
 # Task: task-pickup-similarity-merge
 
-**Status**: in-review
+**Status**: complete
+**Completed**: 2026-08-17 02:10
 **Category**: Small
 **Project**: software-factory
 **Created**: 2026-08-16 23:49
@@ -20,6 +21,7 @@
 - [task-similarity-check-scope](../knowledge/sessions/357a4c1d-cfd2-47d4-b3a8-a831dd310daf/decisions/01-task-similarity-check-scope.md)
 - [semantic-similarity-assessment](../knowledge/sessions/357a4c1d-cfd2-47d4-b3a8-a831dd310daf/decisions/02-semantic-similarity-assessment.md)
 - [partial-split-remainder-registration](../knowledge/sessions/357a4c1d-cfd2-47d4-b3a8-a831dd310daf/decisions/03-partial-split-remainder-registration.md)
+- [pickup-similarity-merge](../knowledge/sessions/b77c5e2b-a870-40c7-bcad-effcbc45332a/decisions/01-pickup-similarity-merge.md)
 
 ## PR tracking
 
