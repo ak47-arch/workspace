@@ -1,6 +1,6 @@
 # Task: task-pickup-similarity-merge
 
-**Status**: prd-ready
+**Status**: in-progress
 **Category**: Small
 **Project**: software-factory
 **Created**: 2026-08-16 23:49
@@ -13,6 +13,7 @@
 ## Sessions
 
 - [planning](../knowledge/sessions/357a4c1d-cfd2-47d4-b3a8-a831dd310daf/session.jsonl)
+- [implementation](../knowledge/sessions/b77c5e2b-a870-40c7-bcad-effcbc45332a/session.jsonl)
 
 ## Decisions
 
