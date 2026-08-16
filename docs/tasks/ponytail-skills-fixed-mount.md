@@ -27,3 +27,4 @@
 - Base: master · Head: a2c1b8906af5503b2da4034cb0f5bfbab8af1dc7 (raised 2026-08-16 23:03)
 - Raised by: implementer run 0ded66e7-a908-4838-ace5-03de80e8fc0d
 - Review: session 0bb584c8-f18c-4655-97b9-bc100c39a087 · verdict n/a · report docs/code-reviews/2026-08-16-ponytail-skills-fixed-mount/
+- Merge: 703e726837df567d36983d7a92c4d4373ee811a7 (2026-08-16 23:14, ak47-arch — user go-ahead, decision 05)
