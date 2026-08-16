@@ -1,6 +1,6 @@
 # Task: headless-agent-containerisation
 
-**Status**: prd-ready
+**Status**: in-progress
 **Category**: Medium
 **Project**: software-factory
 **Created**: 2026-08-17 02:38
@@ -13,6 +13,7 @@
 ## Sessions
 
 - `docs/knowledge/sessions/01a00c50-b714-7811-8086-3bc6e0a8ea64/session.jsonl` (planning)
+- [implementation](../knowledge/sessions/771b4017-a17d-4464-9896-476407652701/session.jsonl)
 
 ## Decisions
 
