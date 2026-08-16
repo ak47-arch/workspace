@@ -1,7 +1,7 @@
 # PRD: Task-pickup similarity check and merge flow
 
 **Date**: 2026-08-17 01:29
-**Status**: Draft
+**Status**: Final
 **Owner**: software-factory workspace
 **Task**: task-pickup-similarity-merge
 **Session**: `docs/knowledge/sessions/357a4c1d-cfd2-47d4-b3a8-a831dd310daf/session.jsonl`
