@@ -76,6 +76,7 @@ Entries are grouped by project for progressive discovery. When the agent needs t
 
 ### feed-analyser
 
+- [Capture extension agent — follow-up turns, persistence, and reconnect UX fixes](sessions/01a00610-13dd-72ee-a5d4-2f3765c07cb3/decisions/01-capture-agent-followup-persistence-reconnect-fixes.md)
 - [Capture v1 ships a single intent — save the whole post (Intent A)](sessions/019fd314-9339-7a30-9b8b-f6d8892b5226/decisions/01-capture-v1-single-intent-save-whole-post.md)
 - [Capture links include embedded/quote tweets and resolve t.co shortlinks](sessions/019fd314-9339-7a30-9b8b-f6d8892b5226/decisions/02-capture-links-embedded-tweets-and-tco-resolution.md)
 - [PRD moves to archive only after UAT + user go-ahead](sessions/019fd314-9339-7a30-9b8b-f6d8892b5226/decisions/03-prd-archive-requires-uat-and-user-signoff.md)
