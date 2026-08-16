@@ -13,6 +13,7 @@ Entries are grouped by project for progressive discovery. When the agent needs t
 
 
 ### software-factory
+- [Ponytail skills delivered via fixed `/skills` mount — D2 delivery-path repair](sessions/01a005a8-7302-74e2-8c1a-c6e8e74358c7/decisions/01-ponytail-skills-fixed-mount.md)
 
 - [implementer ponytail restore vanishing scope](sessions/8483b243-ad9a-4e00-be82-0cdf26a8801d/decisions/02-implementer-ponytail-restore-vanishing-scope.md)
 - [Code-review agent APPROVED PR #1 but a real host run surfaced 3 driver bugs the in-container review could not see](sessions/19cb853b-a2e9-4eb6-865a-138864ba1934/decisions/02-review-simulation-blind-spot-real-driver-bugs.md)
