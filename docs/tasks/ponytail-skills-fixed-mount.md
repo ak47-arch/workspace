@@ -1,6 +1,6 @@
 # Task: ponytail-skills-fixed-mount
 
-**Status**: in-progress
+**Status**: in-review
 **Category**: Small
 **Project**: software-factory
 **Created**: 2026-08-16 21:28
@@ -26,3 +26,4 @@
 - Branch: factory/ponytail-skills-fixed-mount/20260816-225451
 - Base: master · Head: a2c1b8906af5503b2da4034cb0f5bfbab8af1dc7 (raised 2026-08-16 23:03)
 - Raised by: implementer run 0ded66e7-a908-4838-ace5-03de80e8fc0d
+- Review: session 0bb584c8-f18c-4655-97b9-bc100c39a087 · verdict n/a · report docs/code-reviews/2026-08-16-ponytail-skills-fixed-mount/
