@@ -63,6 +63,7 @@ tasks:
     - Save compressed sessions on disc not the whole session (software-factory)
     - Bring the product layer to mobile (software-factory)
     - Compress all session files reclaiming disk space (software-factory)
+    - sandboxed agents must resolve LLM credentials from pi's auth.json (same key pi uses) so implementer/reviewer runs can start (software-factory) [sandbox-credential-mounting]
 
     ### Queued
     - when a task is picked, check it against existing tasks across projects and offer to pick similar ones together so more get closed at once (software-factory) [task-pickup-similarity-merge]
