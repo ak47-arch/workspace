@@ -63,7 +63,6 @@ tasks:
     - Save compressed sessions on disc not the whole session (software-factory)
     - Bring the product layer to mobile (software-factory)
     - Compress all session files reclaiming disk space (software-factory)
-    - sandboxed agents must resolve LLM credentials from pi's auth.json (same key pi uses) so implementer/reviewer runs can start (software-factory) [sandbox-credential-mounting]
 
     ### Queued
     - when a task is picked, check it against existing tasks across projects and offer to pick similar ones together so more get closed at once (software-factory) [task-pickup-similarity-merge]
@@ -81,6 +80,7 @@ tasks:
     - (complete) Integrate the real ponytail skills into the implementer agent via pi --skill flags, replacing the prose directive (software-factory) [implementer-ponytail]
     - (complete) Add an implementer revision mode (--revise <pr>) that resumes the original implementation session to address reviewer findings, injecting the review report as binding authority (software-factory) [implementer-revision-mode]
     - (complete) Decouple ponytail skills from the gitignored opensource checkout — fixed /skills mount (software-factory) [ponytail-skills-fixed-mount]
+    - (complete) sandboxed agents must resolve LLM credentials from pi's auth.json (same key pi uses) so implementer/reviewer runs can start (software-factory) [sandbox-credential-mounting]
 
     ## resume
 
