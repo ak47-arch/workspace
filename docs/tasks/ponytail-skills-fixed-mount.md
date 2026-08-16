@@ -1,6 +1,6 @@
 # Task: ponytail-skills-fixed-mount
 
-**Status**: prd-ready
+**Status**: in-progress
 **Category**: Small
 **Project**: software-factory
 **Created**: 2026-08-16 21:28
@@ -13,6 +13,7 @@
 ## Sessions
 
 - 01a005a8-7302-74e2-8c1a-c6e8e74358c7 (planning)
+- [implementation](../knowledge/sessions/0ded66e7-a908-4838-ace5-03de80e8fc0d/session.jsonl)
 
 ## Decisions
 
