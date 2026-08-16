@@ -66,6 +66,9 @@ Entries are grouped by project for progressive discovery. When the agent needs t
 - [implementer ponytail test env](sessions/8483b243-ad9a-4e00-be82-0cdf26a8801d/decisions/01-implementer-ponytail-test-env.md)
 - [Review-feedback fixes are made by the implementer, resuming its original session (`--revise`); review report injected as binding authority](sessions/019ff79e-181d-7e8b-a869-398b6417d28a/decisions/08-implementer-revision-same-session.md)
 - [`--pick` selects only `prd-ready` tasks with Final PRDs; `--task` is the explicit operator override](sessions/019ff79e-181d-7e8b-a869-398b6417d28a/decisions/09-pick-prd-ready-only.md)
+- [Task similarity check scope and merge policy](sessions/357a4c1d-cfd2-47d4-b3a8-a831dd310daf/decisions/01-task-similarity-check-scope.md)
+- [Semantic similarity assessment with partial-split support](sessions/357a4c1d-cfd2-47d4-b3a8-a831dd310daf/decisions/02-semantic-similarity-assessment.md)
+- [Partial-split remainder registered as new pending task](sessions/357a4c1d-cfd2-47d4-b3a8-a831dd310daf/decisions/03-partial-split-remainder-registration.md)
 
 ### workspace-portability
 
