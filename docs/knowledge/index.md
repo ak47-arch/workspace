@@ -13,6 +13,8 @@ Entries are grouped by project for progressive discovery. When the agent needs t
 
 
 
+
+
 ### software-factory
 
 - [pickup similarity merge](sessions/b77c5e2b-a870-40c7-bcad-effcbc45332a/decisions/01-pickup-similarity-merge.md)
@@ -74,6 +76,10 @@ Entries are grouped by project for progressive discovery. When the agent needs t
 - [LLM credential resolution from pi's auth.json for sandboxed agents](sessions/357a4c1d-cfd2-47d4-b3a8-a831dd310daf/decisions/04-llm-credential-resolution-from-auth-json.md)
 - [Direct implementation for assembly-line self-repair](sessions/357a4c1d-cfd2-47d4-b3a8-a831dd310daf/decisions/05-direct-implementation-for-assembly-line-self-repair.md)
 - [Driver-sourcing hazard — never run driver mains from a test shell](sessions/357a4c1d-cfd2-47d4-b3a8-a831dd310daf/decisions/06-driver-sourcing-hazard.md)
+- [Headless backend host takes over once a PRD is Final](sessions/01a00c50-b714-7811-8086-3bc6e0a8ea64/decisions/01-headless-backend-host-scope.md)
+- [Backend delivers a merge-ready PR; merge stays human](sessions/01a00c50-b714-7811-8086-3bc6e0a8ea64/decisions/02-merge-ready-deliverable.md)
+- [GitHub Actions as the fast-path backend runtime (YAGNI)](sessions/01a00c50-b714-7811-8086-3bc6e0a8ea64/decisions/03-github-actions-fast-path.md)
+- [Extend factory-run.sh with --headless loop to APPROVE](sessions/01a00c50-b714-7811-8086-3bc6e0a8ea64/decisions/04-factory-run-headless-loop.md)
 
 ### workspace-portability
 
