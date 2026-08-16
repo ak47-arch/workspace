@@ -1,6 +1,6 @@
 # Task: ponytail-skills-fixed-mount
 
-**Status**: in-review
+**Status**: prd-ready
 **Category**: Small
 **Project**: software-factory
 **Created**: 2026-08-16 21:28
@@ -13,18 +13,7 @@
 ## Sessions
 
 - 01a005a8-7302-74e2-8c1a-c6e8e74358c7 (planning)
-- [implementation](../knowledge/sessions/0ded66e7-a908-4838-ace5-03de80e8fc0d/session.jsonl)
 
 ## Decisions
 
 - `docs/knowledge/sessions/01a005a8-7302-74e2-8c1a-c6e8e74358c7/decisions/01-ponytail-skills-fixed-mount.md` — ponytail skills delivered via fixed `/skills` mount (D2 delivery-path repair)
-
-## PR tracking
-
-- PR: #4 (ak47-arch/workspace)
-- URL: https://github.com/ak47-arch/workspace/pull/4
-- Branch: factory/ponytail-skills-fixed-mount/20260816-225451
-- Base: master · Head: a2c1b8906af5503b2da4034cb0f5bfbab8af1dc7 (raised 2026-08-16 23:03)
-- Raised by: implementer run 0ded66e7-a908-4838-ace5-03de80e8fc0d
-- Review: session 0bb584c8-f18c-4655-97b9-bc100c39a087 · verdict n/a · report docs/code-reviews/2026-08-16-ponytail-skills-fixed-mount/
-- Merge: 703e726837df567d36983d7a92c4d4373ee811a7 (2026-08-16 23:14, ak47-arch — user go-ahead, decision 05)

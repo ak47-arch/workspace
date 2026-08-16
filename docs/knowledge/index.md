@@ -12,10 +12,9 @@ Entries are grouped by project for progressive discovery. When the agent needs t
 
 
 
-
 ### software-factory
+- [Ponytail skills delivered via fixed `/skills` mount — D2 delivery-path repair](sessions/01a005a8-7302-74e2-8c1a-c6e8e74358c7/decisions/01-ponytail-skills-fixed-mount.md)
 
-- [ponytail skills fixed mount conditional mount](sessions/0ded66e7-a908-4838-ace5-03de80e8fc0d/decisions/01-ponytail-skills-fixed-mount-conditional-mount.md)
 - [implementer ponytail restore vanishing scope](sessions/8483b243-ad9a-4e00-be82-0cdf26a8801d/decisions/02-implementer-ponytail-restore-vanishing-scope.md)
 - [Code-review agent APPROVED PR #1 but a real host run surfaced 3 driver bugs the in-container review could not see](sessions/19cb853b-a2e9-4eb6-865a-138864ba1934/decisions/02-review-simulation-blind-spot-real-driver-bugs.md)
 - [Label seam — `gh pr edit --add-label` fails on this gh (classic-Projects GraphQL error); use the REST labels API](sessions/19cb853b-a2e9-4eb6-865a-138864ba1934/decisions/03-label-seam-gh-pr-edit.md)
@@ -66,7 +65,6 @@ Entries are grouped by project for progressive discovery. When the agent needs t
 - [implementer ponytail test env](sessions/8483b243-ad9a-4e00-be82-0cdf26a8801d/decisions/01-implementer-ponytail-test-env.md)
 - [Review-feedback fixes are made by the implementer, resuming its original session (`--revise`); review report injected as binding authority](sessions/019ff79e-181d-7e8b-a869-398b6417d28a/decisions/08-implementer-revision-same-session.md)
 - [`--pick` selects only `prd-ready` tasks with Final PRDs; `--task` is the explicit operator override](sessions/019ff79e-181d-7e8b-a869-398b6417d28a/decisions/09-pick-prd-ready-only.md)
-- [Ponytail skills delivered via fixed `/skills` mount — D2 delivery-path repair](sessions/01a005a8-7302-74e2-8c1a-c6e8e74358c7/decisions/01-ponytail-skills-fixed-mount.md)
 
 ### workspace-portability
 
@@ -79,6 +77,7 @@ Entries are grouped by project for progressive discovery. When the agent needs t
 
 ### feed-analyser
 
+- [Capture extension agent — follow-up turns, persistence, and reconnect UX fixes](sessions/01a00610-13dd-72ee-a5d4-2f3765c07cb3/decisions/01-capture-agent-followup-persistence-reconnect-fixes.md)
 - [Capture v1 ships a single intent — save the whole post (Intent A)](sessions/019fd314-9339-7a30-9b8b-f6d8892b5226/decisions/01-capture-v1-single-intent-save-whole-post.md)
 - [Capture links include embedded/quote tweets and resolve t.co shortlinks](sessions/019fd314-9339-7a30-9b8b-f6d8892b5226/decisions/02-capture-links-embedded-tweets-and-tco-resolution.md)
 - [PRD moves to archive only after UAT + user go-ahead](sessions/019fd314-9339-7a30-9b8b-f6d8892b5226/decisions/03-prd-archive-requires-uat-and-user-signoff.md)
@@ -97,7 +96,6 @@ Entries are grouped by project for progressive discovery. When the agent needs t
 - [One artefact per capture + the full pi session as evidence](sessions/019fd8a4-73ca-7c92-bbcc-b5d74e7d0817/decisions/04-artefact-session-evidence-model.md)
 - [Twitter knowledge base — plain files as truth, SQLite FTS5 derived index, thin read API](sessions/019fd8a4-73ca-7c92-bbcc-b5d74e7d0817/decisions/05-twitter-kb-plain-files-fts5-read-api.md)
 - [Browser control by the agent deferred to a follow-on phase](sessions/019fd8a4-73ca-7c92-bbcc-b5d74e7d0817/decisions/06-browser-control-deferred.md)
-- [Capture extension agent — follow-up turns, persistence, and reconnect UX fixes](sessions/01a00610-13dd-72ee-a5d4-2f3765c07cb3/decisions/01-capture-agent-followup-persistence-reconnect-fixes.md)
 
 ### survival-infrastructure
 
