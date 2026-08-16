@@ -1,7 +1,7 @@
 # PRD: Ponytail skills via fixed `/skills` mount — D2 delivery-path repair
 
 **Date**: 2026-08-16 21:28
-**Status**: Final
+**Status**: Draft
 **Owner**: software-factory
 **Task**: ponytail-skills-fixed-mount
 **Session**: `docs/knowledge/sessions/01a005a8-7302-74e2-8c1a-c6e8e74358c7/session.jsonl`
