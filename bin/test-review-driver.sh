@@ -149,6 +149,10 @@ setup_fixture() {
   mkdir -p "$dir/config" "$dir/docs/tasks" "$dir/docs/prd-queue" \
            "$dir/docs/code-reviews" "$dir/docs/knowledge/sessions" \
            "$dir/bin" "$dir/.factory/runs"
+  # Stub the host skills checkout the driver binds into the container at /skills
+  # (US2/US3): the mount source must exist so the /skills mount + flags are
+  # emitted in the smoke test. Test-time scratch, never part of the repo/worktree.
+  mkdir -p "$dir/opensource/ponytail/skills/ponytail-review"
   ( cd "$dir" && git init -q -b master >/dev/null 2>&1 \
       && git config user.email review@example.com && git config user.name Review \
       && printf 'base\n' > base.txt && git add -A \
@@ -179,7 +183,7 @@ setup_fixture() {
   "image": "sandbox:latest",
   "runs_root": ".factory/runs", "reviews_root": "docs/code-reviews",
   "liveness_interval_sec": 2, "liveness_idle_sec": 5,
-  "ponytail": { "skills_dir": "/workspace/opensource/ponytail/skills", "default_mode": "ultra" }
+  "ponytail": { "skills_dir": "/skills", "host_skills_dir": "$WORKSPACE/opensource/ponytail/skills", "default_mode": "ultra" }
 }
 CFG
 
@@ -368,12 +372,23 @@ if printf '%s\n' "$FLAGS" | grep -q "ponytail-gain"; then pass "flag: ponytail-g
 if printf '%s\n' "$FLAGS" | grep -q "ponytail-help"; then pass "flag: ponytail-help"; else fail "missing ponytail-help flag"; fi
 COUNT="$(printf '%s\n' "$FLAGS" | wc -l | tr -d ' ')"
 if [ "$COUNT" -eq 6 ]; then pass "exactly six --skill flags ($COUNT)"; else fail "ponytail flag count = $COUNT — expected 6"; fi
-# Ponytail skills exist in the live opensource checkout. The container sees
-# $WORKSPACE at /workspace, so the host-side truth is the driver's own checkout.
-if [ -d "$SCRIPT_DIR/opensource/ponytail/skills/ponytail-review" ]; then
-  pass "ponytail-review skill present in opensource checkout (→ /workspace in container)"
+# Skip-tolerant skills-presence check (US3): the /skills mount is wired into
+# the driver's invocation regardless of whether any host `opensource/` checkout
+# exists. A clean worktree clone never ships `opensource/` (gitignored, not
+# cloned) — asserting the dir would force fabrication. Asserting the mount flag
+# passes by construction and never demands a host env dependency.
+if grep -q -- ':/skills:ro' "$DRIVER"; then
+  pass "skills delivered via read-only /skills mount in the podman invocation (skip-tolerant)"
 else
-  fail "ponytail skills dir not found at $SCRIPT_DIR/opensource/ponytail/skills"
+  fail "skills /skills:ro mount flag missing from driver invocation"
+fi
+# US4: warn-and-run is wired — a missing host skills checkout warns loudly and
+# never fails the run (advisory discipline, no fabrication incentive).
+if grep -q 'ponytail skills not found at' "$DRIVER" \
+   && grep -q 'running without ponytail discipline' "$DRIVER"; then
+  pass "US4 warn-and-run: missing host skills warns and run proceeds"
+else
+  fail "US4 warn-and-run warning line missing from driver"
 fi
 
 # ─── Test 8: archive to docs/code-reviews/<date>-<slug>/ ───────────────────
@@ -486,6 +501,13 @@ if grep -q "ponytail-review" "$MOCK_PODMAN_LOG" && grep -q "ponytail-help" "$MOC
   pass "smoke: six ponytail --skill flags in the podman invocation"
 else
   fail "smoke: ponytail skill flags missing from podman invocation"
+fi
+# US2/US3: the read-only /skills bind mount (not path inheritance) appears in
+# the podman invocation.
+if grep -q ':/skills:ro' "$MOCK_PODMAN_LOG"; then
+  pass "smoke: read-only /skills bind mount present in the podman invocation"
+else
+  fail "smoke: /skills:ro mount missing from podman invocation: $(cat "$MOCK_PODMAN_LOG" | tr '\n' ' ')"
 fi
 if grep -q "PONYTAIL_DEFAULT_MODE=ultra" "$SMOKE"/.factory/runs/*/secrets.env 2>/dev/null \
    || grep -q "PONYTAIL_DEFAULT_MODE" "$MOCK_PODMAN_LOG"; then

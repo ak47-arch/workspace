@@ -306,6 +306,11 @@ echo "── end-to-end smoke: driver main executed (mock podman, --dry-run) ─
 SMOKE="$(mktemp -d)"
 mkdir -p "$SMOKE/config" "$SMOKE/docs/tasks" "$SMOKE/docs/prd-queue" \
          "$SMOKE/docs/implementations" "$SMOKE/docs/knowledge/sessions" "$SMOKE/bin"
+# Stub the host skills checkout the driver binds into the container at /skills.
+# US2/US3: the mount source must exist so the /skills mount + `--skill /skills/*`
+# flags are emitted (US4's warn-and-run path is exercised elsewhere). The stub
+# is a test-time scratch dir, never part of the worktree/repo.
+mkdir -p "$SMOKE/opensource/ponytail/skills/ponytail-review"/
 ( cd "$SMOKE" && git init -q -b master >/dev/null 2>&1 \
     && git config user.email smoke@example.com && git config user.name Smoker \
     && echo base > base.txt && git add -A && git commit -qm base >/dev/null 2>&1 )
@@ -321,7 +326,7 @@ cat > "$SMOKE/config/implementer.json" <<'CFG'
   "image": "sandbox:latest",
   "runs_root": ".factory/runs", "archives_root": "docs/implementations",
   "liveness_interval_sec": 2, "liveness_idle_sec": 5,
-  "ponytail": { "skills_dir": "/workspace/opensource/ponytail/skills", "default_mode": "ultra" }
+  "ponytail": { "skills_dir": "/skills", "host_skills_dir": "$WORKSPACE/opensource/ponytail/skills", "default_mode": "ultra" }
 }
 CFG
 # The success path shells out to append_decisions_to_index → sort-knowledge-index.
@@ -349,20 +354,34 @@ if [ "$rc" -eq 0 ]; then
 else
   fail "main crashed under --dry-run (exit $rc): $(tail -3 "$SMOKE/smoke.out" | tr '\n' ' ')"
 fi
-# All six --skill flags, resolving under the live skills dir. The mock log
-# wraps each argv element in angle brackets (`<arg>`), so match the skill path
-# (which always carries the `--skill` prefix in the diagnostic line below).
+# All six --skill flags, resolving under the fixed /skills container path. The
+# mock log wraps each argv element in angle brackets (`<arg>`), so match the
+# skill path (which always carries the `--skill` prefix in the diagnostic line).
 flag_ok=1
 for sk in ponytail ponytail-review ponytail-audit ponytail-debt ponytail-gain ponytail-help; do
-  grep -q -- "--skill> </workspace/opensource/ponytail/skills/$sk>" "$MOCK_PODMAN_LOG" \
+  grep -q -- "--skill> </skills/$sk>" "$MOCK_PODMAN_LOG" \
     || flag_ok=0
 done
 if [ "$flag_ok" -eq 1 ]; then
-  pass "smoke: six ponytail --skill flags from the live skills dir in the podman invocation"
+  pass "smoke: six ponytail --skill flags from the fixed /skills path in the podman invocation"
 else
   fail "smoke: ponytail --skill flags missing from podman invocation: $(cat "$MOCK_PODMAN_LOG" | tr '\n' ' ')"
 fi
 echo "  smoke: flag count = $(grep -o -- '--skill' "$MOCK_PODMAN_LOG" | wc -l)" >&2
+# US2: the read-only /skills bind mount appears in the invocation (not path
+# inheritance from a host checkout).
+if grep -q ':/skills:ro' "$MOCK_PODMAN_LOG"; then
+  pass "smoke: read-only /skills bind mount present in the podman invocation"
+else
+  fail "smoke: /skills:ro mount missing from podman invocation: $(cat "$MOCK_PODMAN_LOG" | tr '\n' ' ')"
+fi
+# US4: the warn-and-run seam is wired — the driver warns (never fail-fast) when
+# the host skills checkout is absent, and still runs.
+if grep -q 'ponytail skills not found at' "$DRIVER" && grep -q 'running without ponytail discipline' "$DRIVER"; then
+  pass "smoke: US4 warn-and-run branch present in the driver"
+else
+  fail "smoke: US4 warn-and-run warning line missing from driver"
+fi
 if grep -q "PONYTAIL_DEFAULT_MODE=ultra" "$SMOKE"/.factory/runs/*/secrets.env 2>/dev/null \
    || grep -q "PONYTAIL_DEFAULT_MODE=ultra" "$MOCK_PODMAN_LOG"; then
   pass "smoke: PONYTAIL_DEFAULT_MODE=ultra carried to the container"
