@@ -31,6 +31,12 @@ Multiple saves from the same session add new decision files to the same session 
    ```
    Create it if it doesn't exist. Then **always copy** the session file into it as `session.jsonl`, overwriting any previous copy. The session file grows as the conversation progresses — each save gets the freshest snapshot, which is a strict superset of any earlier one.
 
+   **Then sanitize the copy**: session traces capture tool output (e.g. `cat ~/.config/gh/hosts.yml`, env vars) that can embed live credentials. Committing them trips GitHub Push Protection (GH013) and blocks the save. Run:
+   ```bash
+   bash bin/sanitize-session.sh docs/knowledge/sessions/<uuid>/session.jsonl
+   ```
+   This redacts `sk-or-v1-*`, `gho_*`, `ghp_*`, `github_pat_*`, `xox*-*`, `AKIA*` values in place (prefixes kept as `…REDACTED`). If it exits 3 (secrets still present), inspect the file and redact manually before committing.
+
 3. **Read the session entries** — the file is JSONL. Walk the tree from leaf to root via `parentId` to get the active path. Skip entries that are excluded by compaction (a compaction entry with `firstKeptEntryId` replaces everything before that point).
 
 4. **Infer a title** from the conversation. The title should be short and descriptive (e.g. "Payment Flow Architecture Decision"). Also derive a slug from the title for the filename.

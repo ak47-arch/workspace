@@ -35,11 +35,11 @@ How to restore only `opensource/` into the live workspace without touching anyth
 ### Consequences
 
 - `opensource/` restored 26/26; six ponytail skills available at `opensource/ponytail/skills/`; `opensource/` remains untracked (bare `opensource` gitignore pattern) so re-restores are safe.
-- **Stale manifest entry discovered**: `ak47-arch/skills.git` returns 404 (fork deleted upstream); `opensource/skills` was cloned from upstream `mattpocock/skills.git`. The manifest still lists the dead fork URL — a follow-on task should update `workspace_restore_manifest.json` (and restore-path checks) to the upstream URL.
+- **Stale manifest entry discovered + fixed**: `ak47-arch/skills.git` returns 404 (API-confirmed; fork gone, no rename redirect — parent `mattpocock/skills` alive); `opensource/skills` was cloned from upstream `mattpocock/skills.git`. The manifest entry was updated on 2026-08-17 (clone_url → `mattpocock/skills.git`, extra_remotes dropped) and `docs/projects.md` re-pointed to the upstream, so restore no longer aborts on this repo.
 - The D2 fix was then verified end-to-end (implement → review → merge → post-merge checkout) with **no replication** of the deletion bug.
 
 ### Revision triggers
 
-- The `ak47-arch/skills.git` manifest entry is corrected (or the fork is restored) — decision's fallback note becomes stale.
+- ~~The `ak47-arch/skills.git` manifest entry is corrected~~ **(resolved 2026-08-17: manifest + projects.md now point at `mattpocock/skills.git`)** — decision's fallback note becomes stale.
 - Manifest gains a first-class "fallback clone URLs" concept (would supersede the manual upstream-fallback step).
 - Restore tooling grows a `--repos-only-into-existing` guard or a per-directory restore mode (would formalize what was done ad hoc here).

@@ -187,7 +187,7 @@ These are cloned/forked third-party projects. Not actively developed by us, but 
 | `open-notebook` | `lfnovo/open-notebook` | — |
 | `openwiki` | `ak47-arch/openwiki` | Wiki generator (forked) |
 | `pi-mono` | `ak47-arch/pi-mono` | Pi framework (removed from backup manifest) |
-| `skills` | `ak47-arch/skills` | Shared skills collection |
+| `skills` | `mattpocock/skills` | Shared skills collection (upstream; `ak47-arch` fork deleted) |
 | `Understand-Anything` | `Egonex-AI/Understand-Anything` | — |
 | `woodpecker` | `woodpecker-ci/woodpecker` | CI system |
 | `yazi` | `sxyazi/yazi` | Terminal file manager |
