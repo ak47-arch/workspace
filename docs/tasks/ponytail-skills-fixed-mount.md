@@ -18,3 +18,11 @@
 ## Decisions
 
 - `docs/knowledge/sessions/01a005a8-7302-74e2-8c1a-c6e8e74358c7/decisions/01-ponytail-skills-fixed-mount.md` — ponytail skills delivered via fixed `/skills` mount (D2 delivery-path repair)
+
+## PR tracking
+
+- PR: #4 (ak47-arch/workspace)
+- URL: https://github.com/ak47-arch/workspace/pull/4
+- Branch: factory/ponytail-skills-fixed-mount/20260816-225451
+- Base: master · Head: a2c1b8906af5503b2da4034cb0f5bfbab8af1dc7 (raised 2026-08-16 23:03)
+- Raised by: implementer run 0ded66e7-a908-4838-ace5-03de80e8fc0d
