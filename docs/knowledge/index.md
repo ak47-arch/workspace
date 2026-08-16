@@ -69,6 +69,7 @@ Entries are grouped by project for progressive discovery. When the agent needs t
 - [Task similarity check scope and merge policy](sessions/357a4c1d-cfd2-47d4-b3a8-a831dd310daf/decisions/01-task-similarity-check-scope.md)
 - [Semantic similarity assessment with partial-split support](sessions/357a4c1d-cfd2-47d4-b3a8-a831dd310daf/decisions/02-semantic-similarity-assessment.md)
 - [Partial-split remainder registered as new pending task](sessions/357a4c1d-cfd2-47d4-b3a8-a831dd310daf/decisions/03-partial-split-remainder-registration.md)
+- [LLM credential resolution from pi's auth.json for sandboxed agents](sessions/357a4c1d-cfd2-47d4-b3a8-a831dd310daf/decisions/04-llm-credential-resolution-from-auth-json.md)
 
 ### workspace-portability
 

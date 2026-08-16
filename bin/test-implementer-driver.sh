@@ -395,6 +395,66 @@ else
 fi
 rm -rf "$SMOKE"
 
+# ─── Test 5b: write_env_file resolves LLM credentials from pi's auth.json ──
+# The sandbox needs OPENROUTER_API_KEY/ANTHROPIC_API_KEY; pi keeps its key in
+# ~/.pi/agent/auth.json (not the host env). The driver must fall back to that
+# file, only for allowlisted provider keys — never github-copilot / nvidia.
+echo "── write_env_file: auth.json credential fallback ──"
+source_driver
+AUTH_HOME="$(mktemp -d)"
+mkdir -p "$AUTH_HOME/.pi/agent" "$AUTH_HOME/run"
+cat > "$AUTH_HOME/.pi/agent/auth.json" <<'AUTHJSON'
+{
+  "openrouter": { "type": "openrouter", "key": "sk-or-v1-test-openrouter-key" },
+  "anthropic": { "type": "anthropic", "key": "sk-ant-test-anthropic-key" },
+  "github-copilot": { "type": "github-copilot", "access": "gho_should-never-leak" },
+  "nvidia": { "type": "nvidia", "key": "nvapi-should-never-leak" }
+}
+AUTHJSON
+
+# Case 1: neither env var set → both resolved from auth.json, GH/nvidia excluded.
+(
+  export HOME="$AUTH_HOME"
+  unset OPENROUTER_API_KEY ANTHROPIC_API_KEY
+  RUN_DIR="$AUTH_HOME/run"
+  ENVF="$(write_env_file)"
+  grep -q "^OPENROUTER_API_KEY=sk-or-v1-test-openrouter-key$" "$ENVF" \
+    && pass "auth.json: OPENROUTER_API_KEY resolved from pi auth.json" \
+    || fail "auth.json: OPENROUTER_API_KEY missing from env file"
+  grep -q "^ANTHROPIC_API_KEY=sk-ant-test-anthropic-key$" "$ENVF" \
+    && pass "auth.json: ANTHROPIC_API_KEY resolved from pi auth.json" \
+    || fail "auth.json: ANTHROPIC_API_KEY missing from env file"
+  ! grep -q "gho_\|nvapi" "$ENVF" \
+    && pass "auth.json: github-copilot/nvidia keys excluded" \
+    || fail "auth.json: GH/nvidia key leaked into env file"
+)
+
+# Case 2: host env var set → it wins (explicit override, no auth.json lookup).
+(
+  export HOME="$AUTH_HOME"
+  export OPENROUTER_API_KEY="sk-env-explicit-override"
+  unset ANTHROPIC_API_KEY
+  RUN_DIR="$AUTH_HOME/run"
+  ENVF="$(write_env_file)"
+  grep -q "^OPENROUTER_API_KEY=sk-env-explicit-override$" "$ENVF" \
+    && pass "auth.json: host env var overrides auth.json" \
+    || fail "auth.json: host env override lost"
+)
+
+# Case 3: no auth.json → env file simply lacks LLM creds (entrypoint will fail
+# clearly), no crash.
+(
+  export HOME="$AUTH_HOME/empty-home"
+  mkdir -p "$AUTH_HOME/empty-home"
+  unset OPENROUTER_API_KEY ANTHROPIC_API_KEY
+  RUN_DIR="$AUTH_HOME/run"
+  ENVF="$(write_env_file)"
+  ! grep -q "OPENROUTER_API_KEY\|ANTHROPIC_API_KEY" "$ENVF" \
+    && pass "auth.json: absent file → no LLM creds, no crash" \
+    || fail "auth.json: expected no LLM creds without auth.json"
+)
+rm -rf "$AUTH_HOME"
+
 # ─── Test 6: cleanup worktree (disposable vs durable) + stop_container ──────
 echo "── cleanup_run_dir + stop_container ──"
 source_driver

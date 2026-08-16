@@ -384,6 +384,38 @@ write_env_file() {
   if [ -n "$PONYTAIL_DEFAULT_MODE" ]; then
     printf 'PONYTAIL_DEFAULT_MODE=%s\n' "$PONYTAIL_DEFAULT_MODE" >> "$envfile"
   fi
+  # ── LLM credential fallback from pi's auth.json (the same file pi reads) ──
+  # For allowlisted provider env vars left unset by the host env, resolve the
+  # key from ~/.pi/agent/auth.json. Scoped strictly to the allowlist mapping —
+  # the github-copilot access token and the nvidia key never enter the
+  # container. Values go straight to the envfile, never echoed.
+  local auth_file="${PI_AUTH_FILE:-$HOME/.pi/agent/auth.json}"
+  if [ -f "$auth_file" ]; then
+    local name provider key
+    while read -r name; do
+      [ -z "$name" ] && continue
+      case "$name" in
+        OPENROUTER_API_KEY) provider=openrouter ;;
+        ANTHROPIC_API_KEY)  provider=anthropic ;;
+        *) continue ;;
+      esac
+      if ! grep -q "^${name}=" "$envfile"; then
+        key="$(python3 -c '
+import json, sys
+provider, auth_file = sys.argv[1], sys.argv[2]
+try:
+    with open(auth_file) as f:
+        auth = json.load(f)
+    sys.stdout.write(auth.get(provider, {}).get("key", ""))
+except Exception:
+    sys.exit(1)
+' "$provider" "$auth_file")" || continue
+        if [ -n "$key" ]; then
+          printf '%s=%s\n' "$name" "$key" >> "$envfile"
+        fi
+      fi
+    done < <(env_allowed)
+  fi
   # Env must contain ONLY LLM + Langfuse credentials + the mode variable —
   # never GH tokens.
   echo "$envfile"
@@ -410,8 +442,10 @@ run_container() {
   local model_arg=()
   if [ -n "${IMPLEMENTER_MODEL:-}" ]; then
     model_arg=(--model "$IMPLEMENTER_MODEL")
-  else
+  elif [ -n "${MODEL:-}" ] && [ "$MODEL" != "null" ]; then
     model_arg=(--model "$MODEL")
+  elif [ -n "${PI_MODEL:-}" ]; then
+    model_arg=(--model "${PI_PROVIDER:-openrouter}/${PI_MODEL}")
   fi
 
   # The six ponytail skills, bind-mounted read-only from the host skills
