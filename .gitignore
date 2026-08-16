@@ -32,6 +32,8 @@ __pycache__/
 # /.agent/
 # /.agents/
 /.github/
+# The root-level factory headless workflow (this repo) must be trackable.
+!.github/
 /.omp/lsp-tools/node_modules/
 /.omp/lsp-tools/.npm/
 /node_modules/

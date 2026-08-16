@@ -17,7 +17,7 @@
 #
 # Usage:
 #   bin/factory-run.sh [--task <slug>] [--yes] [--implement-only]
-#                      [--review <pr>] [--dry-run]
+#                      [--review <pr>] [--dry-run] [--headless]
 #   --task <slug>     Task to implement (passed to implementer-run; default: --pick)
 #   --yes             Skip the UAT prompt (still never merges)
 #   --implement-only  Implement only — do NOT run the review
@@ -26,9 +26,14 @@
 #                     falls back to --pick)
 #   --dry-run         Pass --dry-run to the implementer; review is skipped
 #                     (nothing to review — no PR exists in dry-run)
+#   --headless        Decision 04: fully autonomous loop. No UAT gate. On
+#                     REQUEST_CHANGES, run implementer-run.sh --revise <pr> and
+#                     re-review up to REVISION_CAP (default 3); stop at APPROVE;
+#                     on cap exhaustion exit non-zero with the last report surfaced.
 #
 # Exit codes:
 #   0  Success (implement + review done, or implement-only, or deferred at UAT)
+#      or headless loop ended at APPROVE
 #   1  Implementer failed (review skipped; task reverted, no PR)
 #   2  Reviewer failed (PR left open; re-run bin/review-run.sh --pick later)
 #   3  Usage error
@@ -56,12 +61,16 @@ Usage:
                     falls back to --pick)
   --dry-run         Pass --dry-run to the implementer; review is skipped
                     (nothing to review — no PR exists in dry-run)
+  --headless        Decision 04: fully autonomous loop. No UAT gate. On
+                    REQUEST_CHANGES, run implementer-run.sh --revise <pr> and
+                    re-review up to REVISION_CAP (default 3); stop at APPROVE;
+                    on cap exhaustion exit non-zero with the last report surfaced.
 
-Exit codes: 0 success/deferred · 1 implementer failed · 2 reviewer failed · 3 usage
+Exit codes: 0 success/deferred/approved · 1 implementer failed · 2 reviewer failed · 3 usage
 EOF
 }
 
-TASK_ARG=""; YES=false; IMPL_ONLY=false; REVIEW_OVERRIDE=""; DRY_RUN=false
+TASK_ARG=""; YES=false; IMPL_ONLY=false; REVIEW_OVERRIDE=""; DRY_RUN=false; HEADLESS=false
 while [ $# -gt 0 ]; do
   case "$1" in
     --task) TASK_ARG="$2"; shift 2 ;;
@@ -69,6 +78,7 @@ while [ $# -gt 0 ]; do
     --implement-only) IMPL_ONLY=true; shift ;;
     --review) REVIEW_OVERRIDE="$2"; shift 2 ;;
     --dry-run) DRY_RUN=true; shift ;;
+    --headless) HEADLESS=true; shift ;;
     -h|--help) usage; exit 0 ;;
     *) echo "Unknown option: $1" >&2; usage >&2; exit 3 ;;
   esac
@@ -93,6 +103,9 @@ fi
 
 RUN_LOG="$(mktemp)"; REV_LOG="$(mktemp)"
 trap 'rm -f "$RUN_LOG" "$REV_LOG"' EXIT
+
+# Headless revision cap (decision 04). Env-configurable, default 3.
+REVISION_CAP="${REVISION_CAP:-3}"
 
 # ─── Stage 1: implement ───────────────────────────────────────────────────
 echo ""
@@ -130,7 +143,8 @@ fi
 [ -z "$PR_ARG" ] && PR_ARG="--pick"
 
 # ─── UAT / human gate ─────────────────────────────────────────────────────
-if [ "$YES" != true ]; then
+# Decision 04: headless mode has NO gate — the loop is fully autonomous.
+if [ "$HEADLESS" != true ] && [ "$YES" != true ]; then
   echo ""
   echo "══════════════════════════════════════════════════════════════════"
   echo "  HUMAN GATE — PR $PR_ARG is open."
@@ -155,20 +169,103 @@ if [ "$YES" != true ]; then
 fi
 
 # ─── Stage 2: review ──────────────────────────────────────────────────────
-echo ""
-echo "── Stage 2: code review ($PR_ARG) ──"
-REV_ARGS=()
-if [ -n "$REVIEW_OVERRIDE" ]; then REV_ARGS+=("$REVIEW_OVERRIDE"); else REV_ARGS+=("$PR_ARG"); fi
-set +e
-"$REVIEWER" "${REV_ARGS[@]}" > "$REV_LOG" 2>&1
-REV_RC=$?
-set -e
-cat "$REV_LOG" >&2
-if [ "$REV_RC" -ne 0 ]; then
-  echo "  ✗ Reviewer failed (rc $REV_RC) — task left in-progress." >&2
-  echo "    Re-run when ready: bin/review-run.sh --pick" >&2
-  exit 2
+run_review() {
+  echo ""
+  echo "── Stage 2: code review ($PR_ARG) ──"
+  REV_ARGS=()
+  if [ -n "$REVIEW_OVERRIDE" ]; then REV_ARGS+=("$REVIEW_OVERRIDE"); else REV_ARGS+=("$PR_ARG"); fi
+  set +e
+  "$REVIEWER" "${REV_ARGS[@]}" > "$REV_LOG" 2>&1
+  REV_RC=$?
+  set -e
+  cat "$REV_LOG" >&2
+  if [ "$REV_RC" -ne 0 ]; then
+    echo "  ✗ Reviewer failed (rc $REV_RC) — task left in-progress." >&2
+    echo "    Re-run when ready: bin/review-run.sh --pick" >&2
+    exit 2
+  fi
+}
+
+# Verdict read-back (decision 04): the review driver archives the report to
+# docs/code-reviews/<date>-<slug>/report.md. Read the verdict the same way the
+# driver does (grep -m1 '^APPROVE|^REQUEST_CHANGES'). Real reports open with
+# "# Code Review", so we do NOT assume line 1. An empty verdict (e.g. a
+# "# Partial review" failure report) means non-APPROVE, surfaced, no revise.
+read_verdict() {
+  local slug="$1"
+  local report="$WORKSPACE/docs/code-reviews/$(date '+%Y-%m-%d')-$slug/report.md"
+  if [ ! -f "$report" ]; then
+    verdict=""
+    verdict_file=""
+    return 1
+  fi
+  verdict_file="$report"
+  verdict="$(grep -m1 '^APPROVE\|^REQUEST_CHANGES' "$report" 2>/dev/null | tr -d '[:space:]' || true)"
+  return 0
+}
+
+surface_report() {
+  echo "  ── Last review report (${verdict_file:-n/a}) ──" >&2
+  if [ -n "${verdict_file:-}" ] && [ -f "$verdict_file" ]; then cat "$verdict_file" >&2; fi
+}
+
+headless_loop() {
+  local slug="$1"
+  local n=0
+  while true; do
+    run_review
+    if ! read_verdict "$slug"; then
+      echo "  ✗ Verdict unavailable — no review report archived for $slug." >&2
+      exit 1
+    fi
+    case "$verdict" in
+      APPROVE*)
+        echo "  ✓ Review APPROVED (revision $n). Merge-ready PR — task in-review." >&2
+        exit 0
+        ;;
+      REQUEST_CHANGES*)
+        if [ "$n" -lt "$REVISION_CAP" ]; then
+          n=$((n+1))
+          echo "  Review returned REQUEST_CHANGES (revision $n/$REVISION_CAP) — running implementer-run.sh --revise." >&2
+          set +e
+          "$IMPLEMENTER" --revise "$PR_ARG" > "$RUN_LOG" 2>&1
+          IMPL_RC=$?
+          set -e
+          cat "$RUN_LOG" >&2
+          if [ "$IMPL_RC" -ne 0 ]; then
+            echo "  ✗ Revision implementer failed (rc $IMPL_RC)." >&2
+            exit 1
+          fi
+        else
+          echo "  ✗ REQUEST_CHANGES persists after ${REVISION_CAP} revision(s) — cap exhausted." >&2
+          surface_report
+          exit 1
+        fi
+        ;;
+      *)
+        # Empty / unrecognised verdict (e.g. partial-failure report). Surface,
+        # treat as non-APPROVE, do NOT revise (decision 04 contract).
+        echo "  ✗ No valid verdict read back (got '${verdict}') — surfacing report, not revising." >&2
+        surface_report
+        exit 1
+        ;;
+    esac
+  done
+}
+
+if [ "$HEADLESS" = true ]; then
+  SLUG="$TASK_ARG"
+  if [ -z "$SLUG" ]; then
+    SLUG="$(grep -oE 'docs/tasks/[^ ]+\.md' "$RUN_LOG" | head -1 | sed -E 's#docs/tasks/(.*)\.md#\1#' || true)"
+  fi
+  if [ -z "$SLUG" ]; then
+    echo "  ✗ Could not resolve task slug for verdict read-back (use --task <slug>)." >&2
+    exit 1
+  fi
+  headless_loop "$SLUG"
 fi
+
+run_review
 
 echo ""
 echo "── Chain complete: implement + review done ──"
