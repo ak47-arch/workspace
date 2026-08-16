@@ -8,7 +8,7 @@
 
 ## Artifacts
 
-- Plan: _(will be created)_
+- Plan: `docs/prd-queue/2026-08-17-task-pickup-similarity-merge.md`
 
 ## Sessions
 
