@@ -6,13 +6,14 @@ tasks:
 
     ### Pending
     - thorough testing (all)
-    - agent containerisation (all)
     - standardise documentation structure across all apps (all)
     - work on vision, functional and technical documentation across projects making them factory ready (all)
     - plan the modularisation of all apps. it would be better if all projects follow same structure (all)
     - integrate langfuse with all applications (all) [langfuse-agentic-operations]
     - deprecate the spec driven process for all projects (all)
 
+    ### Queued
+    - agent containerisation (all) [headless-agent-containerisation]
     ## llm
 
     ### Pending
@@ -56,7 +57,6 @@ tasks:
     - clearly define the projects so the context infrastructure is is more efficient. the projects are survival-infrastructure, feed_analyser, llm, resume, workspace-portability, headroom-pi, software_factory (software_factory)
     - Add another abstraction layer on the tasks.txt that helps the user select the next task based on the overall state of the system and reasoning on priorities (software-factory) [task-selection-abstraction-layer]
     - Extend the prod review agent to make it better (software-factory)
-    - Add headless herdr host to implementer gent so we can run it seperately in a separate worktree (software-factory)
     - Make the infrastructure so that we don’t need the prompt before delete extension (software-factory)
     - Build the software factory into its own product with evals attached (software-factory)
     - Host the applications in two environments test, main and prod (software-factory)
@@ -65,6 +65,7 @@ tasks:
     - Compress all session files reclaiming disk space (software-factory)
 
     ### Queued
+    - Add headless herdr host to implementer gent so we can run it seperately in a separate worktree (software-factory) [headless-agent-containerisation]
     ### Complete
     - (complete)create a skill to summarise the content and most important learnings from a session and attach a link to the actual context window of that session so we can save our knowledge and build on it and not lose it at the end of each session close (software_factory)
     - (complete) implement end to end tracaebility for each task from picked up to completed. this includes connecting a task from here through the prd queue to the implementation. as we are saving the prd sessions and the context around it we will trace implementation and verifications sessions also. point is to trace tasks end to end so their entire lifecycle can be traced and logged (software_factory) [end-to-end-traceability]
