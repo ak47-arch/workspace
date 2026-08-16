@@ -15,8 +15,10 @@ Entries are grouped by project for progressive discovery. When the agent needs t
 
 
 
+
 ### software-factory
 
+- [headless ci gitignore track workflow](sessions/771b4017-a17d-4464-9896-476407652701/decisions/05-headless-ci-gitignore-track-workflow.md)
 - [pickup similarity merge](sessions/b77c5e2b-a870-40c7-bcad-effcbc45332a/decisions/01-pickup-similarity-merge.md)
 - [implementer ponytail restore vanishing scope](sessions/8483b243-ad9a-4e00-be82-0cdf26a8801d/decisions/02-implementer-ponytail-restore-vanishing-scope.md)
 - [Code-review agent APPROVED PR #1 but a real host run surfaced 3 driver bugs the in-container review could not see](sessions/19cb853b-a2e9-4eb6-865a-138864ba1934/decisions/02-review-simulation-blind-spot-real-driver-bugs.md)
