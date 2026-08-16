@@ -32,17 +32,42 @@ Read `docs/factory-context.md` to understand the software factory model and how 
 
 Then read `docs/tasks.txt` and prompt the user to pick a task to work on. The session centres around that task — everything from grilling to the PRD is scoped to it.
 
-**When a task is picked up**, derive a slug from its title (e.g. `github-browser-auth-flow` from "implement github browser authentication flow for project restore"), then:
+### 2. Similarity check
 
-1. **Categorise the task** — assign one of:
+**Immediately after the user picks a task** (from the list or freshly entered), **before** deriving a slug or categorising — run a similarity check across `docs/tasks.txt`. Scan **every** task line, in **every** project and **every** status, and look for tasks similar to the picked one. Similarity classes:
+
+- **Near-duplicate** — same intent, reworded.
+- **Same subject, different framing** — the same capability expressed differently.
+- **Cross-project capability** — the same capability living in another project.
+
+For each candidate, present the exact task line and a **one-line "why"** so the user can veto quickly. Then, for each candidate, establish the **degree of similarity** — always user-confirmed, never automatic:
+
+- **Full** → merge: all chosen lines (the picked task + the matches) form a single **merge bundle** sharing one `[slug]`, one task file, one PRD.
+- **Partial** → split: the overlapping part joins the bundle; the remainder is registered as a **new Pending line** under its own project in `docs/tasks.txt` — clarified wording, **no slug** (it earns a slug when picked up later, like any other pending task). The original picked-task line stays **verbatim** in `docs/tasks.txt`; clarity lives in the task file and PRD.
+- **None** → proceed with the single task, exactly as today.
+
+**Status policy** — merge offers only for tasks in **Pending** or **Queued**:
+
+- **In-progress / in-review** → informational flag only ("already being worked on"). Never a merge offer.
+- **Complete** → informational flag only ("appears to already be done"). Never a merge offer.
+
+**Silent when nothing matches**: if no similar tasks exist, skip all of this and proceed exactly as today — no added ceremony, no delay.
+
+### 3. Slug, categorise, annotate
+
+When a single task is confirmed, derive a slug from its title (e.g. `github-browser-auth-flow` from "implement github browser authentication flow for project restore"). When a **merge bundle** is confirmed, derive **one** slug for the bundle from the shared goal (e.g. `langfuse-agentic-operations` from three converging langfuse lines). Then:
+
+1. **Categorise the task / bundle** — assign one of:
    - **Trivial**: single file, no new logic (oneshot directly)
    - **Small**: 1–3 files, existing seam (Product Design only)
    - **Medium**: crosses modules, 3+ files (Product Design + System Architecture)
    - **Large**: new service/project, major refactor (all three phases)
 
-2. **Annotate `docs/tasks.txt`** — append `[<slug>]` to the end of that task's line so the mapping is explicit and deterministic. This is a one-time edit — the slug never changes after assignment.
+   For a **bundle**, the category is the **max of its constituents' categories** (a Small + a Medium → Medium), so planning depth matches the largest member.
 
-3. **Create the task file** at `docs/tasks/<slug>.md` with status `in-prd` and the category recorded. The task file is the reference hub that will accumulate links to the plan document, sessions, and decisions as work progresses.
+2. **Annotate `docs/tasks.txt`** — append `[<slug>]` to the end of that task's line so the mapping is explicit and deterministic. This is a one-time edit — the slug never changes after assignment. For a **bundle**, append `[<slug>]` to **every** chosen line, each within its own project section, so the bundle closes all its lines on transition.
+
+3. **Create the task file** at `docs/tasks/<slug>.md` with status `in-prd` and the category recorded. The task file is the reference hub that will accumulate links to the plan document, sessions, and decisions as work progresses. For a **bundle**, the `Source` field lists **every** verbatim task line (comma-separated), matching the langfuse task file convention.
 
 Task file template:
 ```markdown
@@ -52,7 +77,7 @@ Task file template:
 **Category**: Trivial | Small | Medium | Large
 **Project**: <project>
 **Created**: <yyyy-mm-dd HH:MM>
-**Source**: docs/tasks.txt — `<exact text from the tasks.txt line>`
+**Source**: docs/tasks.txt — `<verbatim task line>` (for a merge bundle: `<line 1>`, `<line 2>`, ... one per `[<slug>]`-annotated line, comma-separated)
 
 ## Artifacts
 
@@ -203,3 +228,8 @@ Use the `save-knowledge` skill to handle path creation, sequence numbering, sess
 ## Glossary
 
 If a shared vocabulary emerges during grilling, write resolved terms into `CONTEXT.md` at the workspace root. The glossary stays a glossary: pure vocabulary, no implementation details, no spec.
+
+Current shared terms:
+
+- **Merge bundle** — a set of task lines (possibly across projects) that share one `[slug]`, one task file, and one PRD, and transition together.
+- **Degree of similarity** — the user-established relationship between a picked task and a candidate: **full** (merge), **partial** (split), or **none** (proceed single).

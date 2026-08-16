@@ -109,6 +109,24 @@ tasks:
 EOF
 }
 
+write_multi_tasks_txt() {
+  cat > "$TMPROOT/docs/tasks.txt" <<'EOF'
+tasks:
+    # multi-line bundle fixture
+
+    ## all
+
+    ### Pending
+    - cross project task [bundle-task]
+
+    ## test-project
+
+    ### Pending
+    - bundle task one [bundle-task]
+    - bundle task two [bundle-task]
+EOF
+}
+
 run_script() {
   if [ "$VERBOSE" = true ]; then
     "$TMPROOT/bin/transition-task.sh" "$@"
@@ -373,6 +391,41 @@ test_special_chars_in_decision_path() {
   teardown_workspace
 }
 
+test_multi_line_bundle() {
+  echo "Test: multi-line bundle — all [slug] lines move to their own project's Complete"
+  setup_workspace
+  write_task_file bundle-task
+  write_multi_tasks_txt
+
+  run_script bundle-task --to complete --session "$UUID:planning"
+  local code=$?
+  assert_exit 0 $code "script exits 0"
+  # all three lines end up in Complete with (complete) prefixes
+  assert_contains "$TMPROOT/docs/tasks.txt" "(complete) cross project task [bundle-task]" "## all line moved to Complete"
+  assert_contains "$TMPROOT/docs/tasks.txt" "(complete) bundle task one [bundle-task]" "test-project line 1 moved to Complete"
+  assert_contains "$TMPROOT/docs/tasks.txt" "(complete) bundle task two [bundle-task]" "test-project line 2 moved to Complete"
+  # none remain in Pending
+  assert_not_contains "$TMPROOT/docs/tasks.txt" "- cross project task [bundle-task]" "## all line not stranded in Pending"
+  assert_not_contains "$TMPROOT/docs/tasks.txt" "- bundle task one [bundle-task]" "test-project line 1 not stranded in Pending"
+  assert_not_contains "$TMPROOT/docs/tasks.txt" "- bundle task two [bundle-task]" "test-project line 2 not stranded in Pending"
+
+  # each line lands under ITS OWN project's Complete section
+  local all_block tp_block
+  all_block=$(awk '/^    ## all/{inproj=1;next} /^    ## /{inproj=0} inproj' "$TMPROOT/docs/tasks.txt")
+  if echo "$all_block" | grep -Fq "(complete) cross project task [bundle-task]"; then
+    pass "## all line landed under ## all Complete"
+  else
+    fail "## all line not under ## all Complete"
+  fi
+  tp_block=$(awk '/^    ## test-project/{inproj=1;next} /^    ## /{inproj=0} inproj' "$TMPROOT/docs/tasks.txt")
+  if echo "$tp_block" | grep -Fq "(complete) bundle task one [bundle-task]"; then
+    pass "test-project line landed under test-project Complete"
+  else
+    fail "test-project line 1 not under test-project Complete"
+  fi
+  teardown_workspace
+}
+
 # ─── Runner ────────────────────────────────────────────────────────────────
 echo "=== transition-task.sh test suite ==="
 echo "Script under test: $SCRIPT_PATH"
@@ -391,6 +444,7 @@ test_idempotent_rerun
 test_dry_run_no_changes
 test_prd_archive
 test_special_chars_in_decision_path
+test_multi_line_bundle
 
 echo ""
 echo "=== Results: $PASS passed, $FAIL failed ==="

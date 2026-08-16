@@ -247,98 +247,115 @@ with open(tasks_txt, 'r') as f:
     content = f.read()
     lines = content.split('\n')
 
-# Find the line containing [slug]
-slug_line_idx = None
-slug_line = None
+# ─── Collect ALL lines annotated with [slug] ───────────────────────────────
+# Each is paired with the project section it currently lives in, so a merged
+# bundle can move every line to its OWN project's target status section
+# (lines under "## all" stay under "## all").
+def project_of(lines, idx):
+    """Return the enclosing project section name for line index idx."""
+    proj = None
+    for i in range(idx + 1):
+        m = re.match(r'^    ## (.+)', lines[i])
+        if m:
+            proj = m.group(1).strip()
+    return proj
+
+slug_items = []  # (verbatim line, project section)
 for i, line in enumerate(lines):
     if f'[{slug}]' in line:
-        slug_line_idx = i
-        slug_line = line
-        break
+        proj = project_of(lines, i)
+        if proj is None:
+            proj = project  # fall back to the task file's declared project
+        slug_items.append((line, proj))
 
-if slug_line_idx is None:
+if not slug_items:
     print(f"Warning: Could not find line containing [{slug}] in tasks.txt")
     print("Skipping tasks.txt update.")
     exit(0)
 
-# Remove the slug line from its current position
-del lines[slug_line_idx]
+# ─── Remove every slug line (original positions no longer matter) ─────────
+new_lines = [l for l in lines if f'[{slug}]' not in l]
 
-# Find the project section
-project_start = None
-for i, line in enumerate(lines):
-    m = re.match(r'^    ## (.+)', line)
-    if m and m.group(1).strip() == project:
-        project_start = i
-        break
+# ─── Relocate each slug line into its own project's target status section ──
+section_order = {'Pending': 0, 'Queued': 1, 'Complete': 2}
+single_line = len(slug_items) == 1
 
-if project_start is None:
-    print(f"Warning: Could not find project section '## {project}' in tasks.txt")
-    print("Skipping tasks.txt update.")
-    with open(tasks_txt, 'w') as f:
-        f.write('\n'.join(lines))
-    exit(0)
+for slug_line, line_project in slug_items:
+    # Single-line tasks keep the legacy behaviour: use the task file's
+    # declared project (not the line's current section). Multi-line bundles
+    # use each line's own project so lines stay under their own project.
+    target_project = project if single_line else line_project
 
-# Find the end of the project section (next ## or end of file)
-project_end = len(lines)
-for i in range(project_start + 1, len(lines)):
-    if re.match(r'^    ## ', lines[i]):
-        project_end = i
-        break
+    # Normalize the slug line
+    normalized_line = slug_line
+    if not normalized_line.startswith('    '):
+        normalized_line = '    ' + normalized_line
 
-# Normalize the slug line
-normalized_line = slug_line
-if not normalized_line.startswith('    '):
-    normalized_line = '    ' + normalized_line
+    # Ensure the line has (complete) prefix if moving to Complete
+    if target_section == 'Complete' and '(complete)' not in normalized_line:
+        normalized_line = re.sub(r'^(\s*-\s*)', r'\1(complete) ', normalized_line)
 
-# Ensure the line has (complete) prefix if moving to Complete
-if target_section == 'Complete' and '(complete)' not in normalized_line:
-    normalized_line = re.sub(r'^(\s*-\s*)', r'\1(complete) ', normalized_line)
-
-# Look for ### <target_section> within this project
-status_idx = None
-for i in range(project_start, project_end):
-    m = re.match(r'^    ### (.+)', lines[i])
-    if m and m.group(1).strip() == target_section:
-        status_idx = i
-        break
-
-if status_idx is not None:
-    # Insert after the last line in this status section
-    insert_after = status_idx
-    for i in range(status_idx + 1, project_end):
-        if re.match(r'^    (###|##) ', lines[i]):
+    # Find the project section
+    project_start = None
+    for i, line in enumerate(new_lines):
+        m = re.match(r'^    ## (.+)', line)
+        if m and m.group(1).strip() == target_project:
+            project_start = i
             break
-        if lines[i].strip():
-            insert_after = i
-    lines.insert(insert_after + 1, normalized_line)
-    print(f"  Added line to {project} / {target_section}")
-else:
-    # Create the status section in the right order
-    section_order = {'Pending': 0, 'Queued': 1, 'Complete': 2}
-    target_order = section_order.get(target_section, 99)
 
-    existing_sections = []
+    if project_start is None:
+        print(f"Warning: Could not find project section '## {target_project}' in tasks.txt")
+        continue
+
+    # Find the end of the project section (next ## or end of file)
+    project_end = len(new_lines)
+    for i in range(project_start + 1, len(new_lines)):
+        if re.match(r'^    ## ', new_lines[i]):
+            project_end = i
+            break
+
+    # Look for ### <target_section> within this project
+    status_idx = None
     for i in range(project_start, project_end):
-        m = re.match(r'^    ### (.+)', lines[i])
-        if m:
-            sec = m.group(1).strip()
-            order = section_order.get(sec, 99)
-            existing_sections.append((i, sec, order))
-
-    insert_at = project_end
-    for i, sec, order in existing_sections:
-        if order > target_order:
-            insert_at = i
+        m = re.match(r'^    ### (.+)', new_lines[i])
+        if m and m.group(1).strip() == target_section:
+            status_idx = i
             break
 
-    new_lines = [f'    ### {target_section}', normalized_line]
-    for j, nl in enumerate(new_lines):
-        lines.insert(insert_at + j, nl)
-    print(f"  Created {target_section} section under {project}")
+    if status_idx is not None:
+        # Insert after the last line in this status section
+        insert_after = status_idx
+        for i in range(status_idx + 1, project_end):
+            if re.match(r'^    (###|##) ', new_lines[i]):
+                break
+            if new_lines[i].strip():
+                insert_after = i
+        new_lines.insert(insert_after + 1, normalized_line)
+        print(f"  Added line to {target_project} / {target_section}")
+    else:
+        # Create the status section in the right order
+        target_order = section_order.get(target_section, 99)
+
+        existing_sections = []
+        for i in range(project_start, project_end):
+            m = re.match(r'^    ### (.+)', new_lines[i])
+            if m:
+                sec = m.group(1).strip()
+                order = section_order.get(sec, 99)
+                existing_sections.append((i, sec, order))
+
+        insert_at = project_end
+        for i, sec, order in existing_sections:
+            if order > target_order:
+                insert_at = i
+                break
+
+        new_lines.insert(insert_at, f'    ### {target_section}')
+        new_lines.insert(insert_at + 1, normalized_line)
+        print(f"  Created {target_section} section under {target_project}")
 
 with open(tasks_txt, 'w') as f:
-    f.write('\n'.join(lines))
+    f.write('\n'.join(new_lines))
 
 print("  tasks.txt updated")
 PYEOF
