@@ -1,7 +1,7 @@
 # PRD: Ponytail skills via fixed `/skills` mount — D2 delivery-path repair
 
 **Date**: 2026-08-16 21:28
-**Status**: Draft
+**Status**: Final
 **Owner**: software-factory
 **Task**: ponytail-skills-fixed-mount
 **Session**: `docs/knowledge/sessions/01a005a8-7302-74e2-8c1a-c6e8e74358c7/session.jsonl`
@@ -48,6 +48,15 @@ Deliver the six ponytail skills to the sandbox container via an **explicit read-
 - Skip-tolerant: the skills-presence check passes with the mount flag present even when no `opensource/` dir exists in the fixture.
 - Negative (optional): absent `HOST_SKILLS` → warning line emitted, run continues without flags.
 - Full sweep: `test-implementer-driver`, `test-review-driver`, `test-factory-run`, `test-merge-pr`, `test-transition-task` stay green.
+
+## File map
+
+- `config/implementer.json` — `ponytail.skills_dir` → `"/skills"`; add `ponytail.host_skills_dir` (US1)
+- `config/reviewer.json` — same two changes (US1)
+- `bin/implementer-run.sh` — fallback `PONYTAIL_SKILLS_DIR="/skills"`; read `ponytail.host_skills_dir`; add `-v "$HOST_SKILLS:/skills:ro"` mount in `run_container()`; `ponytail_skill_flags()` → `/skills/<name>`; warn-and-run when host dir absent (US2, US4)
+- `bin/review-run.sh` — same four changes (US2, US4)
+- `bin/test-implementer-driver.sh` — fixture config `skills_dir: "/skills"`; mock-log assertion `--skill> </skills/<name>>` (US3)
+- `bin/test-review-driver.sh` — fixture config `skills_dir: "/skills"`; skills-presence check → skip-tolerant mount-flag assertion (US3)
 
 ## Out-of-scope
 
