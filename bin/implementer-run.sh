@@ -68,6 +68,9 @@ if command -v jq >/dev/null 2>&1; then
   KEEP_WORKTREE="$(cfg '.keep_worktree // true')"
   PONYTAIL_SKILLS_DIR="$(cfg '.ponytail.skills_dir')"
   PONYTAIL_DEFAULT_MODE="$(cfg '.ponytail.default_mode')"
+  HOST_SKILLS="$(cfg '.ponytail.host_skills_dir')"
+  HOST_SKILLS="${HOST_SKILLS//\$WORKSPACE/$WORKSPACE}"
+  HOST_SKILLS="${HOST_SKILLS//\$\{WORKSPACE\}/$WORKSPACE}"
   repo_map_path() { cfg ".repo_map[\"$1\"] // empty"; }
   env_allowed() { jq -r '.env_allowlist[]' "$CONFIG_FILE"; }
 else
@@ -81,8 +84,9 @@ else
   LIVENESS_IDLE=300
   CLEANUP_ENABLED=true
   KEEP_WORKTREE=true
-  PONYTAIL_SKILLS_DIR="/workspace/opensource/ponytail/skills"
+  PONYTAIL_SKILLS_DIR="/skills"
   PONYTAIL_DEFAULT_MODE="ultra"
+  HOST_SKILLS="$WORKSPACE/opensource/ponytail/skills"
   repo_map_path() {
     case "$1" in
       software-factory|langfuse) echo "." ;;
@@ -386,8 +390,9 @@ write_env_file() {
 }
 
 # ─── ponytail_skill_flags(): the six implementer `--skill` flags (Decision 04)
-# Testable seam + used by run_container. Loads read-only from the live
-# opensource checkout; implementer-scoped, never touches shared .pi/settings.json.
+# Testable seam + used by run_container. The skills are bind-mounted read-only
+# at the fixed container path /skills (not inherited from a host checkout);
+# implementer-scoped, never touches shared .pi/settings.json.
 PONYTAIL_SKILL_NAMES=(ponytail ponytail-review ponytail-audit ponytail-debt ponytail-gain ponytail-help)
 ponytail_skill_flags() {
   local s
@@ -409,9 +414,18 @@ run_container() {
     model_arg=(--model "$MODEL")
   fi
 
-  # The six ponytail skills, loaded read-only from the live opensource checkout.
+  # The six ponytail skills, bind-mounted read-only from the host skills
+  # checkout at /skills. If the host checkout is absent, warn loudly and run
+  # WITHOUT the flags/mount (ponytail is advisory — never a blocker, never a
+  # fabrication incentive; warn-and-run, never silent, never fail-fast).
   local pony=()
-  while IFS= read -r flag; do pony+=($flag); done < <(ponytail_skill_flags)
+  local skills_mount=()
+  if [ -d "$HOST_SKILLS" ]; then
+    while IFS= read -r flag; do pony+=($flag); done < <(ponytail_skill_flags)
+    skills_mount=(-v "$HOST_SKILLS:/skills:ro")
+  else
+    echo "WARN: ponytail skills not found at ${HOST_SKILLS:-<unset>}; running without ponytail discipline" >&2
+  fi
 
   local container_out="$RUN_DIR/container-$attempt.log"
 
@@ -454,6 +468,7 @@ run_container() {
     podman_call run --rm --network=host \
       --name "impl-$IMPL_UUID" \
       -v "$WORKSPACE:/workspace:ro" \
+      "${skills_mount[@]}" \
       -v "$RUN_DIR:/sandbox" \
       --env-file "$envfile" \
       "$IMAGE" \

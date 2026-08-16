@@ -31,7 +31,8 @@
   "cleanup_enabled": true,
   "keep_worktree": true,
   "ponytail": {
-    "skills_dir": "/workspace/opensource/ponytail/skills",
+    "skills_dir": "/skills",
+    "host_skills_dir": "$WORKSPACE/opensource/ponytail/skills",
     "default_mode": "ultra"
   }
 }
