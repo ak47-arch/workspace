@@ -688,20 +688,22 @@ push_and_pr() {
   # single-shot `gh pr create` kills otherwise-good runs. Retry with backoff;
   # on persistent failure, leave the branch pushed and return non-zero so the
   # caller can route to fail_run (never print a misleading "PR raised").
-  local attempt=0
-  while [ -z "$pr_url" ] && [ "$attempt" -lt 3 ]; do
+  local attempt=0 pr_url=""
+  while [ "$attempt" -lt 3 ] && [ -z "$pr_url" ]; do
     attempt=$((attempt+1))
-    pr_url="$(gh pr create \
+    if pr_url="$(gh pr create \
       --repo "ak47-arch/$gh_repo" \
       --base "$MANIFEST_BRANCH" --head "$WORKTREE_BRANCH" \
       --title "$title" --body-file "$body_file" \
-      --label "factory:needs-review")" || {
-        if [ "$attempt" -lt 3 ]; then
-          echo "  WARN: gh pr create attempt $attempt/3 failed (transient?) — retrying in ${attempt}s." >&2
-          sleep "$attempt"
-          pr_url=""
-        fi
-      }
+      --label "factory:needs-review")"; then
+      :
+    else
+      if [ "$attempt" -lt 3 ]; then
+        echo "  WARN: gh pr create attempt $attempt/3 failed (transient?) — retrying in ${attempt}s." >&2
+        sleep "$attempt"
+        pr_url=""
+      fi
+    fi
   done
   if [ -z "$pr_url" ]; then
     echo "  ERROR: gh pr create failed after 3 attempts (branch remains pushed)." >&2
