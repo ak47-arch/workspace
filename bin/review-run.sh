@@ -731,6 +731,17 @@ finalize_session_copy() {
   elif [ -s "$SESSION_LOG" ]; then
     cp "$SESSION_LOG" "$sess"
   fi
+  # GH013 guard: this transcript is committed to the repo (tracking commit).
+  # Sanitize the committed copy IN-PLACE so GitHub push protection never
+  # blocks it; the RAW native session stays in RUN_DIR/sessions/ for the
+  # private trace bundle. If sanitize is incomplete, warn — never abort.
+  if [ -s "$sess" ]; then
+    if bash "$WORKSPACE/bin/sanitize-session.sh" "$sess" >/dev/null 2>&1; then
+      :
+    else
+      echo "  WARN: session sanitize incomplete (rc=$?) — add patterns to bin/sanitize-session.sh" >&2
+    fi
+  fi
 }
 
 # ─── main ──────────────────────────────────────────────────────────────────

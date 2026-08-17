@@ -176,13 +176,82 @@ jobs:
         run: |
           set -euo pipefail
           cd "$GITHUB_WORKSPACE"
+          mkdir -p "$HOME/.factory"
+          # Tee the driver orchestration trace (factory-run + both legs' stderr)
+          # to a per-run file — bundled for eval retention by the step below.
           # shellcheck disable=SC2086
-          bin/factory-run.sh --headless ${{ steps.gate.outputs.TASK_ARGS }}
+          bin/factory-run.sh --headless ${{ steps.gate.outputs.TASK_ARGS }} 2>&1 \
+            | tee -a "$HOME/.factory/driver-${{ github.run_id }}.log"
 
+      # ====================================================================
+      # Trace retention for retrospective analysis / evals (driver + agents).
+      # The runner's ~/.factory is ephemeral — the run bundle (raw native pi
+      # sessions, streamed transcript, container logs, driver trace, brief,
+      # outbox reports, sanitized in-repo session copies, manifest) is pushed
+      # to the PRIVATE repo ak47-arch/factory-traces. Raw sessions contain
+      # live credentials, so this NEVER goes to the public workspace repo —
+      # only sanitized copies do (see finalize_session_copy in the drivers).
+      # Runs even on failure so partial runs are eval-able.
+      - name: Push trace bundle to factory-traces (eval retention)
+        if: always()
+        env:
+          FACTORY_GH_PAT: ${{ secrets.FACTORY_GH_PAT }}
+        run: |
+          set -euo pipefail
+          RUN_ID="${{ github.run_id }}"
+          BUNDLE="$HOME/.factory/bundles/$RUN_ID"
+          mkdir -p "$BUNDLE"
+          RUN_DIR="$(ls -dt "$HOME/.factory/runs/"*/ 2>/dev/null | head -1 || true)"
+          # 1. Driver orchestration trace (the loop's full stderr/stdout).
+          cp "$HOME/.factory/driver-$RUN_ID.log" "$BUNDLE/driver.trace.log" 2>/dev/null || true
+          if [ -n "$RUN_DIR" ] && [ -d "$RUN_DIR" ]; then
+            cp "$RUN_DIR/brief.md" "$BUNDLE/" 2>/dev/null || true
+            cp -r "$RUN_DIR/outbox" "$BUNDLE/outbox" 2>/dev/null || true
+            [ -d "$RUN_DIR/sessions" ] && cp -r "$RUN_DIR/sessions" "$BUNDLE/sessions" 2>/dev/null || true
+            cp "$RUN_DIR/session.jsonl" "$BUNDLE/streamed-session.jsonl" 2>/dev/null || true
+            cp "$RUN_DIR"/container-*.log "$BUNDLE/" 2>/dev/null || true
+          fi
+          # 2. Sanitized session copies the run committed under
+          #    docs/knowledge/sessions (in-repo record; matches report IDs).
+          cp -r "$GITHUB_WORKSPACE/docs/knowledge/sessions" "$BUNDLE/inrepo-sessions" 2>/dev/null || true
+          # 3. Manifest linking the run to its sessions + outcome.
+          SLUG="${{ steps.gate.outputs.TASK_ARGS }}"
+          SLUG="${SLUG/--task /}"
+          [ "$SLUG" = "--pick" ] && SLUG=""
+          PR="$(grep -m1 -oE 'PR #?[0-9]+' "$GITHUB_WORKSPACE/docs/tasks/$SLUG.md" 2>/dev/null | head -1 || true)"
+          SESSIONS="$( ( cd "$BUNDLE/sessions" 2>/dev/null && ls *.jsonl 2>/dev/null ) | sed -E 's/.*_([0-9a-fA-F-]{36})\.jsonl/\1/' | sort -u | tr '\n' ' ' )"
+          python3 - "$RUN_ID" "${{ github.event_name }}" "${{ github.repository }}" "${{ github.sha }}" "$SLUG" "$PR" "$SESSIONS" "$(date -Iseconds)" > "$BUNDLE/manifest.json" <<'PY'
+          import json, sys
+          rid, event, repo, sha, slug, pr, sessions, created = sys.argv[1:9]
+          print(json.dumps({
+            "run_id": rid,
+            "event": event,
+            "repo": repo,
+            "sha": sha,
+            "task": slug or None,
+            "pr": pr or None,
+            "created": created,
+            "session_uuids": [s for s in sessions.split() if s],
+          }, indent=2))
+          PY
+          rm -f "$BUNDLE/secrets.env"
+          # 4. Commit + push the bundle to the private traces repo (PAT auth
+          #    via the insteadOf rewrite configured earlier in the job).
+          TRACES_DIR="$HOME/.factory/traces-repo"
+          git clone -q "https://github.com/ak47-arch/factory-traces.git" "$TRACES_DIR" 2>/dev/null \
+            || git -C "$TRACES_DIR" pull -q --rebase 2>/dev/null || true
+          mkdir -p "$TRACES_DIR/runs/$RUN_ID"
+          cp -r "$BUNDLE/." "$TRACES_DIR/runs/$RUN_ID/"
+          cd "$TRACES_DIR"
+          git add -A
+          git -c user.name=factory -c user.email=factory@ak47.local commit -q \
+            -m "traces: run $RUN_ID ($SLUG)" || true
+          git push -q origin HEAD || git push -q origin HEAD:main || true
+          echo "  trace bundle -> ak47-arch/factory-traces runs/$RUN_ID"
       # The drivers persist tracking commits on the workspace checkout (archives
-      # in docs/implementations + docs/code-reviews, knowledge sessions, task
-      # transitions, PR tracking). Locally those ride up with the operator's
-      # merge push (decision 07); on an ephemeral runner they must be pushed
+      # in docs/implementations + docs/code-reviews, sanitized knowledge
+      # sessions, task transitions, PR tracking). Locally those ride up with
+      # the operator's merge push; on an ephemeral runner they must be pushed
       # here or they are lost. This pushes metadata only — never code, never a
       # merge. Runs even on loop failure so reverts/partial reports persist.
       - name: Sync tracking commits to master
