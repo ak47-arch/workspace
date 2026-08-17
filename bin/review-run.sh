@@ -800,12 +800,14 @@ if [ "$local_result" -eq 0 ]; then
   echo "=== Review success — archiving + delivering ===" >&2
   archive
   # Determine verdict from the report (driver-side decision, for label + gate).
-  verdict="$(grep -m1 '^APPROVE\|^REQUEST_CHANGES' "$OUTBOX/report.md" 2>/dev/null \
-    | tr -d '[:space:]' || true)"
+  # The verdict token appears at line start, bare or markdown-bold — match
+  # either so a `**REQUEST_CHANGES**` report is never misread as reviewed-ok.
+  verdict="$(grep -m1 -oE '^\*\*(APPROVE|REQUEST_CHANGES)\*\*|^(APPROVE|REQUEST_CHANGES)' "$OUTBOX/report.md" 2>/dev/null \
+    | tr -d '*[:space:]' || true)"
   case "$verdict" in
-    APPROVE*) REVIEW_OUTCOME="reviewed-ok" ;;
-    REQUEST_CHANGES*) REVIEW_OUTCOME="review-blocked" ;;
-    *) REVIEW_OUTCOME="reviewed-ok" ;;
+    APPROVE*) REVIEW_OUTCOME="reviewed-ok"; TRANSITION_TO="in-review" ;;
+    REQUEST_CHANGES*) REVIEW_OUTCOME="review-blocked"; TRANSITION_TO="" ;;
+    *) REVIEW_OUTCOME="reviewed-ok"; TRANSITION_TO="in-review" ;;
   esac
   # AUTHORITY SPLIT: the reviewer NEVER merges. Merge is the user/operator's
   # go-ahead action after UAT (decision 05-review-never-merges). This driver
@@ -827,8 +829,13 @@ if [ "$local_result" -eq 0 ]; then
           "- Review: session $REVIEW_UUID · verdict ${verdict:-n/a} · report $report_rel/"
       fi
     fi
-    # Successful review → task in-progress → in-review with the review session.
-    transition "in-review"
+    # Lifecycle: APPROVE moves task in-progress → in-review. On REQUEST_CHANGES
+    # the task STAYS in-progress so the loop (or operator) can revise + re-review.
+    if [ -n "${TRANSITION_TO:-}" ]; then
+      transition "$TRANSITION_TO"
+    else
+      echo "  REQUEST_CHANGES — task stays in-progress (loop will revise)." >&2
+    fi
     ( cd "$WORKSPACE" && git add "$REVIEWS_ROOT" docs/knowledge/sessions/$REVIEW_UUID \
         docs/tasks/$PRD_SLUG.md docs/tasks.txt 2>/dev/null || true
       git diff --cached --quiet || git commit -m "reviewer($PRD_SLUG): archive review report + decisions [review $REVIEW_UUID]" )

@@ -188,9 +188,11 @@ run_review() {
 
 # Verdict read-back (decision 04): the review driver archives the report to
 # docs/code-reviews/<date>-<slug>/report.md. Read the verdict the same way the
-# driver does (grep -m1 '^APPROVE|^REQUEST_CHANGES'). Real reports open with
-# "# Code Review", so we do NOT assume line 1. An empty verdict (e.g. a
-# "# Partial review" failure report) means non-APPROVE, surfaced, no revise.
+# driver does — the verdict token appears at line start, either bare
+# (APPROVE / REQUEST_CHANGES) or markdown-bold (**REQUEST_CHANGES** …). Real
+# reports open with "# Code Review", so we do NOT assume line 1. An empty
+# verdict (e.g. a "# Partial review" failure report) means non-APPROVE,
+# surfaced, no revise.
 read_verdict() {
   local slug="$1"
   local report="$WORKSPACE/docs/code-reviews/$(date '+%Y-%m-%d')-$slug/report.md"
@@ -200,7 +202,8 @@ read_verdict() {
     return 1
   fi
   verdict_file="$report"
-  verdict="$(grep -m1 '^APPROVE\|^REQUEST_CHANGES' "$report" 2>/dev/null | tr -d '[:space:]' || true)"
+  verdict="$(grep -m1 -oE '^\*\*(APPROVE|REQUEST_CHANGES)\*\*|^(APPROVE|REQUEST_CHANGES)' "$report" 2>/dev/null \
+    | tr -d '*[:space:]' || true)"
   return 0
 }
 
