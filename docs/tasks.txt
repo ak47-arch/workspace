@@ -13,7 +13,8 @@ tasks:
     - deprecate the spec driven process for all projects (all)
 
     ### Queued
-    - agent containerisation (all) [headless-agent-containerisation]
+    ### Complete
+    - (complete) agent containerisation (all) [headless-agent-containerisation]
     ## llm
 
     ### Pending
@@ -65,7 +66,6 @@ tasks:
     - Compress all session files reclaiming disk space (software-factory)
 
     ### Queued
-    - Add headless herdr host to implementer gent so we can run it seperately in a separate worktree (software-factory) [headless-agent-containerisation]
     ### Complete
     - (complete)create a skill to summarise the content and most important learnings from a session and attach a link to the actual context window of that session so we can save our knowledge and build on it and not lose it at the end of each session close (software_factory)
     - (complete) implement end to end tracaebility for each task from picked up to completed. this includes connecting a task from here through the prd queue to the implementation. as we are saving the prd sessions and the context around it we will trace implementation and verifications sessions also. point is to trace tasks end to end so their entire lifecycle can be traced and logged (software_factory) [end-to-end-traceability]
@@ -82,6 +82,7 @@ tasks:
     - (complete) Decouple ponytail skills from the gitignored opensource checkout — fixed /skills mount (software-factory) [ponytail-skills-fixed-mount]
     - (complete) sandboxed agents must resolve LLM credentials from pi's auth.json (same key pi uses) so implementer/reviewer runs can start (software-factory) [sandbox-credential-mounting]
     - (complete) when a task is picked, check it against existing tasks across projects and offer to pick similar ones together so more get closed at once (software-factory) [task-pickup-similarity-merge]
+    - (complete) Add headless herdr host to implementer gent so we can run it seperately in a separate worktree (software-factory) [headless-agent-containerisation]
 
     ## resume
 
