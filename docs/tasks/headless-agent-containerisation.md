@@ -1,6 +1,6 @@
 # Task: headless-agent-containerisation
 
-**Status**: in-progress
+**Status**: in-review
 **Category**: Medium
 **Project**: software-factory
 **Created**: 2026-08-17 02:38
@@ -29,3 +29,4 @@
 - Branch: factory/headless-agent-containerisation/20260817-033524
 - Base: master · Head: 321c127 (raised 2026-08-17 04:0x)
 - Raised by: implementer run 771b4017-a17d-4464-9896-476407652701
+- Review: session 3133f888-637f-4d83-99f1-f94b88a08328 · verdict APPROVE—implementsall6userstoriesanddecisions01–04faithfully;40/40unittestspass,dry-runwiringverified,noblockingfindings,nosecrets,scopecontained.RealCIisdeferred(externalinfra/secrets)andlefttoUAT. · report docs/code-reviews/2026-08-17-headless-agent-containerisation/
