@@ -1,94 +1,114 @@
 # Implementer Report — implementer-delivery-failure-loud
 
-**Impl session**: afe61c92-6a16-4510-84ea-96d0f91badf6
+**Impl session UUID**: 8370f85b-3627-49fd-ad16-0df58e6c7cd4
 **Date**: 2026-08-17
 **PRD**: `docs/prd-queue/2026-08-17-implementer-delivery-failure-loud.md`
+**Status**: all stories implemented + verified
 
-## Per-user-story status
+## Summary
 
-### Story 1 — When the worktree branch push fails, the driver exits non-zero with a clear failure reason, no "Done (exit 0)". — **done**
+Fixed a false-success delivery bug in `bin/implementer-run.sh`: the success
+path previously called `push_and_pr || true`, swallowing branch-push / PR
+creation failures and printing `Done (exit 0)` — stranding the task
+`in-progress` with no PR raised. The delivery outcome now feeds the existing
+`fail_run` failure path (revert to `prd-ready`, archive partial report, exit 1).
 
-- **What**: `bin/implementer-run.sh` `push_and_pr()` now guards the `git push`:
-  a failed push prints `ERROR: git push of branch … to origin failed.` and returns 1
-  (previously it continued past a failed push and misleadingly printed
-  "Pushed branch …"). The `main` success path now routes `push_and_pr` failure to
-  `fail_run` (see Story 3) with reason `delivery failed: branch push or PR
-  creation`, which exits 1 — so "Done (exit 0)." is never printed.
-- **Verified**: `bin/test-implementer-driver.sh` Test 17 (delivery push-fail) —
-  asserts exit 1, `FAILED:` present, reason present, no `Pushed branch`, no
-  `Done (exit 0)`. Pass.
+## User stories
 
-### Story 2 — Push succeeds but `gh pr create` fails → driver exits non-zero with a clear reason; pushed branch left on the remote. — **done**
+### Story 1 — Push failure → non-zero exit + clear reason
+- **done**
+- **Evidence**: `bin/implementer-run.sh` — `push_and_pr` now wraps `git push`
+  in `if ! git … push …; then echo "ERROR: git push … failed …"; return 1; fi`,
+  so a failed push surfaces explicitly (under `set -e` the `if !` guard tells the
+  shell the function is being checked) and never prints a misleading `Pushed
+  branch …`. In `main`, the guard
+  `if ! push_and_pr; then fail_run "delivery failed: branch push or PR creation"; fi`
+  routes the non-zero return to `fail_run` → exit 1, no `Done (exit 0)`.
+- **Verified**: `delivery push-fail` test — driver exits 1, `FAILED: delivery
+  failed` printed, no `Pushed branch`, no false `Done (exit 0)`.
 
-- **What**: `pr_url="$(gh_call pr create …)"` already returned 1 after 3 retry
-  attempts (not a change), but it only took effect because the success path no
-  longer swallows it (`push_and_pr || true` → guard). The branch-is-left-on-remote
-  semantic is preserved (the function returns 1 after the push, never rewinds it).
-- **Verified**: `bin/test-implementer-driver.sh` Test 18 (delivery pr-fail) —
-  asserts exit 1, `FAILED:` + reason present, branch present on the bare remote,
-  truthful `Pushed branch` line, no `PR raised`, no `Done (exit 0)`. Pass.
-- **Note**: To make this testable through the existing `IMPLEMENTER_GH_BIN` seam
-  (the PRD's prescribed mock), `push_and_pr` now calls `gh_call pr create` and
-  checks `command -v "${IMPLEMENTER_GH_BIN:-gh}"` instead of the raw host `gh`
-  binary. `gh label create` → `gh_call label create … || true`. Regression green.
+### Story 2 — Push ok but `gh pr create` fails → non-zero + clear reason
+- **done**
+- **Evidence**: `gh pr create` already returned 1 after 3 retries (leaving the
+  branch pushed); now the new wealth guard routes that return to `fail_run`
+  with reason `delivery failed: branch push or PR creation`, so the driver exits
+  non-zero and the failure path's re-run guidance applies.
+- **Verified**: `delivery pr-fail` test — driver exits 1, `FAILED: delivery
+  failed` printed, `gh pr create` was attempted, branch really left on the
+  remote (`git for-each-ref` shows `refs/heads/factory/deliv/*`), no misleading
+  `PR raised (tagged…)`, no false `Done (exit 0)`.
 
-### Story 3 — On delivery failure the task is reverted to `prd-ready` (existing `fail_run` semantics). — **done**
+### Story 3 — Delivery failure reverts task to `prd-ready`
+- **done**
+- **Evidence**: routing to the existing `fail_run` triggers its existing
+  `transition "prd-ready"` (plus partial-report archive via the outbox/report
+  path). No new lifecycle machinery.
+- **Verified**: both `delivery push-fail` and `delivery pr-fail` tests — task
+  file `**Status**` ends `prd-ready` and the mock transition-task log shows the
+  `--to <prd-ready>` transition was invoked (observable because the tests run a
+  mock transition-task that actually rewrites the task status, proving the
+  revert from `in-progress` → `prd-ready`).
 
-- **What**: The `main` success path now calls
-  `if ! push_and_pr; then fail_run "delivery failed: branch push or PR creation"; fi`.
-  Because `push_and_pr` is invoked inside the `if` guard, `set -e` cannot abort the
-  script before `fail_run` runs (the PRD's guard-placement note). `fail_run` keeps
-  its existing behavior: `stop_container`, `cleanup_run_dir --keep-logs`, archive
-  (full report when the outbox has `report.md`, else a partial report), then
-  `transition "prd-ready"` and `exit 1`.
-- **Verified**: Both delivery tests assert the recording `transition-task.sh`
-  received `prd-ready`. The no-report branch of `fail_run` (partial report) is
-  covered by the existing Test 5 integration.
-
-### Story 4 — On successful delivery, behavior unchanged: host-authored commit, push, PR with `factory:needs-review`, exit 0. — **done**
-
-- **What**: No change to the happy path. `push_and_pr` still commits, pushes,
-  and raises the PR tagged `factory:needs-review`; the dry-run success path is
-  unchanged.
-- **Verified**: All pre-existing tests stay green (see Verification results),
-  including the dry-run success smoke (Test 5b) and the non-dry revise delivery
-  (Test 16). `push_and_pr` under `--dry-run` still returns 0 before the gh path.
+### Story 4 — Successful delivery unchanged
+- **done**
+- **Evidence**: the only normal-path change is the guard around `push_and_pr`;
+  when it returns 0 the success flow (host commit, push, `gh pr create` →
+  `factory:needs-review`, `Done (exit 0)`) is untouched. Dry-run path unchanged.
+- **Verified**: existing 72-test suite regression green (see below), including
+  the dry-run success smoke and revision-mode non-dry delivery.
 
 ## Verification results
 
-Command run (the PRD acceptance command), inside `/sandbox/worktree`:
-
-```
+Command (PRD acceptance):
+```bash
 bash bin/test-implementer-driver.sh
 ```
+**Result: 72 passed, 0 failed.**
 
-**Result: `71 passed, 0 failed`** (was 57 with the 2 new sections; all prior tests
-green, plus 14 new delivery-failure assertions). `bash -n` syntax OK on both
-`bin/implementer-run.sh` and `bin/test-implementer-driver.sh`.
+Covers: syntax/lint (`bash -n` both scripts; shellcheck skipped — not installed
+in this sandbox), selection/resolution, brief writer, env allowlist, failure
+path, end-to-end dry-run smoke, revise dry-run, revise negatives, revise non-dry
+delivery, and the **15 new delivery-failure assertions** (7 push-fail + 8
+pr-fail).
 
-### What was NOT verified here (UAT)
-- Full non-dry **successful** delivery (real push + real `gh pr create` by the
-  host) requires real network/GitHub credentials, which this sandbox deliberately
-  lacks. The happy path is exercised via `--dry-run` smoke and the non-dry
-  `--revise` delivery (push to a real local bare remote), and the PR-raising code
-  is unchanged. UAT should confirm one real end-to-end run still raises a PR.
+Manual (PRD): a full non-dry driver run against a fixture with a failing push
+mock exits 1 with `FAILED:` and reverts the task — exactly what the
+`delivery push-fail` test does end-to-end.
+
+## Environment note (UAT hand-off)
+
+- `workspace-portability/workspace_restore_manifest.json` is absent from this
+  standalone worktree (it lives in a separate factory repo). This caused one
+  pre-existing test — `resolve_repo manifest branch = public-release` — to fail
+  in this sandbox before my change (the fixture's `cp` of the manifest silently
+  no-op'd and `resolve_repo` fell back to `master`). I made the test fixture
+  **self-contained**: `setup_fixture` now falls back to a generated manifest
+  with the referenced entries when the real file is absent. With that, the
+  entire suite passes here. On a host where `workspace-portability` is checked
+  out, the copy path is unchanged (real manifest wins). No production behavior
+  was altered — this is test-fixture robustness only.
 
 ## UAT hand-off list
 
-- Confirm a real driver run still delivers normally (host-authored commit, push,
-  PR `factory:needs-review`, exit 0) against the live remote (Story 4).
-- Confirm a pushed-then-PR-failed real run leaves the branch on `origin` and
-  shows the `delivery failed: branch push or PR creation` FAILED reason (Story 2).
-- The manifest-branch assertion (`resolve_repo` → `public-release` for
-  `feed_analyser`) requires the `workspace-portability` sibling repo. In the
-  test harness it now falls back to the factory workspace mount (`/workspace`)
-  when it isn't present in the software-factory checkout; on the real host where
-  the sibling lives inside the repo root, behavior is unchanged.
+1. **`bin/implementer-run.sh`** — review the changed `push_and_pr` (explicit
+   push-failure return + truthfulness) and the `if ! push_and_pr; then
+   fail_run "delivery failed: branch push or PR creation"; fi` guard in `main`.
+2. **`bin/test-implementer-driver.sh`** — review the new `delivery push-fail`
+   / `delivery pr-fail` tests and the `setup_fixture` manifest fallback.
+3. **The actual CI loop** (`factory.yml`) — this task doubles as the first real
+   end-to-end cloud-run validation of the headless loop; confirm the delivered
+   PR lands and the cloud run reports truthfully.
+4. Confirm no secrets/environment leaks in the delivery logs (env allowlist
+   unchanged; `GITHUB_TOKEN` exclusion already covered by existing tests).
 
 ## Decisions emerged
 
-- `decisions/01-delivery-failure-loud-gh-seam.md` — use the `IMPLEMENTER_GH_BIN`
-  seam for delivery (`gh pr create` / `label` / `command -v`), enabling the PRD's
-  mock-based delivery-failure tests.
-- `decisions/02-delivery-failure-loud-local-nounset.md` — fix the latent bash
-  `set -u` crash from a bare `local pr_url` (bash 5.2 leaves it unset).
+- `outbox/decisions/01-implementer-delivery-failure-loud.md` — delivery
+  failure now feeds the failure path instead of being swallowed (records the
+  guard + return discipline and the self-contained test-fixture manifest).
+
+## Out of scope (per PRD, intentionally untouched)
+
+- `bin/review-run.sh` (`post_pr_comment || true` discipline) — follow-up task.
+- `bin/factory-run.sh`, `bin/transition-task.sh`, `config/*.json`,
+  `.github/workflows/factory.yml`.
