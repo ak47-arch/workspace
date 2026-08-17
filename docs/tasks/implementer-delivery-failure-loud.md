@@ -31,3 +31,8 @@
 - Base: master · Head: bdac29e5483875fc1c5c41b8d5dea3f94d6db399 (raised 2026-08-17 19:08)
 - Raised by: implementer run 8370f85b-3627-49fd-ad16-0df58e6c7cd4
 - Review: session 06b04dee-2555-4b08-b458-7792eb9aeb7b · verdict n/a · report docs/code-reviews/2026-08-17-implementer-delivery-failure-loud/
+- PR: #11 (ak47-arch/workspace)
+- URL: https://github.com/ak47-arch/workspace/pull/11
+- Branch: factory/implementer-delivery-failure-loud/20260817-193406
+- Base: master · Head: 6c3907d77f28683fd24ae4ef553da0dbe8fcf181 (raised 2026-08-17 20:09)
+- Raised by: implementer run d5492a5c-6c07-4f58-b410-5feefa2a43c2
