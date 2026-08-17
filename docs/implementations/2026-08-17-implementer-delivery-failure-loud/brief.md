@@ -2,7 +2,7 @@
 
 - **PRD path**: /home/runner/work/workspace/workspace/docs/prd-queue/2026-08-17-implementer-delivery-failure-loud.md (read-only; also below)
 - **Task slug**: implementer-delivery-failure-loud
-- **Impl session UUID**: 8370f85b-3627-49fd-ad16-0df58e6c7cd4
+- **Impl session UUID**: d5492a5c-6c07-4f58-b410-5feefa2a43c2
 - **Worktree path** (read-write; your working directory): /sandbox/worktree
 - **Outbox path** (write results here): /sandbox/outbox
 
