@@ -16,6 +16,7 @@ Entries are grouped by project for progressive discovery. When the agent needs t
 
 
 
+
 ### software-factory
 
 - [headless ci gitignore track workflow](sessions/771b4017-a17d-4464-9896-476407652701/decisions/05-headless-ci-gitignore-track-workflow.md)
@@ -82,6 +83,10 @@ Entries are grouped by project for progressive discovery. When the agent needs t
 - [Backend delivers a merge-ready PR; merge stays human](sessions/01a00c50-b714-7811-8086-3bc6e0a8ea64/decisions/02-merge-ready-deliverable.md)
 - [GitHub Actions as the fast-path backend runtime (YAGNI)](sessions/01a00c50-b714-7811-8086-3bc6e0a8ea64/decisions/03-github-actions-fast-path.md)
 - [Extend factory-run.sh with --headless loop to APPROVE](sessions/01a00c50-b714-7811-8086-3bc6e0a8ea64/decisions/04-factory-run-headless-loop.md)
+- [GitHub Actions on the public workspace repo is the factory's execution infra — cost is LLM tokens](sessions/01a00c50-b714-7811-8086-3bc6e0a8ea64/decisions/05-github-actions-free-execution-infra.md)
+- [Workflow-file pushes need workflow scope; use GH_TOKEN + git insteadOf, not gh auth login](sessions/01a00c50-b714-7811-8086-3bc6e0a8ea64/decisions/06-workflow-scope-gh-auth-pattern.md)
+- [CI runs must sync tracking commits to master — ephemeral runners discard local commits](sessions/01a00c50-b714-7811-8086-3bc6e0a8ea64/decisions/07-ci-tracking-sync-ephemeral-runners.md)
+- [Driver delivery failures must be loud — never false-success Done (exit 0)](sessions/01a00c50-b714-7811-8086-3bc6e0a8ea64/decisions/08-delivery-failure-loud.md)
 
 ### workspace-portability
 
