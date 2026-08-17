@@ -202,8 +202,17 @@ jobs:
           BUNDLE="$HOME/.factory/bundles/$RUN_ID"
           mkdir -p "$BUNDLE"
           RUN_DIR="$(ls -dt "$HOME/.factory/runs/"*/ 2>/dev/null | head -1 || true)"
+          DRV="$HOME/.factory/driver-$RUN_ID.log"
+          # Ghost runs (e.g. a PRD-queue delete from a `transition to complete`
+          # archive re-firing the push trigger) skip the loop entirely: the
+          # gate says GATE=false and no run dir / driver log exists. Bundle
+          # nothing, exit 0 — never turn a no-op job red.
+          if { [ -z "$RUN_DIR" ] || [ ! -d "$RUN_DIR" ]; } && [ ! -f "$DRV" ]; then
+            echo "  no factory loop this job (gate false / ghost trigger) — skipping trace bundle"
+            exit 0
+          fi
           # 1. Driver orchestration trace (the loop's full stderr/stdout).
-          cp "$HOME/.factory/driver-$RUN_ID.log" "$BUNDLE/driver.trace.log" 2>/dev/null || true
+          cp "$DRV" "$BUNDLE/driver.trace.log" 2>/dev/null || true
           if [ -n "$RUN_DIR" ] && [ -d "$RUN_DIR" ]; then
             cp "$RUN_DIR/brief.md" "$BUNDLE/" 2>/dev/null || true
             cp -r "$RUN_DIR/outbox" "$BUNDLE/outbox" 2>/dev/null || true
@@ -219,7 +228,7 @@ jobs:
           SLUG="${SLUG/--task /}"
           [ "$SLUG" = "--pick" ] && SLUG=""
           PR="$(grep -m1 -oE 'PR #?[0-9]+' "$GITHUB_WORKSPACE/docs/tasks/$SLUG.md" 2>/dev/null | head -1 || true)"
-          SESSIONS="$( ( cd "$BUNDLE/sessions" 2>/dev/null && ls *.jsonl 2>/dev/null ) | sed -E 's/.*_([0-9a-fA-F-]{36})\.jsonl/\1/' | sort -u | tr '\n' ' ' )"
+          SESSIONS="$( ( cd "$BUNDLE/sessions" 2>/dev/null && ls *.jsonl 2>/dev/null ) | sed -E 's/.*_([0-9a-fA-F-]{36})\.jsonl/\1/' | sort -u | tr '\n' ' ' || true )"
           python3 - "$RUN_ID" "${{ github.event_name }}" "${{ github.repository }}" "${{ github.sha }}" "$SLUG" "$PR" "$SESSIONS" "$(date -Iseconds)" > "$BUNDLE/manifest.json" <<'PY'
           import json, sys
           rid, event, repo, sha, slug, pr, sessions, created = sys.argv[1:9]
