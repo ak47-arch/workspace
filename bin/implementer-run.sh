@@ -656,8 +656,15 @@ push_and_pr() {
   fi
   echo "  Host-authored worktree commit on $WORKTREE_BRANCH" >&2
   # Push the worktree branch (commits live in the run-dir clone, not src).
-  # origin in the clone already points at the real remote.
-  git -C "$WORKTREE" push -u origin "$WORKTREE_BRANCH"
+  # origin in the clone already points at the real remote. Under `set -e` the
+  # `if !` guard tells the shell the function is being checked, so a failed
+  # push must be surfaced EXPLICITLY (return non-zero) rather than relying on
+  # set -e, and the truthfulness discipline means we never print "Pushed
+  # branch …" unless the push actually landed.
+  if ! git -C "$WORKTREE" push -u origin "$WORKTREE_BRANCH"; then
+    echo "  ERROR: git push of branch $WORKTREE_BRANCH failed (branch not pushed, no PR raised)." >&2
+    return 1
+  fi
   echo "  Pushed branch $WORKTREE_BRANCH" >&2
 
   # Raise the PR with title/body derived from the brief + report.
@@ -1319,7 +1326,14 @@ if [ "$local_result" -eq 0 ]; then
     ( cd "$WORKSPACE" && git add "$ARCHIVES_ROOT" docs/knowledge/sessions/$IMPL_UUID \
         docs/knowledge/index.md docs/tasks/$PRD_SLUG.md docs/tasks.txt 2>/dev/null || true
       git diff --cached --quiet || git commit -m "implementer($PRD_SLUG): archive run report + decisions [impl $IMPL_UUID]" )
-    push_and_pr || true
+    # Delivery is load-bearing: a failed branch push or PR creation must route
+    # to the failure path (revert task to prd-ready, archive partial report,
+    # exit 1) — never be swallowed into a false "Done (exit 0)". The guard must
+    # be explicit: under `set -e` an unguarded failing call would abort the
+    # script before fail_run runs.
+    if ! push_and_pr; then
+      fail_run "delivery failed: branch push or PR creation"
+    fi
   fi
   # The run is delivered: the container is no longer needed, and the host only
   # keeps the durable artifacts (outbox, session evidence, brief, worktree).

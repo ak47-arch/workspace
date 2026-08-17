@@ -63,8 +63,22 @@ setup_fixture() {
   # Driver config (kept minimal — resolves to defaults via jq or fallback).
   cp "$(cd "$(dirname "$0")/.." && pwd)/config/implementer.json" "$dir/config/implementer.json"
 
-  # Portability manifest for manifest-branch resolution.
-  cp "$MANIFEST_SRC" "$dir/workspace-portability/workspace_restore_manifest.json"
+  # Portability manifest for manifest-branch resolution. Fall back to a
+  # self-contained fixture manifest when the sibling workspace-portability repo
+  # isn't checked out (it lives in a separate repo of the factory workspace, so
+  # a standalone software-factory checkout may not carry it).
+  if [ -f "$MANIFEST_SRC" ]; then
+    cp "$MANIFEST_SRC" "$dir/workspace-portability/workspace_restore_manifest.json"
+  else
+    cat > "$dir/workspace-portability/workspace_restore_manifest.json" <<'MF'
+{
+  "repos": [
+    { "path": ".", "branch": "master" },
+    { "path": "feed_analyser", "branch": "public-release" }
+  ]
+}
+MF
+  fi
 
   echo "$dir"
 }
@@ -842,6 +856,193 @@ else
   fail "revise non-dry: revision archive missing"
 fi
 rm -rf "$DEL" "$REVISE_REMOTE"
+
+# ─── Delivery-failure tests (PRD: implementer delivery failure loud) ──────
+# When delivery (branch push or PR creation) fails, the driver must route to the
+# failure path instead of swallowing it into a false "Done (exit 0)": exit 1, a
+# clear "FAILED:" reason, the task reverted to prd-ready, and no misleading
+# success output. These run the driver's FULL `main` non-dry against a
+# self-contained fixture: a mock podman fabricates the implementer report, and
+# a mock transition-task actually rewrites the task status so the revert is
+# observable.
+write_mock_transition() {
+  local dir="$1"
+  cat > "$dir/bin/transition-task.sh" <<'MOCK'
+#!/usr/bin/env bash
+LOG="${MOCK_TRANSITION_LOG:-/dev/null}"
+{ printf 'transition'; for a in "$@"; do printf ' <%s>' "$a"; done; printf '\n'; } >> "$LOG"
+WS="$(cd "$(dirname "$0")/.." && pwd)"
+slug="$1"; shift
+to=""
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --to) to="$2"; shift 2 ;;
+    *) shift ;;
+  esac
+done
+[ -n "$to" ] && sed -i "s/^\*\*Status\*\*:.*/**Status**: $to/" "$WS/docs/tasks/$slug.md"
+exit 0
+MOCK
+  chmod +x "$dir/bin/transition-task.sh"
+}
+
+# Mock gh on PATH: `label` no-ops, `pr create` always fails — the delivery-failure
+# seam for the failing-PR story (push_and_pr calls plain `gh`).
+write_mock_gh() {
+  local dir="$1"
+  cat > "$dir/gh" <<'MOCK'
+#!/usr/bin/env bash
+LOG="${MOCK_GH_LOG:-/dev/null}"
+{ printf 'gh'; for a in "$@"; do printf ' <%s>' "$a"; done; printf '\n'; } >> "$LOG"
+case "$1" in
+  label) exit 0 ;;
+  pr) exit 1 ;;
+  *) exit 0 ;;
+esac
+MOCK
+  chmod +x "$dir/gh"
+}
+
+# Self-contained fixture for a NON-dry driver `main` run. origin points at a
+# broken remote (mode=push-fail) or a working bare remote (mode=pr-fail).
+setup_delivery_fixture() {
+  local mode="$1"
+  local slug="deliv"
+  local dir
+  dir="$(mktemp -d)"
+  local remote="$dir-remote"
+
+  mkdir -p "$dir/config" "$dir/docs/tasks" "$dir/docs/prd-queue" \
+           "$dir/docs/implementations" "$dir/docs/knowledge/sessions" \
+           "$dir/bin" "$dir/workspace-portability" "$dir/.factory/runs"
+
+  ( cd "$dir" && git init -q -b master >/dev/null 2>&1 \
+      && git config user.email deliv@example.com && git config user.name Deliv \
+      && printf 'base\n' > base.txt && git add -A \
+      && git commit -qm 'base commit' >/dev/null 2>&1 )
+
+  if [ "$mode" = "pr-fail" ]; then
+    git init -q --bare "$remote" >/dev/null 2>&1
+    git -C "$dir" remote add origin "$remote"
+    git -C "$dir" push -q origin master 2>/dev/null
+  else
+    git -C "$dir" remote add origin "$dir/no-such-remote"
+  fi
+
+  printf '**Date**: 2026-08-17 10:00\n**Status**: Final\n## Testing decisions\nrun the demo verification\n' \
+    > "$dir/docs/prd-queue/2026-08-17-deliv.md"
+  printf '**Status**: prd-ready\n**Project**: software-factory\n' > "$dir/docs/tasks/deliv.md"
+
+  cat > "$dir/config/implementer.json" <<'CFG'
+{
+  "repo_map": { "software-factory": "." },
+  "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+  "timeout_sec": 30, "respawn_cap": 1,
+  "env_allowlist": ["OPENROUTER_API_KEY"],
+  "image": "sandbox:latest",
+  "runs_root": ".factory/runs", "archives_root": "docs/implementations",
+  "liveness_interval_sec": 1, "liveness_idle_sec": 5
+}
+CFG
+
+  cat > "$dir/workspace-portability/workspace_restore_manifest.json" <<'MF'
+{ "repos": [ { "path": ".", "branch": "master" } ] }
+MF
+
+  cp "$(cd "$(dirname "$0")/.." && pwd)/bin/sort-knowledge-index.py" "$dir/bin/"
+  if [ -f "$(cd "$(dirname "$0")/.." && pwd)/bin/sanitize-session.sh" ]; then
+    cp "$(cd "$(dirname "$0")/.." && pwd)/bin/sanitize-session.sh" "$dir/bin/sanitize-session.sh"
+  else
+    printf '#!/usr/bin/env bash\nexit 0\n' > "$dir/bin/sanitize-session.sh"
+    chmod +x "$dir/bin/sanitize-session.sh"
+  fi
+  write_mock_transition "$dir"
+
+  echo "$dir"
+}
+
+echo "── delivery failure: branch push fails → exit 1, reverts task ──"
+DELIV="$(setup_delivery_fixture push-fail)"
+REMO="$DELIV-remote"
+export MOCK_PODMAN_LOG="$DELIV/podman-calls.log"
+export MOCK_TRANSITION_LOG="$DELIV/transition.log"
+: > "$MOCK_TRANSITION_LOG"
+make_mock_podman "$DELIV/mock-podman.sh"
+(
+  cd "$DELIV"
+  HOME="$DELIV" IMPLEMENTER_RUN_SOURCED=0 IMPLEMENTER_WORKSPACE="$DELIV" \
+  IMPLEMENTER_PODMAN_BIN="$DELIV/mock-podman.sh" \
+  OPENROUTER_API_KEY=sk-test bash "$DRIVER" --task deliv
+) > "$DELIV/out.log" 2>&1
+rc=$?
+[ "$rc" -eq 1 ] && pass "delivery push-fail: driver exits 1" \
+  || fail "delivery push-fail: exit=$rc — expected 1: $(tail -3 "$DELIV/out.log" | tr '\n' ' ')"
+grep -q "FAILED: delivery failed" "$DELIV/out.log" \
+  && pass "delivery push-fail: FAILED reason printed" \
+  || fail "delivery push-fail: no FAILED reason: $(grep FAILED "$DELIV/out.log" | tr '\n' ' ')"
+! grep -q "Pushed branch" "$DELIV/out.log" \
+  && pass "delivery push-fail: no misleading 'Pushed branch' output" \
+  || fail "delivery push-fail: printed 'Pushed branch' despite failed push"
+! grep -q "PR raised (tagged" "$DELIV/out.log" \
+  && pass "delivery push-fail: no misleading 'PR raised' success output" \
+  || fail "delivery push-fail: printed 'PR raised (tagged…)' despite failed push"
+! grep -q "Done (exit 0)" "$DELIV/out.log" \
+  && pass "delivery push-fail: no false 'Done (exit 0)'" \
+  || fail "delivery push-fail: printed 'Done (exit 0)'"
+grep -q '^\*\*Status\*\*: *prd-ready' "$DELIV/docs/tasks/deliv.md" \
+  && pass "delivery push-fail: task reverted to prd-ready" \
+  || fail "delivery push-fail: task status = '$(grep '^\*\*Status\*\*' "$DELIV/docs/tasks/deliv.md")'"
+grep -q '<prd-ready>' "$MOCK_TRANSITION_LOG" \
+  && pass "delivery push-fail: transition to prd-ready invoked" \
+  || fail "delivery push-fail: no transition to prd-ready: $(cat "$MOCK_TRANSITION_LOG" | tr '\n' ' ')"
+rm -rf "$DELIV" "$REMO"
+
+echo "── delivery failure: PR creation fails → exit 1, branch pushed, reverts task ──"
+DELIV="$(setup_delivery_fixture pr-fail)"
+REMO="$DELIV-remote"
+export MOCK_TRANSITION_LOG="$DELIV/transition.log"
+export MOCK_GH_LOG="$DELIV/gh.log"
+: > "$MOCK_TRANSITION_LOG"; : > "$MOCK_GH_LOG"
+make_mock_podman "$DELIV/mock-podman.sh"
+write_mock_gh "$DELIV"
+(
+  cd "$DELIV"
+  HOME="$DELIV" IMPLEMENTER_RUN_SOURCED=0 IMPLEMENTER_WORKSPACE="$DELIV" \
+  IMPLEMENTER_PODMAN_BIN="$DELIV/mock-podman.sh" \
+  PATH="$DELIV:$PATH" \
+  OPENROUTER_API_KEY=sk-test bash "$DRIVER" --task deliv
+) > "$DELIV/out.log" 2>&1
+rc=$?
+[ "$rc" -eq 1 ] && pass "delivery pr-fail: driver exits 1" \
+  || fail "delivery pr-fail: exit=$rc — expected 1: $(tail -3 "$DELIV/out.log" | tr '\n' ' ')"
+grep -q "FAILED: delivery failed" "$DELIV/out.log" \
+  && pass "delivery pr-fail: FAILED reason printed" \
+  || fail "delivery pr-fail: no FAILED reason: $(grep FAILED "$DELIV/out.log" | tr '\n' ' ')"
+grep -q "Pushed branch" "$DELIV/out.log" \
+  && pass "delivery pr-fail: branch pushed (honest — left on the remote)" \
+  || fail "delivery pr-fail: no 'Pushed branch' (branch should be pushed)"
+! grep -q "PR raised (tagged" "$DELIV/out.log" \
+  && pass "delivery pr-fail: no misleading 'PR raised' success output" \
+  || fail "delivery pr-fail: printed 'PR raised (tagged…)' despite PR failure"
+! grep -q "Done (exit 0)" "$DELIV/out.log" \
+  && pass "delivery pr-fail: no false 'Done (exit 0)'" \
+  || fail "delivery pr-fail: printed 'Done (exit 0)'"
+grep -q '^\*\*Status\*\*: *prd-ready' "$DELIV/docs/tasks/deliv.md" \
+  && pass "delivery pr-fail: task reverted to prd-ready" \
+  || fail "delivery pr-fail: task status = '$(grep '^\*\*Status\*\*' "$DELIV/docs/tasks/deliv.md")'"
+grep -q '<prd-ready>' "$MOCK_TRANSITION_LOG" \
+  && pass "delivery pr-fail: transition to prd-ready invoked" \
+  || fail "delivery pr-fail: no transition to prd-ready: $(cat "$MOCK_TRANSITION_LOG" | tr '\n' ' ')"
+grep -q '<create>' "$MOCK_GH_LOG" \
+  && pass "delivery pr-fail: gh pr create was attempted" \
+  || fail "delivery pr-fail: gh pr create not called: $(cat "$MOCK_GH_LOG" | tr '\n' ' ')"
+# The pushed branch genuinely landed on the bare remote (regression).
+if git -C "$REMO" for-each-ref --format='%(refname)' refs/heads 2>/dev/null | grep -q 'factory/deliv/'; then
+  pass "delivery pr-fail: pushed branch present on the remote"
+else
+  fail "delivery pr-fail: pushed branch missing from remote"
+fi
+rm -rf "$DELIV" "$REMO"
 
 # ─── Summary ───────────────────────────────────────────────────────────────
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
