@@ -17,8 +17,10 @@ Entries are grouped by project for progressive discovery. When the agent needs t
 
 
 
+
 ### software-factory
 
+- [implementer delivery failure loud](sessions/82eae199-b670-4199-99f3-c1c9edcfb749/decisions/01-implementer-delivery-failure-loud.md)
 - [headless ci gitignore track workflow](sessions/771b4017-a17d-4464-9896-476407652701/decisions/05-headless-ci-gitignore-track-workflow.md)
 - [pickup similarity merge](sessions/b77c5e2b-a870-40c7-bcad-effcbc45332a/decisions/01-pickup-similarity-merge.md)
 - [implementer ponytail restore vanishing scope](sessions/8483b243-ad9a-4e00-be82-0cdf26a8801d/decisions/02-implementer-ponytail-restore-vanishing-scope.md)
