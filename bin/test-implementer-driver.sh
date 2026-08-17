@@ -843,6 +843,150 @@ else
 fi
 rm -rf "$DEL" "$REVISE_REMOTE"
 
+# ─── Delivery-failure fixture (decision: loud delivery failures) ──────────
+# Builds a real git repo the driver can clone + commit against, a Final PRD +
+# prd-ready task, and a recording transition-task.sh so the test can assert the
+# revert-to-prd-ready transition is invoked. `mode` selects whether a push to
+# origin succeeds (bare) or fails (invalid URL).
+setup_delivery_fixture() {
+  local dir
+  dir="$(mktemp -d)"
+  local mode="${1:-invalid}"
+  mkdir -p "$dir/config" "$dir/docs/prd-queue" "$dir/docs/tasks" \
+           "$dir/docs/implementations" "$dir/docs/knowledge/sessions" "$dir/bin"
+  ( cd "$dir" && git init -q -b master >/dev/null 2>&1 \
+      && git config user.email deliv@example.com && git config user.name Deliv \
+      && printf 'base\n' > base.txt && git add -A \
+      && git commit -qm 'base commit' >/dev/null 2>&1 )
+  printf '**Status**: prd-ready\n**Project**: software-factory\n' > "$dir/docs/tasks/deliv.md"
+  printf '**Date**: 2026-08-17 10:00\n**Status**: Final\n## Testing decisions\nrun the demo verification\n' \
+    > "$dir/docs/prd-queue/2026-08-17-deliv.md"
+  if [ "$mode" = "bare" ]; then
+    local remote="$dir-remote"
+    git init -q --bare "$remote" >/dev/null 2>&1
+    git -C "$dir" remote add origin "$remote"
+    git -C "$dir" push -q origin master
+    echo "$remote" > "$dir/REMOTE_PATH"
+  else
+    # Invalid remote URL → a real `git push` must fail with non-zero.
+    git -C "$dir" remote add origin "https://invalid.example.com/factory/workspace.git"
+  fi
+  cat > "$dir/config/implementer.json" <<'CFG'
+{
+  "repo_map": { "software-factory": ".", "feed_analyser": "feed_analyser" },
+  "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+  "timeout_sec": 30, "respawn_cap": 1,
+  "env_allowlist": ["OPENROUTER_API_KEY", "ANTHROPIC_API_KEY", "IMPLEMENTER_MODEL"],
+  "image": "sandbox:latest",
+  "runs_root": ".factory/runs", "archives_root": "docs/implementations",
+  "liveness_interval_sec": 2, "liveness_idle_sec": 5
+}
+CFG
+  cp "$(cd "$(dirname "$0")" && pwd)/sort-knowledge-index.py" "$dir/bin/sort-knowledge-index.py"
+  # Recording transition stub: the test asserts the revert-to-prd-ready is invoked.
+  printf '#!/usr/bin/env bash\necho "$*" >> "$TRANSITION_LOG"\nexit 0\n' \
+    > "$dir/bin/transition-task.sh"; chmod +x "$dir/bin/transition-task.sh"
+  echo "$dir"
+}
+
+# ─── Test 17: delivery failure — worktree branch push fails (US1) ─────────
+# With a mock podman completing the container leg successfully, but an invalid
+# origin remote making the branch push fail, the driver must exit non-zero with
+# a clear FAILED reason, revert the task to prd-ready, and print NO misleading
+# success output (no "Done (exit 0)", no "Pushed branch").
+# ───────────────────────────────────────────────────────────────────────────
+echo "── delivery failure: worktree branch push fails ──"
+DP="$(setup_delivery_fixture invalid)"
+export MOCK_PODMAN_LOG="$DP/podman-calls.log"
+export IMPLEMENTER_PODMAN_BIN="$DP/mock-podman.sh"
+export TRANSITION_LOG="$DP/transition.log"
+: > "$TRANSITION_LOG"
+make_mock_podman_impl "$DP/mock-podman.sh"
+(
+  cd "$DP"
+  HOME="$DP" IMPLEMENTER_RUN_SOURCED=0 IMPLEMENTER_WORKSPACE="$DP" \
+  IMPLEMENTER_RUNS_ROOT="$DP/.factory/runs" IMPLEMENTER_ARCHIVES_ROOT="docs/implementations" \
+  bash "$DRIVER" --task deliv
+) > "$DP/deliv-push.out" 2>&1
+rc=$?
+[ "$rc" -eq 1 ] && pass "push-fail: driver exits 1 on failed branch push" \
+  || fail "push-fail: rc=$rc — expected 1: $(tail -4 "$DP/deliv-push.out" | tr '\n' ' ')"
+grep -q "FAILED: delivery failed: branch push or PR creation" "$DP/deliv-push.out" \
+  && pass "push-fail: clear 'FAILED: delivery failed' reason printed" \
+  || fail "push-fail: FAILED reason missing: $(cat "$DP/deliv-push.out" | tr '\n' ' ')"
+! grep -q "Done (exit 0)." "$DP/deliv-push.out" \
+  && pass "push-fail: no misleading 'Done (exit 0)'" \
+  || fail "push-fail: false-success 'Done (exit 0)' printed"
+! grep -q "Pushed branch" "$DP/deliv-push.out" \
+  && pass "push-fail: no misleading 'Pushed branch' on failed push" \
+  || fail "push-fail: 'Pushed branch' printed despite push failure"
+grep -q "deliv --to prd-ready" "$TRANSITION_LOG" \
+  && pass "push-fail: task reverted to prd-ready (transition invoked)" \
+  || fail "push-fail: revert-to-prd-ready transition not invoked: $(cat "$TRANSITION_LOG" | tr '\n' ' ')"
+grep -q '\*\*Status\*\*: *prd-ready' "$DP/docs/tasks/deliv.md" \
+  && pass "push-fail: task file remains prd-ready" \
+  || fail "push-fail: task status changed after failed delivery"
+rm -rf "$DP"
+
+# ─── Test 18: delivery failure — push succeeds but gh pr create fails (US2) ─
+# With a working bare remote the push succeeds and leaves the branch on the
+# remote, but a failing `gh pr create` mock must still make the driver exit
+# non-zero with a clear reason and revert the task (no misleading "PR raised").
+# ───────────────────────────────────────────────────────────────────────────
+echo "── delivery failure: gh pr create fails (push succeeds) ──"
+DP2="$(setup_delivery_fixture bare)"
+export MOCK_PODMAN_LOG="$DP2/podman-calls.log"
+export IMPLEMENTER_PODMAN_BIN="$DP2/mock-podman.sh"
+export TRANSITION_LOG="$DP2/transition.log"
+: > "$TRANSITION_LOG"
+mkdir -p "$DP2/mockbin"
+cat > "$DP2/mockbin/gh" <<'MOCK'
+#!/usr/bin/env bash
+# Failing-gh mock for the pr-create delivery-failure test.
+# `label` is inert (the label-ensure call tolerates failure anyway); `pr create`
+# fails; everything else succeeds.
+if [ "${1:-}" = "pr" ] && [ "${2:-}" = "create" ]; then
+  echo "mock gh pr create: forced failure" >&2
+  exit 1
+fi
+exit 0
+MOCK
+chmod +x "$DP2/mockbin/gh"
+make_mock_podman_impl "$DP2/mock-podman.sh"
+(
+  cd "$DP2"
+  HOME="$DP2" IMPLEMENTER_RUN_SOURCED=0 IMPLEMENTER_WORKSPACE="$DP2" \
+  IMPLEMENTER_RUNS_ROOT="$DP2/.factory/runs" IMPLEMENTER_ARCHIVES_ROOT="docs/implementations" \
+  PATH="$DP2/mockbin:$PATH" \
+  bash "$DRIVER" --task deliv
+) > "$DP2/deliv-pr.out" 2>&1
+rc=$?
+[ "$rc" -eq 1 ] && pass "pr-fail: driver exits 1 on failed gh pr create" \
+  || fail "pr-fail: rc=$rc — expected 1: $(tail -4 "$DP2/deliv-pr.out" | tr '\n' ' ')"
+grep -q "FAILED: delivery failed: branch push or PR creation" "$DP2/deliv-pr.out" \
+  && pass "pr-fail: clear 'FAILED: delivery failed' reason printed" \
+  || fail "pr-fail: FAILED reason missing: $(cat "$DP2/deliv-pr.out" | tr '\n' ' ')"
+! grep -q "Done (exit 0)." "$DP2/deliv-pr.out" \
+  && pass "pr-fail: no misleading 'Done (exit 0)'" \
+  || fail "pr-fail: false-success 'Done (exit 0)' printed"
+! grep -q "PR raised (tagged factory:needs-review)." "$DP2/deliv-pr.out" \
+  && pass "pr-fail: no misleading 'PR raised' on failed pr create" \
+  || fail "pr-fail: 'PR raised' printed despite pr-create failure"
+# The branch WAS pushed to the remote (story 2: pushed branch left on remote).
+REMOTE="$(cat "$DP2/REMOTE_PATH")"
+if git -C "$REMOTE" branch --list 'factory/deliv/*' | grep -q 'factory/deliv/'; then
+  pass "pr-fail: pushed branch left on the remote"
+else
+  fail "pr-fail: branch not found on remote after successful push"
+fi
+grep -q "deliv --to prd-ready" "$TRANSITION_LOG" \
+  && pass "pr-fail: task reverted to prd-ready (transition invoked)" \
+  || fail "pr-fail: revert-to-prd-ready transition not invoked: $(cat "$TRANSITION_LOG" | tr '\n' ' ')"
+grep -q '\*\*Status\*\*: *prd-ready' "$DP2/docs/tasks/deliv.md" \
+  && pass "pr-fail: task file remains prd-ready" \
+  || fail "pr-fail: task status changed after failed delivery"
+rm -rf "$DP2" "$REMOTE"
+
 # ─── Summary ───────────────────────────────────────────────────────────────
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "implementer-driver: $PASS passed, $FAIL failed"

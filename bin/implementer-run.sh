@@ -657,7 +657,10 @@ push_and_pr() {
   echo "  Host-authored worktree commit on $WORKTREE_BRANCH" >&2
   # Push the worktree branch (commits live in the run-dir clone, not src).
   # origin in the clone already points at the real remote.
-  git -C "$WORKTREE" push -u origin "$WORKTREE_BRANCH"
+  if ! git -C "$WORKTREE" push -u origin "$WORKTREE_BRANCH"; then
+    echo "  ERROR: could not push branch $WORKTREE_BRANCH (delivery failed)." >&2
+    return 3
+  fi
   echo "  Pushed branch $WORKTREE_BRANCH" >&2
 
   # Raise the PR with title/body derived from the brief + report.
@@ -684,11 +687,14 @@ push_and_pr() {
   # fails on a fresh repo (Decision 01: inert metadata for review --pick).
   gh label create "factory:needs-review" --repo "ak47-arch/$gh_repo" --force >/dev/null 2>&1 || true
   local pr_url
-  pr_url="$(gh pr create \
+  if ! pr_url="$(gh pr create \
     --repo "ak47-arch/$gh_repo" \
     --base "$MANIFEST_BRANCH" --head "$WORKTREE_BRANCH" \
     --title "$title" --body-file "$body_file" \
-    --label "factory:needs-review")"
+    --label "factory:needs-review")"; then
+    echo "  ERROR: PR creation failed (branch already pushed; no PR raised)." >&2
+    return 4
+  fi
   echo "  PR raised (tagged factory:needs-review)." >&2
 
   # Decision 06: attach PR tracking to the task file (raise hook).
@@ -1288,7 +1294,13 @@ if [ "$local_result" -eq 0 ]; then
     ( cd "$WORKSPACE" && git add "$ARCHIVES_ROOT" docs/knowledge/sessions/$IMPL_UUID \
         docs/knowledge/index.md docs/tasks/$PRD_SLUG.md docs/tasks.txt 2>/dev/null || true
       git diff --cached --quiet || git commit -m "implementer($PRD_SLUG): archive run report + decisions [impl $IMPL_UUID]" )
-    push_and_pr || true
+    # Delivery is the load-bearing step: a swallowed push/PR failure would strand
+    # the work while reporting success. Propagate push_and_pr's exit status into
+    # the existing failure path (task reverted to prd-ready, partial report
+    # archived, exit 1) instead of discarding it.
+    if ! push_and_pr; then
+      fail_run "delivery failed: branch push or PR creation"
+    fi
   fi
   # The run is delivered: the container is no longer needed, and the host only
   # keeps the durable artifacts (outbox, session evidence, brief, worktree).
