@@ -843,6 +843,284 @@ else
 fi
 rm -rf "$DEL" "$REVISE_REMOTE"
 
+# ─── Delivery-failure fixture + mocks (implementer-delivery-failure-loud) ──
+# The NORMAL (non-revise) success path is exercised end-to-end: mock podman
+# completes with a report + a worktree edit, so push_and_pr has a real change to
+# commit and push. Then delivery is forced to FAIL (a pre-receive hook rejects
+# the push, or mock gh pr create fails) and the test asserts the driver fails
+# LOUDLY — exit 1 + a "FAILED:" reason + task reverted to prd-ready — instead of
+# the old `push_and_pr || true` false "Done (exit 0)".
+make_mock_podman_delivery() {
+  cat > "$1" <<'MOCK'
+#!/usr/bin/env bash
+LOG="$MOCK_PODMAN_LOG"
+{
+  printf 'podman'
+  for a in "$@"; do printf ' <%s>' "$a"; done
+  printf '\n'
+} >> "$LOG"
+sandbox=""
+prev=""
+for a in "$@"; do
+  if [ "$prev" = "-v" ]; then
+    case "$a" in
+      *:/sandbox) sandbox="${a%%:/sandbox}" ;;
+    esac
+  fi
+  prev="$a"
+done
+if [ "${1:-}" = "run" ]; then
+  mkdir -p "$sandbox/outbox/decisions"
+  cat > "$sandbox/outbox/report.md" <<'RPT'
+# Implementer delivery-failure fixture smoke
+
+All stories implemented — fabricated by mock podman for the delivery tests.
+RPT
+  printf '\ndelivery-fixture worktree edit\n' >> "$sandbox/worktree/base.txt"
+fi
+exit 0
+MOCK
+  chmod +x "$1"
+}
+
+# Mock gh: `label create` ok; `pr create` honors MOCK_GH_CREATE (ok → a PR URL,
+# fail → non-zero, retried by the driver then surfaced as a delivery failure).
+# Records every call to MOCK_GH_LOG.
+make_mock_gh_delivery() {
+  cat > "$1" <<'MOCK'
+#!/usr/bin/env bash
+LOG="$MOCK_GH_LOG"
+{
+  printf 'gh'
+  for a in "$@"; do printf ' <%s>' "$a"; done
+  printf '\n'
+} >> "$LOG"
+cmd="$1"; shift
+case "$cmd" in
+  label) printf 'label ok\n' ;;
+  pr)
+    sub="$1"; shift
+    if [ "$sub" = "create" ]; then
+      if [ "${MOCK_GH_CREATE:-ok}" = "fail" ]; then
+        echo "mock gh pr create failed (fixture)" >&2
+        exit 1
+      fi
+      printf '%s\n' "https://github.com/ak47-arch/workspace/pull/42"
+    else
+      printf 'pr ok\n'
+    fi
+    ;;
+  *) printf 'ok\n' ;;
+esac
+exit 0
+MOCK
+  chmod +x "$1"
+}
+
+# A scratch git repo (master + origin→bare remote) with a Final PRD + a
+# prd-ready task, config, helper binaries, mock gh + podman, and a
+# record-and-rewrite transition-task.sh stub so the lifecycle is observable.
+setup_delivery_fixture() {
+  local slug="deliv"
+  local date="2026-08-17"
+  local dir
+  dir="$(mktemp -d)"
+  local remote="$dir-remote"
+  mkdir -p "$dir/config" "$dir/docs/tasks" "$dir/docs/prd-queue" \
+           "$dir/docs/implementations" "$dir/docs/knowledge/sessions" \
+           "$dir/bin" "$dir/.factory/runs"
+  ( cd "$dir" && git init -q -b master >/dev/null 2>&1 \
+      && git config user.email deliv@example.com && git config user.name Deliv \
+      && printf 'base\n' > base.txt && git add -A \
+      && git commit -qm 'base commit' >/dev/null 2>&1 )
+  git init -q --bare "$remote" >/dev/null 2>&1
+  git -C "$dir" remote add origin "$remote"
+  git -C "$dir" push -q origin master
+
+  printf '**Date**: %s 10:00\n**Status**: Final\n## Testing decisions\nrun the demo verification\n' "$date" \
+    > "$dir/docs/prd-queue/$date-$slug.md"
+  printf '**Status**: prd-ready\n**Project**: software-factory\n' > "$dir/docs/tasks/$slug.md"
+
+  cat > "$dir/config/implementer.json" <<'CFG'
+{
+  "repo_map": { "software-factory": ".", "feed_analyser": "feed_analyser" },
+  "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+  "timeout_sec": 30, "respawn_cap": 1,
+  "env_allowlist": ["OPENROUTER_API_KEY", "ANTHROPIC_API_KEY", "IMPLEMENTER_MODEL"],
+  "image": "sandbox:latest",
+  "runs_root": ".factory/runs", "archives_root": "docs/implementations",
+  "liveness_interval_sec": 2, "liveness_idle_sec": 5
+}
+CFG
+
+  cp "$(cd "$(dirname "$0")" && pwd)/sort-knowledge-index.py" "$dir/bin/" 2>/dev/null || true
+  # Transition stub: records the call AND rewrites the task **Status** so tests
+  # can observe the prd-ready revert on delivery failure.
+  cat > "$dir/bin/transition-task.sh" <<'STUB'
+#!/usr/bin/env bash
+LOG="${TRANSITION_LOG:-}"
+[ -n "$LOG" ] && printf 'transition: %s\n' "$*" >> "$LOG"
+slug="$1"; to=""; prev=""
+for a in "$@"; do
+  if [ "$prev" = "--to" ]; then to="$a"; fi
+  prev="$a"
+done
+# WORKSPACE is not exported by the driver, but IMPLEMENTER_WORKSPACE is inherited.
+ws="${IMPLEMENTER_WORKSPACE:-${WORKSPACE:-}}"
+if [ -n "$to" ] && [ -n "$ws" ]; then
+  task="$ws/docs/tasks/$slug.md"
+  [ -f "$task" ] && sed -i -E "s/\*\*Status\*\*: .*/\*\*Status\*\*: $to/" "$task"
+fi
+exit 0
+STUB
+  chmod +x "$dir/bin/transition-task.sh"
+
+  # Ensure the decision index exists (append_decisions_to_index appends to it).
+  printf '' > "$dir/docs/knowledge/index.md"
+
+  : > "$dir/gh-calls.log"; : > "$dir/podman-calls.log"
+  make_mock_gh_delivery "$dir/mock-gh.sh"
+  make_mock_podman_delivery "$dir/mock-podman.sh"
+  printf '%s\n' "$dir" "$remote"
+}
+
+# ─── Test 17: delivery failure — worktree branch PUSH rejected. The driver must
+# fail loudly (exit 1 + FAILED: reason + task back to prd-ready) — NOT print
+# "Done (exit 0)" / "Pushed branch …" / "PR raised …".
+# ───────────────────────────────────────────────────────────────────────────
+echo "── delivery failure: branch push rejected ──"
+DF="$(setup_delivery_fixture | sed -n '1p')"
+DFREMOTE="$DF-remote"
+# Reject the worktree push: the driver re-points the clone's origin at the
+# source repo's REAL remote (the bare remote), so the rejecting pre-receive
+# hook lives on the BARE remote.
+mkdir -p "$DFREMOTE/hooks"
+printf '#!/usr/bin/env bash\nexit 1\n' > "$DFREMOTE/hooks/pre-receive"
+chmod +x "$DFREMOTE/hooks/pre-receive"
+export MOCK_GH_LOG="$DF/gh-calls.log" MOCK_PODMAN_LOG="$DF/podman-calls.log"
+export TRANSITION_LOG="$DF/transitions.log"
+(
+  cd "$DF"
+  HOME="$DF" IMPLEMENTER_RUN_SOURCED=0 \
+  IMPLEMENTER_WORKSPACE="$DF" \
+  IMPLEMENTER_GH_BIN="$DF/mock-gh.sh" \
+  IMPLEMENTER_PODMAN_BIN="$DF/mock-podman.sh" \
+  IMPLEMENTER_DEFAULT_REPO="ak47-arch/workspace" \
+  bash "$DRIVER" --task deliv
+) > "$DF/deliv.out" 2>&1
+rc=$?
+rm -f "$DFREMOTE/hooks/pre-receive"
+if [ "$rc" -eq 1 ]; then
+  pass "push-fail: driver exits 1"
+else
+fail "push-fail: exit=$rc — expected 1 (delivery failure must not be swallowed): $(tail -3 "$DF/deliv.out" | tr '\n' ' ')"
+fi
+if grep -q 'FAILED:' "$DF/deliv.out" && grep -q 'delivery failed' "$DF/deliv.out"; then
+  pass "push-fail: clear FAILED reason printed"
+else
+  fail "push-fail: no FAILED/delivery-failed message: $(tail -5 "$DF/deliv.out" | tr '\n' ' ')"
+fi
+if ! grep -q 'Done (exit 0).' "$DF/deliv.out"; then
+  pass "push-fail: no misleading 'Done (exit 0)'"
+else
+  fail "push-fail: printed 'Done (exit 0)' despite failed delivery"
+fi
+if ! grep -q 'Pushed branch' "$DF/deliv.out"; then
+  pass "push-fail: no misleading 'Pushed branch …'"
+else
+  fail "push-fail: printed 'Pushed branch …' despite failed push"
+fi
+if ! grep -q 'PR raised' "$DF/deliv.out"; then
+  pass "push-fail: no misleading 'PR raised …'"
+else
+  fail "push-fail: printed 'PR raised …' despite failed delivery"
+fi
+# The rejected push returns BEFORE gh is ever called.
+if ! grep -q 'gh' "$DF/gh-calls.log"; then
+  pass "push-fail: gh never invoked on rejected push"
+else
+  fail "push-fail: gh called despite push rejection: $(cat "$DF/gh-calls.log" | tr '\n' ' ')"
+fi
+# fail_run reverted the task to prd-ready (transition invoked) and reflected it
+# in the task file.
+if grep -q -- '--to prd-ready' "$DF/transitions.log"; then
+  pass "push-fail: task reverted to prd-ready (transition invoked)"
+else
+  fail "push-fail: prd-ready transition missing: $(cat "$DF/transitions.log" | tr '\n' ' ')"
+fi
+if grep -q '\*\*Status\*\*: *prd-ready' "$DF/docs/tasks/deliv.md"; then
+  pass "push-fail: task file Status=prd-ready"
+else
+  fail "push-fail: task Status not prd-ready: $(grep 'Status' "$DF/docs/tasks/deliv.md" | tr '\n' ' ')"
+fi
+# Report archived on the failure path.
+if ls "$DF"/docs/implementations/*-deliv/report.md >/dev/null 2>&1; then
+  pass "push-fail: report archived on failure path"
+else
+  fail "push-fail: no report archived under docs/implementations"
+fi
+rm -rf "$DF" "$DFREMOTE"
+
+# ─── Test 18: delivery failure — push succeeds but `gh pr create` fails. The
+# branch stays on the remote; the driver still fails loudly (exit 1 + FAILED:)
+# and reverts the task to prd-ready.
+# ───────────────────────────────────────────────────────────────────────────
+echo "── delivery failure: gh pr create fails (branch left pushed) ──"
+DF="$(setup_delivery_fixture | sed -n '1p')"
+DFREMOTE="$DF-remote"
+export MOCK_GH_LOG="$DF/gh-calls.log" MOCK_PODMAN_LOG="$DF/podman-calls.log"
+export TRANSITION_LOG="$DF/transitions.log"
+export MOCK_GH_CREATE=fail
+(
+  cd "$DF"
+  HOME="$DF" IMPLEMENTER_RUN_SOURCED=0 \
+  IMPLEMENTER_WORKSPACE="$DF" \
+  IMPLEMENTER_GH_BIN="$DF/mock-gh.sh" \
+  IMPLEMENTER_PODMAN_BIN="$DF/mock-podman.sh" \
+  IMPLEMENTER_DEFAULT_REPO="ak47-arch/workspace" \
+  bash "$DRIVER" --task deliv
+) > "$DF/deliv.out" 2>&1
+rc=$?
+unset MOCK_GH_CREATE
+if [ "$rc" -eq 1 ]; then
+  pass "prcreate-fail: driver exits 1"
+else
+  fail "prcreate-fail: exit=$rc — expected 1 (delivery failure must not be swallowed)"
+fi
+if grep -q 'FAILED:' "$DF/deliv.out" && grep -q 'delivery failed' "$DF/deliv.out"; then
+  pass "prcreate-fail: clear FAILED reason printed"
+else
+  fail "prcreate-fail: no FAILED/delivery-failed message: $(tail -5 "$DF/deliv.out" | tr '\n' ' ')"
+fi
+if ! grep -q 'Done (exit 0).' "$DF/deliv.out"; then
+  pass "prcreate-fail: no misleading 'Done (exit 0)'"
+else
+  fail "prcreate-fail: printed 'Done (exit 0)' despite failed PR creation"
+fi
+if ! grep -q 'PR raised' "$DF/deliv.out"; then
+  pass "prcreate-fail: no misleading 'PR raised …'"
+else
+  fail "prcreate-fail: printed 'PR raised …' despite failed PR creation"
+fi
+# gh pr create was attempted (and retried) but the branch WAS pushed first.
+if grep -q '<create' "$DF/gh-calls.log"; then
+  pass "prcreate-fail: gh pr create attempted"
+else
+  fail "prcreate-fail: gh pr create never called: $(cat "$DF/gh-calls.log" | tr '\n' ' ')"
+fi
+if git -C "$DFREMOTE" for-each-ref refs/heads/factory/ | grep -q .; then
+  pass "prcreate-fail: pushed branch left on the remote (factory/*)"
+else
+  fail "prcreate-fail: no pushed branch found on the remote fixture repo"
+fi
+if grep -q -- '--to prd-ready' "$DF/transitions.log" &&
+   grep -q '\*\*Status\*\*: *prd-ready' "$DF/docs/tasks/deliv.md"; then
+  pass "prcreate-fail: task reverted to prd-ready (transition invoked + Status=prd-ready)"
+else
+  fail "prcreate-fail: task not reverted to prd-ready: $(cat "$DF/transitions.log" | tr '\n' ' ')"
+fi
+rm -rf "$DF" "$DFREMOTE"
+
 # ─── Summary ───────────────────────────────────────────────────────────────
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "implementer-driver: $PASS passed, $FAIL failed"

@@ -656,8 +656,14 @@ push_and_pr() {
   fi
   echo "  Host-authored worktree commit on $WORKTREE_BRANCH" >&2
   # Push the worktree branch (commits live in the run-dir clone, not src).
-  # origin in the clone already points at the real remote.
-  git -C "$WORKTREE" push -u origin "$WORKTREE_BRANCH"
+  # origin in the clone already points at the real remote. The push status is
+  # captured, not swallowed: a rejected/dead push must surface as non-zero so
+  # the success path routes to fail_run (never prints a misleading "Pushed
+  # branch …" and never proceeds to raise a PR against a branch that isn't up).
+  if ! git -C "$WORKTREE" push -u origin "$WORKTREE_BRANCH"; then
+    echo "  ERROR: git push of branch $WORKTREE_BRANCH failed." >&2
+    return 3
+  fi
   echo "  Pushed branch $WORKTREE_BRANCH" >&2
 
   # Raise the PR with title/body derived from the brief + report.
@@ -674,7 +680,7 @@ push_and_pr() {
     if [ -f "$ARCHIVE_DEST/report.md" ]; then cat "$ARCHIVE_DEST/report.md"; fi
   } > "$body_file"
 
-  command -v gh >/dev/null 2>&1 || { echo "ERROR: gh not installed; PR skipped (branch already pushed)." >&2; return 1; }
+  command -v "${IMPLEMENTER_GH_BIN:-gh}" >/dev/null 2>&1 || { echo "ERROR: gh not installed; PR skipped (branch already pushed)." >&2; return 1; }
   # Derive the GitHub repo slug from the source repo's origin URL.
   local gh_repo
   gh_repo="$(git -C "$WORKSPACE/$TARGET_REPO" remote get-url origin 2>/dev/null \
@@ -682,7 +688,7 @@ push_and_pr() {
   [ -z "$gh_repo" ] && gh_repo="workspace"
   # Ensure the factory label family exists once so the --label below never
   # fails on a fresh repo (Decision 01: inert metadata for review --pick).
-  gh label create "factory:needs-review" --repo "ak47-arch/$gh_repo" --force >/dev/null 2>&1 || true
+  gh_call label create "factory:needs-review" --repo "ak47-arch/$gh_repo" --force >/dev/null 2>&1 || true
   local pr_url
   # Transient GitHub API failures (HTTP 503 etc.) are common enough that a
   # single-shot `gh pr create` kills otherwise-good runs. Retry with backoff;
@@ -691,7 +697,7 @@ push_and_pr() {
   local attempt=0 pr_url=""
   while [ "$attempt" -lt 3 ] && [ -z "$pr_url" ]; do
     attempt=$((attempt+1))
-    if pr_url="$(gh pr create \
+    if pr_url="$(gh_call pr create \
       --repo "ak47-arch/$gh_repo" \
       --base "$MANIFEST_BRANCH" --head "$WORKTREE_BRANCH" \
       --title "$title" --body-file "$body_file" \
@@ -1319,7 +1325,15 @@ if [ "$local_result" -eq 0 ]; then
     ( cd "$WORKSPACE" && git add "$ARCHIVES_ROOT" docs/knowledge/sessions/$IMPL_UUID \
         docs/knowledge/index.md docs/tasks/$PRD_SLUG.md docs/tasks.txt 2>/dev/null || true
       git diff --cached --quiet || git commit -m "implementer($PRD_SLUG): archive run report + decisions [impl $IMPL_UUID]" )
-    push_and_pr || true
+    # Delivery is load-bearing: a failed push or PR creation must NOT be
+    # swallowed (the old `push_and_pr || true` reported a false success —
+    # "Done (exit 0)") while no PR was ever raised. Route the failure into
+    # the existing fail_run path (revert to prd-ready, archive, exit 1). Under
+    # `set -e` the guard must be explicit — an unguarded failing call would
+    # abort the script before fail_run can run.
+    if ! push_and_pr; then
+      fail_run "delivery failed: branch push or PR creation"
+    fi
   fi
   # The run is delivered: the container is no longer needed, and the host only
   # keeps the durable artifacts (outbox, session evidence, brief, worktree).
