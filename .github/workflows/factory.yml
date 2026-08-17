@@ -12,8 +12,12 @@
 #
 # The workers stay containerised in the existing sandbox:latest image, built
 # in-job from workspace-portability/container/Dockerfile. Docker is the
-# container runtime (IMPLEMENTER_PODMAN_BIN=docker seam — the driver's podman
-# flags are docker-compatible). herdr/Woodpecker remain local/self-hosted
+# container runtime for BOTH legs (IMPLEMENTER_PODMAN_BIN=docker and
+# REVIEWER_PODMAN_BIN=docker seams — the drivers' podman flags are
+# docker-compatible). Podman is NOT usable on GitHub-hosted runners (its
+# container start fails instantly, exit 125), so the reviewer leg must get the
+# docker seam too — forgetting it makes the review stage fail 3× immediately
+# after a successful implementation. herdr/Woodpecker remain local/self-hosted
 # extension paths (not built here).
 #
 # Secrets (repo): FACTORY_GH_PAT, OPENROUTER_API_KEY, ANTHROPIC_API_KEY,
@@ -45,6 +49,7 @@ permissions:
 
 env:
   IMPLEMENTER_PODMAN_BIN: docker
+  REVIEWER_PODMAN_BIN: docker
   # gh CLI reads GH_TOKEN directly (no `gh auth login`, no scope validation —
   # a classic PAT with repo+workflow intentionally lacks read:org, which
   # `gh auth login --with-token` would demand). Git learns the token via the
@@ -194,5 +199,9 @@ jobs:
           else
             echo "  no tracking changes to sync"
           fi
-          git pull --rebase origin master 2>/dev/null || true
+          # Merge remote master in, remote-wins on conflict (-X theirs): the
+          # tracking commit is metadata-only, so an operator's concurrent push
+          # (e.g. a knowledge index update) is never clobbered, and a rebase
+          # conflict can never strand the sync again.
+          git pull --no-rebase -X theirs origin master 2>/dev/null || true
           git push origin master 2>&1 | tail -2
