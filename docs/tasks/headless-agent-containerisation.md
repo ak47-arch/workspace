@@ -30,3 +30,4 @@
 - Base: master · Head: 321c127 (raised 2026-08-17 04:0x)
 - Raised by: implementer run 771b4017-a17d-4464-9896-476407652701
 - Review: session 3133f888-637f-4d83-99f1-f94b88a08328 · verdict APPROVE—implementsall6userstoriesanddecisions01–04faithfully;40/40unittestspass,dry-runwiringverified,noblockingfindings,nosecrets,scopecontained.RealCIisdeferred(externalinfra/secrets)andlefttoUAT. · report docs/code-reviews/2026-08-17-headless-agent-containerisation/
+- Merge: 076705a633419b6e6f8f704143b08769950151db (2026-08-17 16:18, ak47-arch — user go-ahead, decision 05)
