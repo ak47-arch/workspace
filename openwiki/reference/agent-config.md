@@ -1,9 +1,15 @@
 ---
 type: Reference
 title: Agent Configuration and Skills
-description: Root-level agent configuration files, skills, extensions, tasks, and known issues for the workspace.
-tags: [reference, agent, skills, config, claude]
+description: Root-level agent configuration files, skills, extensions, tasks, and known issues for the workspace — including the factory assembly-line sub-agents (implementer, code-reviewer, prd-reviewer), the product-layer similarity/merge policy, and session-sanitization steps.
+tags: [reference, agent, skills, config, claude, software-factory]
 resource: /
+openwiki:
+  roles: [repository, domain]
+  change_kinds: [lifecycle, public-api]
+  source_paths: [.pi/agents/, .agents/skills/product-layer/SKILL.md, .agents/skills/save-knowledge/SKILL.md, bin/sanitize-session.sh]
+  invariants: [Session copies committed to docs/knowledge are sanitized before commit; product-layer runs a user-confirmed similarity/merge step on task pick.]
+  validation_commands: [bash bin/sanitize-session.sh --dry-run <session.jsonl>]
 ---
 
 # Agent Configuration & Skills
@@ -109,6 +115,7 @@ Captures the current session's key decisions, architectural rationale, issues, o
 - Infers a title and topic from the conversation
 - Summarises into a freeform markdown file with date prefix
 - Copies the full session JSONL alongside the summary
+- **Sanitizes the copy first** via `bash bin/sanitize-session.sh docs/knowledge/sessions/<uuid>/session.jsonl` (redacts `sk-or-v1-*`, `gho_*`, `ghp_*`, `github_pat_*`, `xox*-*`, `AKIA*` in place) so the committed snapshot never trips GitHub Push Protection (GH013); exit 3 means secrets remain — inspect and redact manually before committing (see [Operations & Infrastructure](/openwiki/operations/infrastructure.md))
 - Appends an index link to `/docs/knowledge/index.md`
 - Idempotent: re-running on the same session UUID overwrites the existing entry
 
@@ -173,9 +180,10 @@ Backup/restore operational skill for the workspace. Complements the [workspace-p
 Start a product/architecture session. Produces plan documents and structured design decisions. Operates the product/architecture layer of the [software factory](/openwiki/projects/software-factory.md) — the UX layer the user interacts with directly.
 
 - Reads `docs/factory-context.md` for the factory model, `docs/tasks.txt` for task selection
+- **Runs a task-similarity check immediately after the user picks a task** — scans every task line across projects/statuses for near-duplicates, same-subject reframes, and cross-project capabilities; the user confirms the degree: **full** → merge bundle (all lines share one `[slug]`, one task file, one PRD), **partial** → split (overlap joins the bundle; remainder is registered as a new Pending line), **none** → single task. In-progress/complete tasks are informational flags only; a single-task flow keeps exactly the old ceremony (silent when nothing matches)
 - Grilling process using technique guides from `opensource/skills/docs/engineering/`
 - Produces the plan document: PRD/design (saved to `docs/prd-queue/`, archived to `docs/prd-archive/` on completion) and design decisions (saved to `docs/knowledge/sessions/<uuid>/decisions/`)
-- During grilling, categorises the task (Trivial/Small/Medium/Large), derives a slug, creates the task file `docs/tasks/<slug>.md`, and annotates `docs/tasks.txt` with `[<slug>]`
+- During grilling, categorises the task (Trivial/Small/Medium/Large — a bundle takes the **max** of its constituents' categories), derives a slug, creates the task file `docs/tasks/<slug>.md`, and annotates `docs/tasks.txt` with `[<slug>]` (**every** bundle line, each in its own project section; the `Source` field lists each verbatim line)
 - Uses `save-knowledge` skill for decision capture and `bin/transition-task.sh` for lifecycle bookkeeping
 - `disable-model-invocation: true` — user-invoked only
 
@@ -187,13 +195,14 @@ Start a product/architecture session. Produces plan documents and structured des
 
 High-level task list from `/docs/tasks.txt`. Tasks are organised **by project, then by status** (Pending / Queued / Complete), and each line may carry a `[<slug>]` annotation linking to its task file. See [Software Factory](/openwiki/projects/software-factory.md) for the lifecycle.
 
-Current highlights (as of 2026-08-09):
-- **software-factory**: thinking about automated monitoring, cognee evaluation, task-selection abstraction layer, extends the prod review agent, headless herdr host, no-prompt-before-delete infrastructure, build the factory into its own product with evals, host apps in test/main/prod environments, save compressed sessions on disc (all pending)
-- **software-factory** completed: end-to-end traceability, vision-task-traceability, extend-software-factory-wsff, task-file-dashboard, combine-factory-context-factory-txt, chronological-tracking, extend-pm-assembly-line, x-capture-instrument, implementer-agent, code-review-agent, implementer-ponytail, implementer-revision-mode
+Current highlights (as of 2026-08-18):
+- **software-factory**: think about automated monitoring, cognee evaluation, task-selection abstraction layer, extend the prod review agent, headless herdr host, no-prompt-before-delete infrastructure, build the factory into its own product with evals, host apps in test/main/prod environments, save compressed sessions on disc (all pending)
+- **software-factory** completed: end-to-end traceability, vision-task-traceability, extend-software-factory-wsff, task-file-dashboard, combine-factory-context-factory-txt, chronological-tracking, extend-pm-assembly-line, x-capture-instrument, implementer-agent, code-review-agent, implementer-ponytail, implementer-revision-mode, ponytail-skills-fixed-mount, sandbox-credential-mounting, task-pickup-similarity-merge, headless-agent-containerisation, implementer-delivery-failure-loud
 - **workspace-portability**: GitHub browser auth flow, make private repos both complete; cloud migration + themistocles setup pending
 - **langfuse**: langfuse-agentic-operations (integrate official skill, operate agentically) pending
-- **resume**: personal website/blog/toTweet-toBlog-toVideo pipeline, website agent-first, GitHub profile fix (all pending)
-- **survival-infrastructure**: extension, people profiles, whisper.cpp audio ingestion pending; Gmail+GDrive queued
+- **resume**: personal website/blog/toTweet-toBlog-toVideo pipeline, website agent-first, GitHub profile fix, talk-to-my-agent (security-conscious) (all pending)
+- **survival-infrastructure**: extension, people profiles, whisper.cpp audio ingestion, legacy cleanup (pending); Gmail+GDrive queued
+- **all (cross-project)**: `headless-agent-containerisation` complete; `langfuse-agentic-operations` in flight (two bundle lines under the one slug)
 
 ### PLAN_shared_llm_client.md
 
@@ -227,20 +236,20 @@ Implementation summary for headroom-pi integration, documenting:
 
 ## Git History Notes
 
-Recent commits (2026-07-29 → 2026-08-09) added the software-factory assembly line, capture instrument, and subagent infrastructure:
+Recent commits (2026-07-29 → 2026-08-18) built out the assembly line into a
+headless cloud loop and hardened delivery/evidence:
 
 | Commit | Change |
 |--------|--------|
 | `5bd33ec` | herdr-agent-state.ts: unref+clear heartbeat interval so pi children exit after `agent_settled` (fixes subagent handover hang) |
-| `36fd9bd` | extension-inline-agent task: PRD-ready with decisions (pi SDK agent service, OpenRouter server-side key, fetch-url-only tools, artefact/session evidence, FTS5 knowledge base, browser control deferred) |
-| `f0cf8a6` | extended software factory: installed pi subagent extension + project-local `prd-reviewer` sub-agent |
-| `f11aed1` | registered subagent infrastructure decision (04) in knowledge base |
-| `b689ea9` | marked reviewed/completed PRDs Final (github-browser-auth, x-capture, wsff, task-file-dashboard) |
-| `d91631a` | captured PRD status lifecycle, subagent/herdr hang root cause, and chunked-writing decisions |
-| `a209f15` | factory temporal metadata convention — backfill script, index sort, template updates |
-| `be057a2` | merged factory.txt into factory-context.md; renamed `knowledge_base` → `context_engine` |
-| `daa5ed8` / `a89df51` | added `bin/transition-task.sh` for lifecycle bookkeeping, then made it reliable with a test suite (`bin/test-transition-task.sh`) |
-| `d156ea9` | archived x-capture-instrument PRD; marked the task complete after UAT + user go-ahead |
+| `37ef8ab` | **sandbox credential mounting** — drivers resolve `OPENROUTER_API_KEY` / `ANTHROPIC_API_KEY` from `~/.pi/agent/auth.json` (scoped to the env allowlist) + `PI_PROVIDER/PI_MODEL` model fallback |
+| `dc4f6fe` | `bin/sanitize-session.sh` added; `save-knowledge` redacts credentials before committing session copies (GH013 push-protection guard) |
+| `1cfc369` | **task-similarity merge**: `product-layer` gains the pre-pick similarity check + merge-bundle policy; `transition-task.sh` moves every `[slug]` line to its own project section |
+| `321c127` | `.github/workflows/factory.yml` created — headless implement → review loop on GitHub Actions (decisions 01–07) |
+| `2f355d4` … `7f09fff` | implementer delivery hardening: `gh pr create` backoff retry, `pr_url=''` init under `set -u`, loud failure path (`fail_run` instead of false success) |
+| `0d01982` | **verdict parse fix**: `review-run.sh` + `factory-run.sh` match `**APPROVE**`/`**REQUEST_CHANGES**` at line start (markdown-bold); REQUEST_CHANGES leaves task `in-progress` for the revise loop |
+| `6f7f973` | factory-run resolves the PR from the implementer's **run log** first — a stale task-file URL caused a silent wrong-PR review |
+| `8e87206` | **decision 09 — master PR gate**: code reaches master only via human-merged PRs; tracking/evidence syncs direct (incident `bdac29e` swept code to master during a cloud run) |
 
 
 ## Source Files Summary
@@ -251,11 +260,12 @@ Recent commits (2026-07-29 → 2026-08-09) added the software-factory assembly l
 | `/CLAUDE.md` | OpenWiki reference for coding agents (same content) |
 | `/.pi/settings.json` | Pi agent settings (enables `langfuse-tracing`) |
 | `/.pi/extensions/` | Pi extensions directory (including `subagent/`) |
-| `/.pi/agents/` | Project-local sub-agent definitions (`prd-reviewer.md`, `implementer.md`) |
+| `/.pi/agents/` | Project-local sub-agent definitions (`prd-reviewer.md`, `implementer.md`, `code-reviewer.md`) |
 | `/.pi/skills/` | Pi skills directory |
-| `/.agents/skills/` | Agent skills directory (`implementer-ops`, `implementer-save` are implementer-pipeline skills) |
+| `/.agents/skills/` | Agent skills directory (`implementer-ops`, `implementer-save`, `review-ops` are assembly-line skills) |
 | `/bin/implementer-run.sh` | Implementer host driver (pick → worktree → container → report → PR) |
-| `/bin/sandbox-build.sh`, `/config/implementer.json` | Sandbox image build + driver config |
+| `/bin/sanitize-session.sh` | Session credential redaction before commit (save-knowledge + both drivers) |
+| `/bin/sandbox-build.sh`, `/config/implementer.json`, `/config/reviewer.json` | Sandbox image build + driver configs (`ponytail.host_skills_dir` `/skills` mount + auth.json credential fallback) |
 | `/docs/tasks.txt` | High-level task list (by project + status) |
 | `/docs/tasks/<slug>.md` | Per-task reference hubs |
 | `/docs/prd-queue/` | Forward-looking plan documents for active tasks |

@@ -1,3 +1,3 @@
 # Files
 
-- [Operations and Infrastructure](infrastructure.md) - Headroom compression proxy, workspace backup/restore pipeline, and shared container runtime configuration for the workspace ecosystem.
+- [Operations and Infrastructure](infrastructure.md) - Headroom compression proxy, workspace backup/restore pipeline, shared container runtime configuration, the GitHub Actions headless factory workflow, and session sanitization for the workspace ecosystem.

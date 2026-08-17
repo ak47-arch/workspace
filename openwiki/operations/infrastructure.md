@@ -1,14 +1,14 @@
 ---
 type: Operations
 title: Operations and Infrastructure
-description: Headroom compression proxy, workspace backup/restore pipeline, and shared container runtime configuration for the workspace ecosystem.
-tags: [operations, containers, backup, proxy, infrastructure]
+description: Headroom compression proxy, workspace backup/restore pipeline, shared container runtime configuration, the GitHub Actions headless factory workflow, and session sanitization for the workspace ecosystem.
+tags: [operations, containers, backup, proxy, infrastructure, github-actions, ci]
 resource: /
 ---
 
 # Operations & Infrastructure
 
-This page covers the shared operational infrastructure that keeps the workspace ecosystem running: the Headroom compression proxy for the pi coding agent, the workspace-portability backup/restore system, and the shared container runtime setup.
+This page covers the shared operational infrastructure that keeps the workspace ecosystem running: the Headroom compression proxy for the pi coding agent, the workspace-portability backup/restore system, the shared container runtime setup, the GitHub Actions headless factory loop, and session sanitization.
 
 ## Headroom Compression Proxy
 
@@ -138,6 +138,7 @@ All projects in the workspace use a consistent container strategy:
 - **Fallback:** Docker (set `CONTAINER_RUNTIME=docker`)
 - **Shared network:** `workspace-shared-llm-network` (created automatically by `start_stack.sh` or manually)
 - **Rootless:** UID/GID environment variables for file ownership
+- **CI exception:** GitHub-hosted runners cannot start podman containers (instant exit 125), so the [headless factory loop](/openwiki/projects/software-factory.md) forces both agent legs to Docker via `IMPLEMENTER_PODMAN_BIN=docker` / `REVIEWER_PODMAN_BIN=docker`
 
 ### Container Patterns
 
@@ -147,9 +148,46 @@ All projects in the workspace use a consistent container strategy:
 | Survival Infra | `Makefile` → compose | Connects to LLM via shared network |
 | Feed Analyser | `start.sh` → compose | Uses `host.containers.internal` for LLM access |
 | Resume Editor | `podman compose up` or `run.sh` | Standalone |
+| Factory sandbox | `workspace-portability/container/Dockerfile` (built as `sandbox:latest`) | `--network=host` inside the host driver |
+
+## GitHub Actions Workflows (`.github/workflows/`)
+
+| Workflow | Trigger | Purpose |
+|----------|---------|---------|
+| `factory.yml` | push to `docs/prd-queue/**.md`; `workflow_dispatch` with optional `task` slug | **Headless factory loop** — status gate (Final + `prd-ready`) → `bin/factory-run.sh --headless` → implementer → review → revise (cap 3, `REVISION_CAP`) → trace bundle to private `ak47-arch/factory-traces` → tracking sync to master. Single-run concurrency (`factory-headless`, `cancel-in-progress: false`). See [Software Factory](/openwiki/projects/software-factory.md). |
+| `openwiki-update.yml` | scheduled | Regenerates this wiki (all pages under `openwiki/`) |
+
+The factory workflow's runner seams are the load-bearing part: the classic PAT
+`FACTORY_GH_PAT` is used **directly** as `GH_TOKEN` for `gh` and via a
+`url."https://x-access-token:${PAT}@github.com/".insteadOf` rewrite for git —
+never through `gh auth login` (which demands `read:org`), and never the
+single-repo `GITHUB_TOKEN`. The **trace bundle** (raw sessions, streamed
+transcript, container logs, driver trace, manifest) is pushed to the *private*
+`ak47-arch/factory-traces` repo for eval retention; only **sanitized** session
+copies ever land on the public workspace master (via `bin/sanitize-session.sh`,
+see below). The final **tracking sync** step pushes docs/evidence commits to
+master (`git add -A` → conflict-tolerant merge `-X theirs` → push) — metadata
+only; code reaches master only via a human-merged PR.
+
+## Session Sanitization (`bin/sanitize-session.sh`)
+
+Session JSONL traces capture tool output (e.g. `cat ~/.config/gh/hosts.yml`,
+env vars) that can embed live credentials. Committing those trips GitHub Push
+Protection (GH013) and blocks the tracking commit, so the save-knowledge skill
+and both factory drivers run every committed session copy through this script
+before it lands in `docs/knowledge/sessions/`:
+
+- Redacts values for `sk-or-v1-*` (OpenRouter), `sk-lf-*` (Langfuse),
+  `gho_*` / `ghp_*` / `github_pat_*` (GitHub tokens), `xox*-*` (Slack),
+  `AKIA*` (AWS) — prefix kept, value → `REDACTED`
+- `--dry-run` prints the redaction count without modifying; exit 3 when
+  unredacted secrets remain
+- Raw, unredacted sessions are retained only in the private factory-traces
+  bundle; never commit raw traces to the public repo
 
 ## Known Issues
 
 - **PYTHONPATH mount hack** — `llm_client` is volume-mounted into survival-infrastructure and feed_analyser containers via `PYTHONPATH` rather than baked into images. Fragile across directory layouts.
 - **`compose_env_preflight.sh` missing** — Deleted during migration, breaking `start_stack.sh`. Workaround: `docker-compose up -d` directly.
+- **Factory CI sync step still `git add -A`** — decision 09 hardening (narrow to `git add docs/` + a non-merge code-path tripwire) is pending; a code file swept into the tracking sync would bypass the PR gate.
 - See [KNOWN_ISSUES.md](/docs/KNOWN_ISSUES.md) for full tracking (now also covering factory-context issues and the file-based knowledge base).

@@ -1,8 +1,8 @@
 ---
 type: Architecture
 title: System Architecture Overview
-description: Cross-project architecture, data flow, dependency map, and shared infrastructure for the workspace ecosystem.
-tags: [architecture, infrastructure, llm, containers]
+description: Cross-project architecture, data flow, dependency map, and shared infrastructure for the workspace ecosystem — including the container runtime and the headless GitHub Actions factory loop.
+tags: [architecture, infrastructure, llm, containers, software-factory]
 resource: /
 ---
 
@@ -97,12 +97,12 @@ The workspace defines agent skills under [/.agents/skills/](/openwiki/reference/
 
 - **ssh-themistocles** — SSH connection to a secondary Debian machine with tmux-based resilience
 - **survival-infrastructure-operation** — Full Makefile-driven ops for the pipeline app
-- **product-layer** — Operates the software factory's [product/architecture layer](/openwiki/projects/software-factory.md): grills requirements, produces plan documents, tracks tasks
-- **save-knowledge** — Captures design decisions into the session-based knowledge base
+- **product-layer** — Operates the software factory's [product/architecture layer](/openwiki/projects/software-factory.md): grills requirements, runs the task-similarity/merge check, produces plan documents, tracks tasks
+- **save-knowledge** — Captures design decisions into the session-based knowledge base (sanitizing session copies via `bin/sanitize-session.sh` before commit)
 
 ### Software Factory
 
-The workspace is developed under a **software factory** paradigm (see `docs/factory-context.md` and the [Software Factory](/openwiki/projects/software-factory.md) page): a `context_engine` infrastructure spine with progressive disclosure, a `product/architecture` UX layer, a `project_management` lifecycle, and an `assembly_line` (CI/CD, agents, testing). The lifecycle tooling lives in `/bin/` (`transition-task.sh` + its test suite).
+The workspace is developed under a **software factory** paradigm (see `docs/factory-context.md` and the [Software Factory](/openwiki/projects/software-factory.md) page): a `context_engine` infrastructure spine with progressive disclosure, a `product/architecture` UX layer, a `project_management` lifecycle (task files + merge-bundle transitions), and an `assembly_line` (CI/CD, agents, testing). Lifecycle tooling lives in `/bin/` (`transition-task.sh` + its test suite); the assembly line is now driven headless by `.github/workflows/factory.yml` (GitHub Actions), which runs the implementer → reviewer `--headless` loop and syncs tracking evidence to master. Container sandbox images come from `workspace-portability/container/`.
 
 ## Cross-Project Dependency Map
 
@@ -114,6 +114,7 @@ The workspace is developed under a **software factory** paradigm (see `docs/fact
 | workspace-portability | GitHub Release storage, GDrive | All projects (backup/restore) |
 | survival-infrastructure | llm/ (via llm_client) | None (end-user app) |
 | feed_analyser/capture | none (local-first JSONL) | downstream analysis apps (phase 2) |
+| factory headless loop (`factory.yml`) | GitHub Actions runner, Docker, `FACTORY_GH_PAT`, OpenRouter/Anthropic API, `sandbox:latest` image | software factory (implementer/reviewer delivery); production code only reaches master via user-merged PRs |
 
 ## Key Differences from Monorepo
 
