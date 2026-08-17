@@ -1,6 +1,6 @@
 # Task: implementer-delivery-failure-loud
 
-**Status**: in-progress
+**Status**: prd-ready
 **Category**: Small
 **Project**: software-factory
 **Created**: 2026-08-17 16:45
@@ -14,6 +14,7 @@
 
 - `docs/knowledge/sessions/01a00c50-b714-7811-8086-3bc6e0a8ea64/session.jsonl` (planning)
 - [implementation](../knowledge/sessions/82eae199-b670-4199-99f3-c1c9edcfb749/session.jsonl)
+- [cloud-rerun](../knowledge/sessions/recovery/session.jsonl)
 
 ## Decisions
 
