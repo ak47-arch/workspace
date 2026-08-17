@@ -100,6 +100,98 @@ bash "$DRIVER" --task demo --yes --dry-run > "$FIX/out7.log" 2>&1; rc=$?
 grep -q "implementer --task demo --dry-run" "$FA_LOG" && pass "--dry-run forwarded to implementer" || fail "dry-run not forwarded: $(cat "$FA_LOG" | tr '\n' ' ')"
 grep -q "reviewer" "$FA_LOG" && fail "reviewer ran in dry-run" || pass "reviewer NOT run in dry-run (no PR exists)"
 
+echo "── headless: --headless flag + dry-run (decision 04) ──"
+# A verdict-writing stub reviewer: consumes scripted verdicts (one per line in
+# $FA_VERDICTS) and writes the archived review report the headless loop reads.
+cat > "$FIX/stub-reviewer-verdict.sh" <<'STUB'
+#!/usr/bin/env bash
+printf 'reviewer %s\n' "$*" >> "$FA_LOG"
+verdict="$(head -1 "$FA_VERDICTS" 2>/dev/null || true)"
+[ -n "$verdict" ] && sed -i '1d' "$FA_VERDICTS" || verdict="APPROVE"
+slug="${FA_SLUG:-demo}"
+report="${FACTORY_WORKSPACE:-.}/docs/code-reviews/$(date '+%Y-%m-%d')-$slug/report.md"
+mkdir -p "$(dirname "$report")"
+case "$verdict" in
+  PARTIAL)
+    { echo "# Partial review"; echo ""; echo "Run failed: exploded"; } > "$report"
+    ;;
+  *)
+    { echo "# Code Review"; echo ""; echo "## Verdict"; echo "$verdict"; } > "$report"
+    ;;
+esac
+exit "${FA_REV_EXIT:-0}"
+STUB
+# A silent reviewer that archives nothing (missing-report path).
+cat > "$FIX/stub-reviewer-silent.sh" <<'STUB'
+#!/usr/bin/env bash
+printf 'reviewer %s\n' "$*" >> "$FA_LOG"
+exit 0
+STUB
+chmod +x "$FIX/stub-reviewer-verdict.sh" "$FIX/stub-reviewer-silent.sh"
+
+: > "$FA_LOG"
+bash "$DRIVER" --task demo --headless --dry-run > "$FIX/outH0.log" 2>&1; rc=$?
+[ "$rc" -eq 0 ] && pass "headless dry-run exits 0" || fail "headless-dry-run rc=$rc"
+grep -q "reviewer" "$FA_LOG" && fail "reviewer ran in headless dry-run" || pass "headless dry-run skips review (no PR)"
+
+# Switch to the verdict-writing reviewer for the loop tests.
+export FA_RUN_REVIEWER="$FIX/stub-reviewer-verdict.sh"
+
+echo "── headless: APPROVE-first stops the loop ──"
+: > "$FA_LOG"
+export FA_VERDICTS="$FIX/verdicts-approve"
+printf 'APPROVE\n' > "$FA_VERDICTS"
+bash "$DRIVER" --task demo --headless > "$FIX/outH1.log" 2>&1; rc=$?
+[ "$rc" -eq 0 ] && pass "headless APPROVE exits 0" || fail "headless-approve rc=$rc"
+count="$(grep -c 'reviewer ' "$FA_LOG")"
+[ "$count" -eq 1 ] && pass "reviewer ran once on APPROVE (count=$count)" || fail "reviewer count=$count on APPROVE"
+grep -q "implementer --revise" "$FA_LOG" && fail "revise ran on APPROVE" || pass "no revise on APPROVE"
+
+: > "$FA_LOG"
+bash "$DRIVER" --task demo --headless < /dev/null > "$FIX/outH2.log" 2>&1; rc=$?
+[ "$rc" -eq 0 ] && grep -q "APPROVED" "$FIX/outH2.log" && pass "headless skips UAT gate (no stdin interaction)" || fail "headless gate-skip rc=$rc"
+
+echo "── headless: REQUEST_CHANGES → revise → APPROVE ──"
+: > "$FA_LOG"
+printf 'REQUEST_CHANGES\nAPPROVE\n' > "$FA_VERDICTS"
+bash "$DRIVER" --task demo --headless > "$FIX/outH3.log" 2>&1; rc=$?
+[ "$rc" -eq 0 ] && pass "headless revise-then-approve exits 0" || fail "headless-revise-approve rc=$rc"
+rev_count="$(grep -c 'implementer --revise' "$FA_LOG")"
+[ "$rev_count" -eq 1 ] && pass "1 revise ran (rev_count=$rev_count)" || fail "revise count=$rev_count"
+rev_count="$(grep -c 'reviewer ' "$FA_LOG")"
+[ "$rev_count" -eq 2 ] && pass "2 reviews ran (rev_count=$rev_count)" || fail "review count=$rev_count"
+
+echo "── headless: cap exhaustion (REVISION_CAP=2) fails + surfaces report ──"
+: > "$FA_LOG"
+printf 'REQUEST_CHANGES\nREQUEST_CHANGES\nREQUEST_CHANGES\n' > "$FA_VERDICTS"
+REVISION_CAP=2 bash "$DRIVER" --task demo --headless > "$FIX/outH4.log" 2>&1; rc=$?
+[ "$rc" -eq 1 ] && pass "headless cap exhaustion exits 1" || fail "headless-cap rc=$rc"
+rev_count="$(grep -c 'implementer --revise' "$FA_LOG")"
+[ "$rev_count" -eq 2 ] && pass "exactly REVISION_CAP revises ran (rev_count=$rev_count)" || fail "revise count=$rev_count"
+grep -q "cap exhausted" "$FIX/outH4.log" && pass "cap exhaustion reported" || fail "cap exhaustion not reported"
+
+: > "$FA_LOG"
+printf 'REQUEST_CHANGES\nREQUEST_CHANGES\nREQUEST_CHANGES\n' > "$FA_VERDICTS"
+REVISION_CAP=0 bash "$DRIVER" --task demo --headless > "$FIX/outH5.log" 2>&1; rc=$?
+[ "$rc" -eq 1 ] && grep -q 'implementer --revise' "$FA_LOG" && fail "revise ran with REVISION_CAP=0" || pass "REVISION_CAP=0 → no revise, exit 1 (rc=$rc)"
+
+echo "── headless: empty verdict / partial report → surface, no revise ──"
+: > "$FA_LOG"
+printf 'PARTIAL\n' > "$FA_VERDICTS"
+bash "$DRIVER" --task demo --headless > "$FIX/outH6.log" 2>&1; rc=$?
+[ "$rc" -eq 1 ] && pass "empty verdict → exit 1" || fail "empty-verdict rc=$rc"
+grep -q "implementer --revise" "$FA_LOG" && fail "revise ran on empty verdict" || pass "no revise on empty verdict"
+grep -q "Partial review" "$FIX/outH6.log" && pass "partial report surfaced" || fail "partial report not surfaced"
+
+echo "── headless: missing archived report → surface, exit 1 ──"
+export FA_RUN_REVIEWER="$FIX/stub-reviewer-silent.sh"
+: > "$FA_LOG"
+rm -rf "$FIX/docs/code-reviews"
+bash "$DRIVER" --task demo --headless > "$FIX/outH7.log" 2>&1; rc=$?
+[ "$rc" -eq 1 ] && pass "missing report → exit 1" || fail "missing-report rc=$rc"
+grep -q "Verdict unavailable" "$FIX/outH7.log" && pass "missing report surfaced" || fail "missing-report not surfaced"
+export FA_RUN_REVIEWER="$FIX/stub-reviewer-verdict.sh"
+
 echo "── authority split: chain never touches merge ──"
 grep -q "merge-pr" "$DRIVER" && { grep -q "bin/merge-pr.sh" "$DRIVER" && pass "merge-pr referenced only as operator guidance text" || fail "unexpected merge-pr reference"; } || true
 : > "$FA_LOG"
