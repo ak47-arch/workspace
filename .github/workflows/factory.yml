@@ -45,6 +45,11 @@ permissions:
 
 env:
   IMPLEMENTER_PODMAN_BIN: docker
+  # gh CLI reads GH_TOKEN directly (no `gh auth login`, no scope validation —
+  # a classic PAT with repo+workflow intentionally lacks read:org, which
+  # `gh auth login --with-token` would demand). Git learns the token via the
+  # insteadOf rewrite below, so clones/pushes authenticate as the PAT owner.
+  GH_TOKEN: ${{ secrets.FACTORY_GH_PAT }}
 
 jobs:
   headless:
@@ -56,15 +61,17 @@ jobs:
           token: ${{ secrets.FACTORY_GH_PAT }}
           fetch-depth: 0
 
-      # Authenticate gh with the cross-repo PAT and teach git to use it, so the
-      # drivers' `git push` and `gh pr create/comment/label` work in this job.
+      # Teach git the cross-repo PAT (insteadOf rewrite) so both the repo_map
+      # clones below and the drivers' `git push` authenticate as the PAT owner.
+      # No `gh auth login` — it would demand read:org on a classic token.
       # GITHUB_TOKEN is single-repo; FACTORY_GH_PAT is the cross-repo credential.
-      - name: Authenticate gh + configure git
+      - name: Configure git credentials (PAT)
         env:
           FACTORY_GH_PAT: ${{ secrets.FACTORY_GH_PAT }}
         run: |
-          echo "$FACTORY_GH_PAT" | gh auth login --with-token
-          gh auth setup-git
+          git config --global url."https://x-access-token:${FACTORY_GH_PAT}@github.com/".insteadOf "https://github.com/"
+          git config --global user.name "factory"
+          git config --global user.email "factory@ak47.local"
 
       # Checkout every repo_map target so the driver's
       # "$WORKSPACE/$TARGET_REPO" git resolution finds repos (shallow).
