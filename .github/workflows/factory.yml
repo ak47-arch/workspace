@@ -173,3 +173,26 @@ jobs:
           cd "$GITHUB_WORKSPACE"
           # shellcheck disable=SC2086
           bin/factory-run.sh --headless ${{ steps.gate.outputs.TASK_ARGS }}
+
+      # The drivers persist tracking commits on the workspace checkout (archives
+      # in docs/implementations + docs/code-reviews, knowledge sessions, task
+      # transitions, PR tracking). Locally those ride up with the operator's
+      # merge push (decision 07); on an ephemeral runner they must be pushed
+      # here or they are lost. This pushes metadata only — never code, never a
+      # merge. Runs even on loop failure so reverts/partial reports persist.
+      - name: Sync tracking commits to master
+        if: always()
+        run: |
+          set -euo pipefail
+          cd "$GITHUB_WORKSPACE"
+          git add -A
+          if ! git diff --cached --quiet; then
+            git -c user.name=factory -c user.email=factory@ak47.local commit -q \
+              -m "factory(${{ steps.gate.outputs.TASK_ARGS }}): sync tracking commits from CI run" \
+              || true
+            echo "  committed tracking changes"
+          else
+            echo "  no tracking changes to sync"
+          fi
+          git pull --rebase origin master 2>/dev/null || true
+          git push origin master 2>&1 | tail -2
