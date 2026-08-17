@@ -18,8 +18,11 @@ Entries are grouped by project for progressive discovery. When the agent needs t
 
 
 
+
 ### software-factory
 
+- [delivery failure loud local nounset](sessions/afe61c92-6a16-4510-84ea-96d0f91badf6/decisions/02-delivery-failure-loud-local-nounset.md)
+- [delivery failure loud gh seam](sessions/afe61c92-6a16-4510-84ea-96d0f91badf6/decisions/01-delivery-failure-loud-gh-seam.md)
 - [implementer delivery failure loud](sessions/82eae199-b670-4199-99f3-c1c9edcfb749/decisions/01-implementer-delivery-failure-loud.md)
 - [headless ci gitignore track workflow](sessions/771b4017-a17d-4464-9896-476407652701/decisions/05-headless-ci-gitignore-track-workflow.md)
 - [pickup similarity merge](sessions/b77c5e2b-a870-40c7-bcad-effcbc45332a/decisions/01-pickup-similarity-merge.md)
