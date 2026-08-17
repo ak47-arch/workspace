@@ -21,3 +21,11 @@
 ## Decisions
 
 - [factory-run-headless-loop](../knowledge/docs/knowledge/sessions/01a00c50-b714-7811-8086-3bc6e0a8ea64/decisions/04-factory-run-headless-loop.md)
+
+## PR tracking
+
+- PR: #10 (ak47-arch/workspace)
+- URL: https://github.com/ak47-arch/workspace/pull/10
+- Branch: factory/implementer-delivery-failure-loud/20260817-184540
+- Base: master · Head: bdac29e5483875fc1c5c41b8d5dea3f94d6db399 (raised 2026-08-17 19:08)
+- Raised by: implementer run 8370f85b-3627-49fd-ad16-0df58e6c7cd4
