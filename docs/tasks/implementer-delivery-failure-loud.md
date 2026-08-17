@@ -1,6 +1,6 @@
 # Task: implementer-delivery-failure-loud
 
-**Status**: in-review
+**Status**: prd-ready
 **Category**: Small
 **Project**: software-factory
 **Created**: 2026-08-17 16:45
