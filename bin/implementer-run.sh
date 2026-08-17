@@ -684,11 +684,29 @@ push_and_pr() {
   # fails on a fresh repo (Decision 01: inert metadata for review --pick).
   gh label create "factory:needs-review" --repo "ak47-arch/$gh_repo" --force >/dev/null 2>&1 || true
   local pr_url
-  pr_url="$(gh pr create \
-    --repo "ak47-arch/$gh_repo" \
-    --base "$MANIFEST_BRANCH" --head "$WORKTREE_BRANCH" \
-    --title "$title" --body-file "$body_file" \
-    --label "factory:needs-review")"
+  # Transient GitHub API failures (HTTP 503 etc.) are common enough that a
+  # single-shot `gh pr create` kills otherwise-good runs. Retry with backoff;
+  # on persistent failure, leave the branch pushed and return non-zero so the
+  # caller can route to fail_run (never print a misleading "PR raised").
+  local attempt=0
+  while [ -z "$pr_url" ] && [ "$attempt" -lt 3 ]; do
+    attempt=$((attempt+1))
+    pr_url="$(gh pr create \
+      --repo "ak47-arch/$gh_repo" \
+      --base "$MANIFEST_BRANCH" --head "$WORKTREE_BRANCH" \
+      --title "$title" --body-file "$body_file" \
+      --label "factory:needs-review")" || {
+        if [ "$attempt" -lt 3 ]; then
+          echo "  WARN: gh pr create attempt $attempt/3 failed (transient?) — retrying in ${attempt}s." >&2
+          sleep "$attempt"
+          pr_url=""
+        fi
+      }
+  done
+  if [ -z "$pr_url" ]; then
+    echo "  ERROR: gh pr create failed after 3 attempts (branch remains pushed)." >&2
+    return 1
+  fi
   echo "  PR raised (tagged factory:needs-review)." >&2
 
   # Decision 06: attach PR tracking to the task file (raise hook).
