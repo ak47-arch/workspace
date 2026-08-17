@@ -657,7 +657,13 @@ push_and_pr() {
   echo "  Host-authored worktree commit on $WORKTREE_BRANCH" >&2
   # Push the worktree branch (commits live in the run-dir clone, not src).
   # origin in the clone already points at the real remote.
-  git -C "$WORKTREE" push -u origin "$WORKTREE_BRANCH"
+  # Delivery discipline: a failed push is a delivery failure and MUST surface
+  # as a non-zero return (the caller turns it into fail_run). Do NOT continue
+  # past a failed push to the misleading "Pushed branch" output.
+  if ! git -C "$WORKTREE" push -u origin "$WORKTREE_BRANCH"; then
+    echo "  ERROR: branch push failed for $WORKTREE_BRANCH." >&2
+    return 1
+  fi
   echo "  Pushed branch $WORKTREE_BRANCH" >&2
 
   # Raise the PR with title/body derived from the brief + report.
@@ -684,11 +690,17 @@ push_and_pr() {
   # fails on a fresh repo (Decision 01: inert metadata for review --pick).
   gh label create "factory:needs-review" --repo "ak47-arch/$gh_repo" --force >/dev/null 2>&1 || true
   local pr_url
-  pr_url="$(gh pr create \
+  # Delivery discipline: a failed `gh pr create` is a delivery failure (branch
+  # already pushed). Surface it as a non-zero return so the caller enters
+  # fail_run — never print "PR raised" on a failed create.
+  if ! pr_url="$(gh pr create \
     --repo "ak47-arch/$gh_repo" \
     --base "$MANIFEST_BRANCH" --head "$WORKTREE_BRANCH" \
     --title "$title" --body-file "$body_file" \
-    --label "factory:needs-review")"
+    --label "factory:needs-review")"; then
+    echo "  ERROR: gh pr create failed for $WORKTREE_BRANCH (branch pushed but no PR raised)." >&2
+    return 1
+  fi
   echo "  PR raised (tagged factory:needs-review)." >&2
 
   # Decision 06: attach PR tracking to the task file (raise hook).
@@ -1288,7 +1300,12 @@ if [ "$local_result" -eq 0 ]; then
     ( cd "$WORKSPACE" && git add "$ARCHIVES_ROOT" docs/knowledge/sessions/$IMPL_UUID \
         docs/knowledge/index.md docs/tasks/$PRD_SLUG.md docs/tasks.txt 2>/dev/null || true
       git diff --cached --quiet || git commit -m "implementer($PRD_SLUG): archive run report + decisions [impl $IMPL_UUID]" )
-    push_and_pr || true
+    # Delivery discipline: capture the delivery outcome instead of swallowing
+    # it. A failed push / PR enters the existing failure path (revert to
+    # prd-ready, partial report archived, exit 1) — never a false success.
+    if ! push_and_pr; then
+      fail_run "delivery failed: branch push or PR creation"
+    fi
   fi
   # The run is delivered: the container is no longer needed, and the host only
   # keeps the durable artifacts (outbox, session evidence, brief, worktree).
