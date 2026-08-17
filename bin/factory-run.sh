@@ -131,13 +131,16 @@ if [ "$IMPL_ONLY" = true ]; then
   exit 0
 fi
 
-# Resolve the raised PR from the task file's decision-06 tracking row.
+# Resolve the raised PR. The implementer's run log is authoritative — it just
+# created the PR, while the task file's decision-06 tracking row may hold a
+# STALE URL from a previous run's sync (reviewing the wrong PR silently).
+# Fall back to the task-file row, then --pick.
 SLUG="$TASK_ARG"
 if [ -z "$SLUG" ]; then
   SLUG="$(grep -oE 'docs/tasks/[^ ]+\.md' "$RUN_LOG" | head -1 | sed -E 's#docs/tasks/(.*)\.md#\1#' || true)"
 fi
-PR_ARG=""
-if [ -n "$SLUG" ] && [ -f "$WORKSPACE/docs/tasks/$SLUG.md" ]; then
+PR_ARG="$(grep -m1 -oE 'https://[^[:space:]]+/pull/[0-9]+' "$RUN_LOG" 2>/dev/null || true)"
+if [ -z "$PR_ARG" ] && [ -n "$SLUG" ] && [ -f "$WORKSPACE/docs/tasks/$SLUG.md" ]; then
   PR_ARG="$(sed -n 's/^- URL: //p' "$WORKSPACE/docs/tasks/$SLUG.md" | head -1 || true)"
 fi
 [ -z "$PR_ARG" ] && PR_ARG="--pick"

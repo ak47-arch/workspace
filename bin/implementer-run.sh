@@ -709,7 +709,7 @@ push_and_pr() {
     echo "  ERROR: gh pr create failed after 3 attempts (branch remains pushed)." >&2
     return 1
   fi
-  echo "  PR raised (tagged factory:needs-review)." >&2
+  echo "  PR raised: $pr_url (tagged factory:needs-review)." >&2
 
   # Decision 06: attach PR tracking to the task file (raise hook).
   local pr_num head_sha
