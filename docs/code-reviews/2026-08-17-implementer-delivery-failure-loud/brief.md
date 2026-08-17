@@ -3,7 +3,7 @@
 - **PR URL**: ak47-arch/workspace#10
 - **Task slug**: implementer-delivery-failure-loud
 - **PRD path** (read-only; also below): /home/runner/work/workspace/workspace/docs/prd-queue/2026-08-17-implementer-delivery-failure-loud.md
-- **Review session UUID**: 06b04dee-2555-4b08-b458-7792eb9aeb7b
+- **Review session UUID**: f28bb390-3980-46cd-956b-c3bcf33d9d4b
 - **Worktree path** (PR head, read-only for you): /sandbox/worktree
 - **Base ref**: d556cafe0ca0e73d713a0d35a1b33b7370ae26cb
 - **Head ref**: bdac29e5483875fc1c5c41b8d5dea3f94d6db399
