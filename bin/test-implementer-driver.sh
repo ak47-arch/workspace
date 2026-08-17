@@ -395,6 +395,206 @@ else
 fi
 rm -rf "$SMOKE"
 
+# ─── Delivery-failure tests (PRD: implementer-delivery-failure-loud) ──────
+# The success path must NOT swallow delivery failures (it used to call
+# `push_and_pr || true`). Two NON-dry driver runs exercise the guard:
+#   (1) worktree branch push fails  → exit 1, "FAILED:", task reverted to
+#       prd-ready, and NO misleading "Pushed branch"/"Done (exit 0)".
+#   (2) push succeeds but `gh pr create` fails → exit 1, "FAILED:", task
+#       reverted, and the pushed branch is left on the remote.
+# Mocks: podman (report → success signal), git (fails only on `push`), gh
+# (fails only on `pr create`), and a transition-task.sh stub that records +
+# applies transitions so the revert-to-prd-ready is observable.
+
+# Mock git: delegates every subcommand to the real git EXCEPT `push`, which is
+# rejected (simulates an OAuth-without-workflow-scope rejection, etc).
+make_mock_git_fail_push() {
+  local real_git="$1"
+  cat > "$2" <<MOCK
+#!/usr/bin/env bash
+# The driver calls git -C \$WORKTREE push ... so the subcommand is NOT at \$1;
+# scan for an exact literal push argument to reject the delivery push only (no
+# other git call in the flow carries a literal push arg).
+for a in "\$@"; do
+  if [ "\$a" = "push" ]; then
+    echo "mock git: push REJECTED (fixture)" >&2
+    exit 128
+  fi
+done
+exec "$real_git" "\$@"
+MOCK
+  chmod +x "$2"
+}
+
+# Mock gh: succeeds on `label`, fails on `pr create` (push already done).
+make_mock_gh_fail_pr() {
+  cat > "$1" <<'MOCK'
+#!/usr/bin/env bash
+LOG="${MOCK_GH_LOG:?}"
+{ printf 'gh'; for a in "$@"; do printf ' <%s>' "$a"; done; printf '\n'; } >> "$LOG"
+case "${1:-}" in
+  label) exit 0 ;;
+  pr) [ "${2:-}" = "create" ] && { echo "mock gh: pr create REJECTED (fixture)" >&2; exit 1; } ;;
+esac
+exit 0
+MOCK
+  chmod +x "$1"
+}
+
+# transition-task.sh stub: record the invocation + apply the status so the
+# revert-to-prd-ready is observable on the task file.
+make_mock_transition() {
+  cat > "$1" <<'MOCK'
+#!/usr/bin/env bash
+echo "$*" >> "${TRANSITION_LOG:?}"
+slug="$1"
+to=""
+prev=""
+for a in "$@"; do
+  if [ "$prev" = "--to" ]; then to="$a"; fi
+  prev="$a"
+done
+if [ -n "$to" ] && [ -n "${TRANSITION_TASKS_DIR:-}" ]; then
+  sed -i -E "s/^(\*\*Status\*\*: *).*/\1$to/" "$TRANSITION_TASKS_DIR/$slug.md"
+fi
+exit 0
+MOCK
+  chmod +x "$1"
+}
+
+# Delivery fixture: a scratch git repo (master + bare origin remote) with a
+# Final PRD + prd-ready task, so a NON-dry run reaches push_and_pr. Returns dir.
+setup_delivery_fixture() {
+  local dir remote
+  dir="$(mktemp -d)"
+  remote="$dir-remote"
+  mkdir -p "$dir/config" "$dir/docs/tasks" "$dir/docs/prd-queue" \
+           "$dir/docs/implementations" "$dir/docs/knowledge/sessions" \
+           "$dir/bin" "$dir/.factory/runs" "$dir/bin-mock"
+  ( cd "$dir" && git init -q -b master >/dev/null 2>&1 \
+      && git config user.email dev@example.com && git config user.name Dev \
+      && printf 'base\n' > base.txt && git add -A \
+      && git commit -qm 'base' >/dev/null 2>&1 )
+  git init -q --bare "$remote" >/dev/null 2>&1
+  git -C "$dir" remote add origin "$remote"
+  git -C "$dir" push -q origin master
+  printf '**Status**: prd-ready\n**Project**: software-factory\n' > "$dir/docs/tasks/delivery.md"
+  printf '**Date**: 2026-08-17 10:00\n**Status**: Final\n## Testing decisions\nrun the demo verification\n' \
+    > "$dir/docs/prd-queue/2026-08-17-delivery.md"
+  cat > "$dir/config/implementer.json" <<'CFG'
+{
+  "repo_map": { "software-factory": ".", "feed_analyser": "feed_analyser" },
+  "model": "openrouter/deepseek/deepseek-v4-flash-0731",
+  "timeout_sec": 30, "respawn_cap": 1,
+  "env_allowlist": ["OPENROUTER_API_KEY", "ANTHROPIC_API_KEY", "IMPLEMENTER_MODEL"],
+  "image": "sandbox:latest",
+  "runs_root": ".factory/runs", "archives_root": "docs/implementations",
+  "liveness_interval_sec": 2, "liveness_idle_sec": 5
+}
+CFG
+  cp "$(cd "$(dirname "$0")" && pwd)/sort-knowledge-index.py" "$dir/bin/" 2>/dev/null || true
+  echo "$dir"
+}
+
+# ─── Test 17: delivery failure — branch push fails (exit 1, FAILED, revert) ─
+echo "── delivery failure: worktree branch push fails ──"
+DEL="$(setup_delivery_fixture)"
+export IMPLEMENTER_WORKSPACE="$DEL"
+export IMPLEMENTER_RUNS_ROOT="$DEL/.factory/runs"
+export IMPLEMENTER_ARCHIVES_ROOT="docs/implementations"
+export IMPLEMENTER_PODMAN_BIN="$DEL/mock-podman.sh"
+export MOCK_PODMAN_LOG="$DEL/podman-calls.log"
+make_mock_podman "$DEL/mock-podman.sh"
+REAL_GIT="$(command -v git)"
+make_mock_git_fail_push "$REAL_GIT" "$DEL/bin-mock/git"
+export TRANSITION_LOG="$DEL/transitions.log"
+export TRANSITION_TASKS_DIR="$DEL/docs/tasks"
+make_mock_transition "$DEL/bin/transition-task.sh"
+: > "$TRANSITION_LOG"
+(
+  cd "$DEL"
+  HOME="$DEL" IMPLEMENTER_RUN_SOURCED=0 PATH="$DEL/bin-mock:$PATH" \
+  bash "$DRIVER" --task delivery
+) > "$DEL/del-push.out" 2>&1
+rc=$?
+if [ "$rc" -eq 1 ]; then
+  pass "delivery: push-fail driver exits 1"
+else
+  fail "delivery: push-fail rc=$rc (expected 1): $(tail -3 "$DEL/del-push.out" | tr '\n' ' ')"
+fi
+grep -q 'FAILED:' "$DEL/del-push.out" && grep -q 'delivery failed' "$DEL/del-push.out" \
+  && pass "delivery: push-fail prints clear FAILED reason" \
+  || fail "delivery: push-fail missing FAILED/delivery-failed: $(tail -5 "$DEL/del-push.out" | tr '\n' ' ')"
+if grep -q 'Pushed branch\|Done (exit 0)\|PR raised' "$DEL/del-push.out"; then
+  fail "delivery: push-fail emitted misleading success output"
+else
+  pass "delivery: push-fail has no misleading success output"
+fi
+if grep -q '\*\*Status\*\*: *prd-ready' "$DEL/docs/tasks/delivery.md" \
+   && grep -q -- '--to prd-ready' "$TRANSITION_LOG"; then
+  pass "delivery: push-fail reverts task to prd-ready (transition invoked)"
+else
+  fail "delivery: push-fail task not reverted: $(sed -n '1p' "$DEL/docs/tasks/delivery.md" | tr '\n' ' ')"
+fi
+# Partial report archived (fail_run archives when outbox has a report).
+if ls "$DEL"/docs/implementations/*-delivery/report.md >/dev/null 2>&1; then
+  pass "delivery: push-fail archives partial/full report"
+else
+  fail "delivery: push-fail no report archived"
+fi
+rm -rf "$DEL" "$DEL-remote"
+
+# ─── Test 18: delivery failure — push ok, gh pr create fails ──────────────
+echo "── delivery failure: gh pr create fails (push ok) ──"
+DEL="$(setup_delivery_fixture)"
+export IMPLEMENTER_WORKSPACE="$DEL"
+export IMPLEMENTER_RUNS_ROOT="$DEL/.factory/runs"
+export IMPLEMENTER_ARCHIVES_ROOT="docs/implementations"
+export IMPLEMENTER_PODMAN_BIN="$DEL/mock-podman.sh"
+export MOCK_PODMAN_LOG="$DEL/podman-calls.log"
+make_mock_podman "$DEL/mock-podman.sh"
+export IMPLEMENTER_GH_BIN="$DEL/mock-gh.sh"
+export MOCK_GH_LOG="$DEL/gh-calls.log"
+make_mock_gh_fail_pr "$DEL/mock-gh.sh"
+export TRANSITION_LOG="$DEL/transitions.log"
+export TRANSITION_TASKS_DIR="$DEL/docs/tasks"
+make_mock_transition "$DEL/bin/transition-task.sh"
+: > "$TRANSITION_LOG"
+REMOTE="$DEL-remote"
+(
+  cd "$DEL"
+  HOME="$DEL" IMPLEMENTER_RUN_SOURCED=0 \
+  bash "$DRIVER" --task delivery
+) > "$DEL/del-pr.out" 2>&1
+rc=$?
+if [ "$rc" -eq 1 ]; then
+  pass "delivery: pr-fail driver exits 1"
+else
+  fail "delivery: pr-fail rc=$rc (expected 1): $(tail -3 "$DEL/del-pr.out" | tr '\n' ' ')"
+fi
+grep -q 'FAILED:' "$DEL/del-pr.out" && grep -q 'delivery failed' "$DEL/del-pr.out" \
+  && pass "delivery: pr-fail prints clear FAILED reason" \
+  || fail "delivery: pr-fail missing FAILED/delivery-failed: $(tail -5 "$DEL/del-pr.out" | tr '\n' ' ')"
+if grep -q 'Done (exit 0)\|PR raised' "$DEL/del-pr.out"; then
+  fail "delivery: pr-fail emitted misleading success output"
+else
+  pass "delivery: pr-fail has no misleading success output"
+fi
+# Branch was pushed to the remote (left there) before gh pr create failed.
+if [ -n "$(git -C "$REMOTE" show-ref 2>/dev/null | grep -c 'refs/heads/factory/delivery/')" ] \
+   && git -C "$REMOTE" show-ref 2>/dev/null | grep -q 'refs/heads/factory/delivery/'; then
+  pass "delivery: pr-fail leaves pushed branch on the remote"
+else
+  fail "delivery: pr-fail branch not found on remote"
+fi
+if grep -q '\*\*Status\*\*: *prd-ready' "$DEL/docs/tasks/delivery.md" \
+   && grep -q -- '--to prd-ready' "$TRANSITION_LOG"; then
+  pass "delivery: pr-fail reverts task to prd-ready (transition invoked)"
+else
+  fail "delivery: pr-fail task not reverted"
+fi
+rm -rf "$DEL" "$DEL-remote"
+
 # ─── Test 5b: write_env_file resolves LLM credentials from pi's auth.json ──
 # The sandbox needs OPENROUTER_API_KEY/ANTHROPIC_API_KEY; pi keeps its key in
 # ~/.pi/agent/auth.json (not the host env). The driver must fall back to that
