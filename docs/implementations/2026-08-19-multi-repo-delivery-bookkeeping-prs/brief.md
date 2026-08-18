@@ -1,26 +1,27 @@
-# Implementer Task Brief
+# Implementer Revision Brief
 
-- **PRD path**: /home/anupam/.herdr/worktrees/workspace/factory-local-run-multi-repo-20260819-013126/docs/prd-queue/2026-08-18-multi-repo-delivery-bookkeeping-prs.md (read-only; also below)
+- **PR**: ak47-arch/workspace#12 (same branch: factory/multi-repo-delivery-bookkeeping-prs/20260819-013447)
 - **Task slug**: multi-repo-delivery-bookkeeping-prs
-- **Impl session UUID**: 4d89a859-9d05-4b28-9efd-e56aad8837e7
-- **Worktree path** (read-write; your working directory): /sandbox/worktree
+- **PRD path** (read-only; also below): /home/anupam/.herdr/worktrees/workspace/factory-local-run-multi-repo-20260819-013126/docs/prd-queue/2026-08-18-multi-repo-delivery-bookkeeping-prs.md
+- **Impl session UUID** (reused from the original run, decision 08): 4d89a859-9d05-4b28-9efd-e56aad8837e7
+- **Original review (BINDING authority)**: /sandbox/review/report.md + /sandbox/review/decisions/
+- **Worktree path** (same branch, read-write): /sandbox/worktree
 - **Outbox path** (write results here): /sandbox/outbox
 
 ## Rules (binding)
 
-1. Implement EVERY user story in the PRD, one story/unit at a time.
-2. Work ONLY inside /sandbox/worktree. Your edits are already durable on the
-   host's disk via this mount — you do NOT need to commit anything.
-3. Do NOT run ANY git command (no init/add/commit/stash/push/pull/checkout).
-   The host driver performs the single commit, push, and PR at the end.
-4. You CANNOT modify docs/tasks/, docs/tasks.txt, or docs/prd-queue/ — those
-   live in the read-only /workspace mount. Do not attempt to bypass this.
+1. Fix EXACTLY what the review findings scope — no more, no less. No scope expansion.
+2. WHERE THE REVIEW FINDINGS CONFLICT WITH YOUR EARLIER REASONING, THE FINDINGS WIN.
+   The review report + decisions are higher-priority authority than your prior reasoning.
+3. Resume your original implementation session context (continuity) — do NOT
+   restart from scratch, do NOT re-litigate findings.
+4. Do NOT run any git commands (the host owns git). Do NOT change the task
+   lifecycle — the task stays in-review through the re-review.
 5. Do NOT write secrets, keys, or GitHub credentials anywhere.
-6. Do NOT run builds that require network secrets you don't have.
 
 ## Verification
 
-See the PRD  for the acceptance commands. Run them inside the worktree as the PRD specifies.
+See the PRD `## Testing decisions` for the acceptance commands. Run them inside the worktree as the PRD specifies.
 - State evidence for each story (what you changed and how it is verified).
 
 ## Completion
