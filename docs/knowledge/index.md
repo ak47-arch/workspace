@@ -104,6 +104,9 @@ Entries are grouped by project for progressive discovery. When the agent needs t
 - [Code reaches master only via PR merge — tracking/evidence syncs direct](sessions/01a00c50-b714-7811-8086-3bc6e0a8ea64/decisions/09-code-master-pr-gate.md)
 - [Multi-repo delivery — per-repo implementation PRs + PR-based bookkeeping on the workspace root](sessions/01a01515-8457-7260-a4d6-45731d61d571/decisions/01-multi-repo-delivery-pr-shapes.md)
 - [Enforce merge-only on every default branch — GitHub branch protection, no direct pushes](sessions/01a01515-8457-7260-a4d6-45731d61d571/decisions/02-branch-protection-merge-only.md)
+- [Local-first herdr execution substrate (validated operating model)](sessions/01a01515-8457-7260-a4d6-45731d61d571/decisions/03-local-first-herdr-execution-substrate.md)
+- [Reviewer must verify production wiring — not just green tests](sessions/01a01515-8457-7260-a4d6-45731d61d571/decisions/04-reviewer-verifies-production-wiring.md)
+- [Evidence stream pathology — toolcall_delta replay is O(n²)](sessions/01a01515-8457-7260-a4d6-45731d61d571/decisions/05-evidence-stream-toolcall-delta-replay.md)
 
 ### workspace-portability
 
