@@ -28,3 +28,4 @@
 - Branch: factory/multi-repo-delivery-bookkeeping-prs/20260819-013447
 - Base: master · Head: 68d68f28061cfa7e66b9637908750a02f8f9b097 (raised 2026-08-19 02:53)
 - Raised by: implementer run 4d89a859-9d05-4b28-9efd-e56aad8837e7
+- Review: session 745d22cb-1a68-49b2-b859-07173257e29e · verdict REQUEST_CHANGES · report docs/code-reviews/2026-08-19-multi-repo-delivery-bookkeeping-prs/
