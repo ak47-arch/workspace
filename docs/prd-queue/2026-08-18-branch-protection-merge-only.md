@@ -1,7 +1,7 @@
 # PRD: Enforce merge-only on all repos — no direct pushes to any default branch
 
 **Date**: 2026-08-18 19:59
-**Status**: Final
+**Status**: Draft
 **Owner**: software-factory workspace
 **Task**: branch-protection-merge-only
 **Repos**: workspace (root)
@@ -119,6 +119,27 @@ returns the ruleset with `require_pull_request` + `block_force_push` +
 `block_deletions` enforced for every repo in scope, and a documented manual
 negative test (non-bypass token push to `<repo>'s` default branch is
 rejected; a created-and-merged PR succeeds).
+
+## Execution note (2026-08-18 — done in-session, not via the loop)
+
+Executed directly; the planned scripts were **not created** (one-time action —
+YAGNI; the decision record `02-branch-protection-merge-only.md` is the audit
+trail).
+
+- **Applied + verified via GET:** classic branch protection on
+  `ak47-arch/llamacpp_inference_server` (master), `ak47-arch/headroom-pi`
+  (main), `ak47-arch/timesheetViewer` (main) — `required_pull_request_reviews`
+  (0 approvals), `enforce_admins: true` (no bypass, incl. the PAT),
+  `allow_force_pushes: false`, `allow_deletions: false`.
+- **Blocked — GitHub free plan:** private repos (`goal-agent`,
+  `feed_analyser`, `workspace-portability`, `resume`, `emotional_architecture`)
+  reject both rulesets and the classic protection API (HTTP 403, Pro-gated).
+  No remote enforcement exists there on free; open decision: Pro upgrade or a
+  documented gap.
+- **Sequenced:** the `workspace` repo is public → protectable on free; enabled
+  as the capstone of `multi-repo-delivery-bookkeeping-prs`.
+- This PRD returns to **Draft** so the headless loop does not pick it up while
+  the platform constraint is unresolved.
 
 ## Out-of-scope
 
