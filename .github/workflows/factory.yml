@@ -164,10 +164,50 @@ jobs:
           fi
           echo "GATE=true" >> "$GITHUB_OUTPUT"
 
-      - name: Run headless factory loop
+      - name: Pickup gate (skip if an open [factory] PR exists)
         if: steps.gate.outputs.GATE == 'true'
         env:
           FACTORY_GH_PAT: ${{ secrets.FACTORY_GH_PAT }}
+        run: |
+          set -euo pipefail
+          cd "$GITHUB_WORKSPACE"
+          TASK_ARGS="${{ steps.gate.outputs.TASK_ARGS }}"
+          [ -n "$TASK_ARGS" ] || exit 0
+          slug="${TASK_ARGS#--task }"
+          # Resolve the declared repos from the PRD **Repos:** header (default: root).
+          prd="$(ls docs/prd-queue/*-"$slug.md" 2>/dev/null | head -1 || true)"
+          REPOS=""
+          if [ -n "$prd" ] && grep -q '^\*\*Repos\*\*:' "$prd"; then
+            REPOS="$(grep -m1 '^\*\*Repos\*\*:' "$prd" | sed 's/^\*\*Repos\*\*: *//; s/,/ /g')"
+          fi
+          # US8 / J2: an open `[factory] <slug>` PR on any declared repo means a
+          # delivery is already in flight — do NOT re-implement. `gh` (PAT auth)
+          # is live here; factory-run.sh's internal pickup_gate() self-resolves
+          # the same repos and SKIPs too, so the gate is enforced regardless.
+          OPEN=""
+          check() { # <repo-or-owner/repo>
+            local n; n="$(gh pr list --repo "$1" --search "\"[factory] $slug\"" --state open --json number 2>/dev/null \
+              | python3 -c 'import sys,json;print(len(json.loads(sys.stdin.read() or "[]")))' 2>/dev/null || echo 0)"
+            [ "$n" -gt 0 ] 2>/dev/null && OPEN=y
+          }
+          if [ -n "$REPOS" ]; then
+            while read -r r; do [ -n "$r" ] && check "$r"; done <<< "$REPOS"
+          else
+            check ak47-arch/workspace
+          fi
+          if [ -n "$OPEN" ]; then
+            echo "Pickup gate: open [factory] PR for $slug — skipping this run."
+            echo "FACTORY_SKIP_PICKUP=true" >> "$GITHUB_ENV"
+          else
+            echo "Pickup gate: no open [factory] PR for $slug — proceed."
+          fi
+
+      - name: Run headless factory loop
+        if: steps.gate.outputs.GATE == 'true' && env.FACTORY_SKIP_PICKUP != 'true'
+        env:
+          FACTORY_GH_PAT: ${{ secrets.FACTORY_GH_PAT }}
+          FACTORY_GH_BIN: gh
+          FACTORY_ROOT_REPO: ak47-arch/workspace
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           LANGFUSE_SECRET_KEY: ${{ secrets.LANGFUSE_SECRET_KEY }}

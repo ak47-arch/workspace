@@ -755,20 +755,57 @@ echo "  dry-run: $DRY_RUN | target: ${PR_UNSET:-unspecified}"
 
 # ─── Arg parsing ───────────────────────────────────────────────────────────
 PR_ARG=""
+PR_ARG_SEQ=()
 PICK_MODE=false
 while [ $# -gt 0 ]; do
   case "$1" in
     --pick) PICK_MODE=true; shift ;;
     --dry-run) DRY_RUN=true; shift ;;
     --*) die "Unknown option: $1" ;;
-    *) PR_ARG="$1"; shift ;;
+    *) PR_ARG_SEQ+=("$1"); shift ;;
   esac
 done
 
 if [ "$PICK_MODE" = true ]; then
-  PR_ARG="--pick"
+  PR_ARG="--pick"; PR_ARG_SEQ=()
+elif [ "${#PR_ARG_SEQ[@]}" -eq 0 ]; then
+  { echo "Usage: bin/review-run.sh <pr> [<pr2> ...]|--pick [--dry-run]"; exit 2; }
+elif [ "${#PR_ARG_SEQ[@]}" -eq 1 ]; then
+  PR_ARG="${PR_ARG_SEQ[0]}"
 fi
-[ -z "$PR_ARG" ] && { echo "Usage: bin/review-run.sh <pr>|--pick [--dry-run]"; exit 2; }
+
+# PR-set review (US9 / review B-4): review each PR in the set. Each PR runs in its
+# own fresh process (the single-PR flow below stays byte-identical), and the
+# per-PR verdicts are merged into $REVIEWER_SET_VERDICTS so the factory-run loop
+# can revise ONLY the rejected repos. Exit 0 only when EVERY PR approved.
+if [ "${#PR_ARG_SEQ[@]}" -gt 1 ]; then
+  allok=0
+  DRY_RUN_FLAG=""; [ "$DRY_RUN" = true ] && DRY_RUN_FLAG="--dry-run"
+  for pr in "${PR_ARG_SEQ[@]}"; do
+    set +e
+    bash "$0" "$pr" $DRY_RUN_FLAG
+    rc=$?
+    set -e
+    [ "$rc" -ne 0 ] && allok=$rc
+  done
+  rejected=0
+  if [ -n "${REVIEWER_SET_VERDICTS:-}" ] && [ -f "$REVIEWER_SET_VERDICTS" ]; then
+    rejected="$(python3 -c 'import json
+mf=sys.argv[1]
+try:
+    d=json.load(open(mf))
+except Exception:
+    raise SystemExit
+print(sum(1 for k,r in d.get("repos",{}).items() if str(r.get("verdict","")).startswith("REQUEST")))' "$REVIEWER_SET_VERDICTS" 2>/dev/null || echo 0)"
+  fi
+  echo "  Set reviewed: ${#PR_ARG_SEQ[@]} PR(s); ${rejected} REQUEST_CHANGES." >&2
+  if [ "$allok" -ne 0 ] || [ "$rejected" -gt 0 ]; then
+    echo "  PR-set verdict: non-approve (exit $allok)." >&2
+    exit 1
+  fi
+  echo "  PR-set verdict: all ${#PR_ARG_SEQ[@]} PR(s) approved." >&2
+  exit 0
+fi
 
 echo "  dry-run: $DRY_RUN | target: $PR_ARG"
 
@@ -819,6 +856,24 @@ data = {"task": slug, "repos": {pr: {"verdict": verdict, "state": "open"}}}
 with open(mf, "w") as f:
     json.dump(data, f, indent=2)
 PYEOF
+  # PR-set flow (US9 / review B-4): merge this PR's verdict into the shared
+  # per-PR set-verdicts file factory-run's loop reads to revise only the
+  # rejected repos. No-op when REVIEWER_SET_VERDICTS is unset (single-PR).
+  if [ -n "${REVIEWER_SET_VERDICTS:-}" ]; then
+    python3 - "$REVIEWER_SET_VERDICTS" "$PRD_SLUG" "$PR_REPO#$PR_NUMBER" "${verdict:-}" <<'PYEOF' || true
+import json, sys, os
+mf, slug, pr, verdict = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
+d = {}
+if os.path.exists(mf):
+    try:
+        with open(mf) as f: d = json.load(f)
+    except Exception: d = {}
+d.setdefault("task", slug)
+d.setdefault("repos", {})[pr] = {"verdict": verdict, "state": "open"}
+with open(mf, "w") as f:
+    json.dump(d, f, indent=2)
+PYEOF
+  fi
   case "$verdict" in
     APPROVE*) REVIEW_OUTCOME="reviewed-ok"; TRANSITION_TO="in-review" ;;
     REQUEST_CHANGES*) REVIEW_OUTCOME="review-blocked"; TRANSITION_TO="" ;;

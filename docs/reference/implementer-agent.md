@@ -32,7 +32,7 @@ archived report+decision, and the compact session evidence are **durable**.
 | Worker persona / brief | `.pi/agents/implementer.md` |
 | Worker in-container ops skill | `.agents/skills/implementer-ops/SKILL.md` |
 | Worker artifact-save skill | `.agents/skills/implementer-save/SKILL.md` |
-| Orchestrator (loop, bookkeeping PR, run manifest, pickup gate) | `bin/factory-run.sh` |
+| Orchestrator (loop, bookkeeping PR, run manifest, pickup gate, loop-end A/B invariant) | `bin/factory-run.sh` |
 | Operator PR-set merge + complete transition | `bin/merge-pr.sh` |
 | Image Dockerfile | `workspace-portability/container/Dockerfile` |
 | Container entrypoint (session/`--continue` logic) | `workspace-portability/container/sandbox-entrypoint.sh` |

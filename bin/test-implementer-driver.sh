@@ -1097,24 +1097,30 @@ else
 fi
 PRD="$MR/docs/prd-queue/2026-08-18-multi.md"
 
-# A/B invariant: violation (both or neither) → loud fail; hold → 0.
-ROOT_IN_SET=true; DRY_RUN=false
+# A/B invariant (DELIVERY-TIME semantics, decision: Shape A assert point moves
+# post-bookkeeping): at delivery time BOOKKEEPING_PR is always empty (the Shape A
+# bookkeeping PR is raised later by factory-run at loop end).
+#   * Shape B (root in set): root code PR present AND no bookkeeping PR → hold;
+#     root code PR absent, or root code PR + bookkeeping PR → loud fail.
+#   * Shape A (root not in set): bookkeeping pending → always hold at delivery.
+ROOT_IN_SET=true; DRY_RUN=false; REPO_KEYS=(workspace)
 REPO_PR=( [workspace]=101 ); BOOKKEEPING_PR=""
-REPO_KEYS=(workspace)
 set +e; assert_delivery_invariant >/dev/null 2>&1; rc=$?; set -e
-[ "$rc" -eq 0 ] && pass "invariant: root code PR + no bookkeeping PR holds (A side)" \
-  || fail "invariant: A-side rc=$rc"
-REPO_PR=( [workspace]="" ); BOOKKEEPING_PR=102
-set +e; assert_delivery_invariant >/dev/null 2>&1; rc=$?; set -e
-[ "$rc" -eq 0 ] && pass "invariant: no root code PR + one bookkeeping PR holds (B side)" \
-  || fail "invariant: B-side rc=$rc"
+[ "$rc" -eq 0 ] && pass "invariant(delivery-time): Shape B root code PR + no bookkeeping holds" \
+  || fail "invariant Shape B hold rc=$rc"
 REPO_PR=( [workspace]=101 ); BOOKKEEPING_PR=102
 set +e; assert_delivery_invariant >/dev/null 2>&1; rc=$?; set -e
-[ "$rc" -ne 0 ] && pass "invariant: both root code + bookkeeping → violation (loud fail)" \
-  || fail "invariant: violation not detected"
+[ "$rc" -ne 0 ] && pass "invariant(delivery-time): root code PR + bookkeeping PR → loud fail" \
+  || fail "invariant both-set not detected"
 REPO_PR=( [workspace]="" ); BOOKKEEPING_PR=""
 set +e; assert_delivery_invariant >/dev/null 2>&1; rc=$?; set -e
-[ "$rc" -ne 0 ] && pass "invariant: neither → violation" || fail "invariant: neither not detected"
+[ "$rc" -ne 0 ] && pass "invariant(delivery-time): Shape B without root code PR → loud fail" \
+  || fail "invariant Shape B missing-code not detected"
+# Shape A (root NOT in set): bookkeeping pending → hold, no false-fail (B-1 fix).
+ROOT_IN_SET=false; REPO_PR=( [feed_analyser]=201 ); BOOKKEEPING_PR=""
+set +e; assert_delivery_invariant >/dev/null 2>&1; rc=$?; set -e
+[ "$rc" -eq 0 ] && pass "invariant(delivery-time): Shape A bookkeeping pending → holds (no false-fail)" \
+  || fail "invariant Shape A false-fail rc=$rc"
 
 # Shape B collapse: root worktree with an UNCOMMITTED code change + a docs
 # change → delivery produces a code commit THEN a bookkeeping (docs-only) commit.

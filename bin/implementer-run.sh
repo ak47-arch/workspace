@@ -410,33 +410,47 @@ PYEOF
 }
 
 # assert_delivery_invariant(): the A/B XOR — (root code PR AND no bookkeeping PR)
-# XOR (no root code PR AND exactly one bookkeeping PR). Dies loudly (exit 1) on a
-# violation, printing the per-repo status table. Returns 0 on hold.
+# XOR (no root code PR AND exactly one bookkeeping PR).
+#
+# DELIVERY-TIME semantics (decision: Shape A invariant assert point must move
+# post-bookkeeping): at delivery the implementer has raised only the N code PRs;
+# the Shape A bookkeeping PR is raised LATER by factory-run.sh at loop end, so
+# `BOOKKEEPING_PR` is always empty here. Assert only what is true now:
+#   * Shape B (root in set): a root code PR must exist AND no bookkeeping PR.
+#   * Shape A (root not in set): bookkeeping is PENDING — nothing required yet
+#     (the loop-end assert in factory-run.sh enforces the full A/B XOR once the
+#     bookkeeping PR exists, so the "no third Shape" safety is not lost).
 assert_delivery_invariant() {
   # In dry-run no real PRs exist — the invariant is asserted on real deliveries.
   if [ "$DRY_RUN" = true ]; then
     echo "  [dry-run] delivery invariant skipped (no real PRs in dry-run)" >&2
     return 0
   fi
-  local has_root_code=false has_bk=false
   if [ "$ROOT_IN_SET" = true ]; then
+    local has_root_code=false
     for k in "${!REPO_PR[@]}"; do
       [ "$k" = "workspace" ] && [ -n "${REPO_PR[$k]:-}" ] && has_root_code=true
     done
+    echo "  Asserting delivery invariant: root_code_pr=$has_root_code bookkeeping_pr=${BOOKKEEPING_PR:-}" >&2
+    if [ "$has_root_code" != true ]; then
+      echo "  FAILED: delivery invariant violated — root in set but no root code PR." >&2
+      for k in "${REPO_KEYS[@]}"; do
+        echo "    $k: branch=${REPO_BRANCH[$k]:-} pr=${REPO_PR[$k]:-}" >&2
+      done
+      return 1
+    fi
+    if [ -n "${BOOKKEEPING_PR:-}" ]; then
+      echo "  FAILED: delivery invariant violated — root code PR AND a bookkeeping PR already set (bookkeeping_pr=${BOOKKEEPING_PR:-})." >&2
+      return 1
+    fi
   else
-    has_root_code=false
+    # Shape A: the bookkeeping PR is pending at loop end — nothing to assert now
+    # (has_bk would be false here by construction; requiring it now would false-
+    # fail every legitimate multi-app-repo delivery, review finding B-1).
+    echo "  ✓ delivery invariant (delivery-time): Shape A, bookkeeping PR pending (root not touched) — hold." >&2
+    return 0
   fi
-  [ -n "${BOOKKEEPING_PR:-}" ] && has_bk=true
-  if { [ "$has_root_code" = true ] && [ "$has_bk" = true ]; } \
-     || { [ "$has_root_code" = false ] && [ "$has_bk" = false ]; }; then
-    echo "  FAILED: delivery invariant violated — root_code_pr=$has_root_code bookkeeping_pr=$has_bk" >&2
-    for k in "${REPO_KEYS[@]}"; do
-      echo "    $k: branch=${REPO_BRANCH[$k]:-} pr=${REPO_PR[$k]:-}" >&2
-    done
-    echo "    bookkeeping_pr=${BOOKKEEPING_PR:-}" >&2
-    return 1
-  fi
-  echo "  ✓ delivery invariant holds (A/B XOR satisfied)" >&2
+  echo "  ✓ delivery invariant holds (Shape B root code PR + no bookkeeping PR)" >&2
   return 0
 }
 

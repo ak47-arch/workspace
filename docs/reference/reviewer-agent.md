@@ -73,11 +73,20 @@ implementer); deps are workspace-side.
 ## Invocation
 
 ```
-bin/review-run.sh [<pr>|--pick] [--dry-run]
-# <pr>      repo#num, owner/repo#num, or full pull-request URL
+bin/review-run.sh [<pr> [<pr2> ...]|--pick] [--dry-run]
+# <pr>      repo#num, owner/repo#num, or full pull-request URL.
+#           Multiple <pr> args = PR-set review (US9): each PR is reviewed in its
+#           own run and the per-PR verdicts are merged into $REVIEWER_SET_VERDICTS
+#           (`repo#num → verdict`), which the factory loop reads to revise ONLY
+#           the rejected repos. Exit 0 only when every PR approves.
 # --pick    oldest open PR labeled factory:needs-review
 # --dry-run no gh mutations (comment/label), no transitions, no workspace-root commit
 ```
+
+Verdict read-back (J2): per-PR verdicts/report land in the reviewer run dir
+(`RUN_DIR/reports/verdict.txt`, `reports/report.md`, and `RUN_DIR/verdicts.json`),
+which the factory loop reads in preference to the checkout archive — the run dir
+is the PRD-mandated source of truth for the loop gate.
 
 ## Key invariants to honour
 
