@@ -66,9 +66,9 @@ tasks:
     - Bring the product layer to mobile (software-factory)
     - Compress all session files reclaiming disk space (software-factory)
     - Multi-repo delivery: tasks may touch several repos and raise one implementation PR per repo, with all bookkeeping on a workspace-root PR (collapsed into the root PR when the root is touched); replace the direct-push sync step with PR-based bookkeeping plus a run manifest and fail-fast/fail-loud monitoring (software-factory) [multi-repo-delivery-bookkeeping-prs]
-    - Enforce merge-only on all repos: GitHub branch protection on every default branch so no code is ever pushed directly — everything merges via a reviewed PR (software-factory) [branch-protection-merge-only]
 
     ### Queued
+    - Enforce merge-only on all repos: GitHub branch protection on every default branch so no code is ever pushed directly — everything merges via a reviewed PR (software-factory) [branch-protection-merge-only]
     ### Complete
     - (complete)create a skill to summarise the content and most important learnings from a session and attach a link to the actual context window of that session so we can save our knowledge and build on it and not lose it at the end of each session close (software_factory)
     - (complete) implement end to end tracaebility for each task from picked up to completed. this includes connecting a task from here through the prd queue to the implementation. as we are saving the prd sessions and the context around it we will trace implementation and verifications sessions also. point is to trace tasks end to end so their entire lifecycle can be traced and logged (software_factory) [end-to-end-traceability]

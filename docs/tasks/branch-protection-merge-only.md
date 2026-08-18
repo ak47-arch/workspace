@@ -1,6 +1,6 @@
 # Task: branch-protection-merge-only
 
-**Status**: in-prd
+**Status**: prd-ready
 **Category**: Small
 **Project**: software-factory
 **Created**: 2026-08-18 19:59
