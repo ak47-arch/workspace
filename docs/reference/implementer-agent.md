@@ -32,6 +32,8 @@ archived report+decision, and the compact session evidence are **durable**.
 | Worker persona / brief | `.pi/agents/implementer.md` |
 | Worker in-container ops skill | `.agents/skills/implementer-ops/SKILL.md` |
 | Worker artifact-save skill | `.agents/skills/implementer-save/SKILL.md` |
+| Orchestrator (loop, bookkeeping PR, run manifest, pickup gate, loop-end A/B invariant) | `bin/factory-run.sh` |
+| Operator PR-set merge + complete transition | `bin/merge-pr.sh` |
 | Image Dockerfile | `workspace-portability/container/Dockerfile` |
 | Container entrypoint (session/`--continue` logic) | `workspace-portability/container/sandbox-entrypoint.sh` |
 | Local container runner | `workspace-portability/container/run-sandbox.sh` |
@@ -49,6 +51,8 @@ archived report+decision, and the compact session evidence are **durable**.
 | Driver-generated task brief | `<run>/brief.md` |
 | Implementer's deliverable (report + decision) | `<run>/outbox/` |
 | pi session evidence (compact) | `<run>/sessions/` |
+| Per-repo worktrees (multi-repo tasks) | `<run>/worktrees/<repo-key>/` |
+| Run manifest (per-repo `{branch,pr,verdict,state}`, `bookkeeping_pr`, `revisions`, `outcome`) | `<run>/manifest.json` (mirrored into the bookkeeping PR body) |
 | Full raw session trace + container logs | `<run>/session.jsonl`, `<run>/container-*.log` — **removed on successful delivery** (kept only under `IMPL_CLEANUP=false` or on failure for diagnosis) |
 | Worktree clone (the implementation) | `<run>/worktree/` — **deps stripped on delivery** (`node_modules`, `venv*`, `__pycache__`); source + `.git` kept unless `KEEP_WORKTREE=0` |
 | Injected env (`secrets.env`, **no GitHub tokens**) | `<run>/secrets.env` — deleted after the run |

@@ -646,6 +646,25 @@ if ! grep -q "<merge>" "$MOCK_GH_LOG" && ! grep -q "^\\- Merge:" "$DELIVER/docs/
 else
   fail "deliver: unexpected merge"
 fi
+# Run-dir verdict path (PRD): the review report + per-PR verdict manifest land in
+# the run dir (not only the checkout archive) for the loop's read-back.
+RDIR="$(ls -d "$DELIVER"/.factory/runs/demo-* 2>/dev/null | head -1 || true)"
+if [ -n "$RDIR" ] && [ -f "$RDIR/reports/verdict.txt" ] \
+   && grep -q 'APPROVE' "$RDIR/reports/verdict.txt"; then
+  pass "run-dir verdict path: reports/verdict.txt written (APPROVE)"
+else
+  fail "run-dir verdict path: no verdict.txt at $RDIR"
+fi
+if [ -n "$RDIR" ] && [ -f "$RDIR/reports/report.md" ] && grep -q 'APPROVE' "$RDIR/reports/report.md"; then
+  pass "run-dir verdict path: reports/report.md archived"
+else
+  fail "run-dir verdict path: report.md missing"
+fi
+if [ -n "$RDIR" ] && [ -f "$RDIR/verdicts.json" ] && grep -q 'APPROVE' "$RDIR/verdicts.json"; then
+  pass "run-dir per-PR review manifest (verdicts.json) written"
+else
+  fail "run-dir verdicts.json missing/empty"
+fi
 rm -rf "$DELIVER"
 
 # ─── Summary ───────────────────────────────────────────────────────────────

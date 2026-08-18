@@ -164,10 +164,50 @@ jobs:
           fi
           echo "GATE=true" >> "$GITHUB_OUTPUT"
 
-      - name: Run headless factory loop
+      - name: Pickup gate (skip if an open [factory] PR exists)
         if: steps.gate.outputs.GATE == 'true'
         env:
           FACTORY_GH_PAT: ${{ secrets.FACTORY_GH_PAT }}
+        run: |
+          set -euo pipefail
+          cd "$GITHUB_WORKSPACE"
+          TASK_ARGS="${{ steps.gate.outputs.TASK_ARGS }}"
+          [ -n "$TASK_ARGS" ] || exit 0
+          slug="${TASK_ARGS#--task }"
+          # Resolve the declared repos from the PRD **Repos:** header (default: root).
+          prd="$(ls docs/prd-queue/*-"$slug.md" 2>/dev/null | head -1 || true)"
+          REPOS=""
+          if [ -n "$prd" ] && grep -q '^\*\*Repos\*\*:' "$prd"; then
+            REPOS="$(grep -m1 '^\*\*Repos\*\*:' "$prd" | sed 's/^\*\*Repos\*\*: *//; s/,/ /g')"
+          fi
+          # US8 / J2: an open `[factory] <slug>` PR on any declared repo means a
+          # delivery is already in flight — do NOT re-implement. `gh` (PAT auth)
+          # is live here; factory-run.sh's internal pickup_gate() self-resolves
+          # the same repos and SKIPs too, so the gate is enforced regardless.
+          OPEN=""
+          check() { # <repo-or-owner/repo>
+            local n; n="$(gh pr list --repo "$1" --search "\"[factory] $slug\"" --state open --json number 2>/dev/null \
+              | python3 -c 'import sys,json;print(len(json.loads(sys.stdin.read() or "[]")))' 2>/dev/null || echo 0)"
+            [ "$n" -gt 0 ] 2>/dev/null && OPEN=y
+          }
+          if [ -n "$REPOS" ]; then
+            while read -r r; do [ -n "$r" ] && check "$r"; done <<< "$REPOS"
+          else
+            check ak47-arch/workspace
+          fi
+          if [ -n "$OPEN" ]; then
+            echo "Pickup gate: open [factory] PR for $slug — skipping this run."
+            echo "FACTORY_SKIP_PICKUP=true" >> "$GITHUB_ENV"
+          else
+            echo "Pickup gate: no open [factory] PR for $slug — proceed."
+          fi
+
+      - name: Run headless factory loop
+        if: steps.gate.outputs.GATE == 'true' && env.FACTORY_SKIP_PICKUP != 'true'
+        env:
+          FACTORY_GH_PAT: ${{ secrets.FACTORY_GH_PAT }}
+          FACTORY_GH_BIN: gh
+          FACTORY_ROOT_REPO: ak47-arch/workspace
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           LANGFUSE_SECRET_KEY: ${{ secrets.LANGFUSE_SECRET_KEY }}
@@ -219,6 +259,9 @@ jobs:
             [ -d "$RUN_DIR/sessions" ] && cp -r "$RUN_DIR/sessions" "$BUNDLE/sessions" 2>/dev/null || true
             cp "$RUN_DIR/session.jsonl" "$BUNDLE/streamed-session.jsonl" 2>/dev/null || true
             cp "$RUN_DIR"/container-*.log "$BUNDLE/" 2>/dev/null || true
+            # Multi-repo run manifest (PRD: monitoring backbone; mirrored into the
+            # bookkeeping PR body).
+            cp "$RUN_DIR/manifest.json" "$BUNDLE/manifest.json" 2>/dev/null || true
           fi
           # 2. Sanitized session copies the run committed under
           #    docs/knowledge/sessions (in-repo record; matches report IDs).
@@ -259,11 +302,14 @@ jobs:
           echo "  trace bundle -> ak47-arch/factory-traces runs/$RUN_ID"
       # The drivers persist tracking commits on the workspace checkout (archives
       # in docs/implementations + docs/code-reviews, sanitized knowledge
-      # sessions, task transitions, PR tracking). Locally those ride up with
-      # the operator's merge push; on an ephemeral runner they must be pushed
-      # here or they are lost. This pushes metadata only — never code, never a
-      # merge. Runs even on loop failure so reverts/partial reports persist.
-      - name: Sync tracking commits to master
+      # sessions, task transitions, PR tracking). Story 11 (multi-repo delivery
+      # bookkeeping PRs) RETIRES the direct-push stream: master receives content
+      # ONLY via merged PRs, never from `git push origin master`. Tracking
+      # commits are therefore committed locally on the runner; the durable docs
+      # copy reaches master through the bookkeeping PR (raised by factory-run.sh
+      # at loop end) or the operator's merge of the code PR — never by a
+      # direct-push to the default branch.
+      - name: Commit tracking changes locally (no direct master push)
         if: always()
         run: |
           set -euo pipefail
@@ -271,15 +317,9 @@ jobs:
           git add -A
           if ! git diff --cached --quiet; then
             git -c user.name=factory -c user.email=factory@ak47.local commit -q \
-              -m "factory(${{ steps.gate.outputs.TASK_ARGS }}): sync tracking commits from CI run" \
+              -m "factory(${{ steps.gate.outputs.TASK_ARGS }}): tracking commits from CI run" \
               || true
-            echo "  committed tracking changes"
+            echo "  committed tracking changes locally (no master push — master changes only via merged PRs, decision: multi-repo bookkeeping PRs)"
           else
-            echo "  no tracking changes to sync"
+            echo "  no tracking changes to commit"
           fi
-          # Merge remote master in, remote-wins on conflict (-X theirs): the
-          # tracking commit is metadata-only, so an operator's concurrent push
-          # (e.g. a knowledge index update) is never clobbered, and a rebase
-          # conflict can never strand the sync again.
-          git pull --no-rebase -X theirs origin master 2>/dev/null || true
-          git push origin master 2>&1 | tail -2

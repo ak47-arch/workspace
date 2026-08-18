@@ -198,6 +198,269 @@ grep -q "merge-pr" "$DRIVER" && { grep -q "bin/merge-pr.sh" "$DRIVER" && pass "m
 bash "$DRIVER" --task demo --yes > /dev/null 2>&1
 if grep -q "merge" "$FA_LOG"; then fail "a stub received a merge call"; else pass "no merge call reaches any driver"; fi
 
+# ─── Multi-repo: bookkeeping PR + manifest + pickup gate (PRD) ─────────────
+# Story 6/7: the bookkeeping PR is docs-only (tripwire) and mirrors the manifest;
+# the manifest is printed at loop end. Story 8: the pickup gate skips a task that
+# already has an open `[factory] <slug>` PR in a declared repo.
+echo "── bookkeeping PR (docs-only tripwire) + manifest print + pickup gate ──"
+GK="$(mktemp -d)"
+mkdir -p "$GK/docs/tasks" "$GK/docs/implementations/2026-08-18-bk" "$GK/bin"
+cat > "$GK/docs/tasks/bk.md" <<'TASK'
+# Task: bk
+
+**Status**: in-progress
+
+## PR tracking
+
+- PR: #20 (ak47-arch/workspace)
+TASK
+( cd "$GK" && git init -q -b master && git config user.email b@e.c && git config user.name B \
+  && git add -A && git commit -qm base )
+# The archived report the bookkeeping PR must carry (docs-only).
+echo "# Implementer (bk)" > "$GK/docs/implementations/2026-08-18-bk/report.md"
+( cd "$GK" && git add -A && git commit -qm 'archive report' )
+cat > "$GK/bin/stub-implementer.sh" <<'STUB'
+#!/usr/bin/env bash
+printf 'implementer %s\n' "$*" >> "$FA_LOG"
+printf '  Task PR tracking: #20 recorded on docs/tasks/bk.md\n'
+exit 0
+STUB
+cat > "$GK/bin/stub-reviewer.sh" <<'STUB'
+#!/usr/bin/env bash
+printf 'reviewer %s\n' "$*" >> "$FA_LOG"
+slug="${FA_SLUG:-bk}"
+report="$FACTORY_WORKSPACE/docs/code-reviews/$(date '+%Y-%m-%d')-$slug/report.md"
+mkdir -p "$(dirname "$report")"
+{ echo "# Code Review"; echo ""; echo "## Verdict"; echo "APPROVE"; } > "$report"
+exit 0
+STUB
+chmod +x "$GK/bin/stub-implementer.sh" "$GK/bin/stub-reviewer.sh"
+# Mock gh: logs calls; `pr create` emits a URL; `pr list` returns no open PRs.
+cat > "$GK/mock-gh.sh" <<'MOCK'
+#!/usr/bin/env bash
+LOG="$FACTORY_GH_LOG"
+{ printf 'gh'; for a in "$@"; do printf ' <%s>' "$a"; done; printf '\n'; } >> "$LOG"
+case "$1" in
+  pr) case "$2" in
+        create) printf 'https://github.com/ak47-arch/workspace/pull/99\n' ;;
+        list) printf '[]\n' ;;
+      esac ;;
+  label) : ;;
+esac
+exit 0
+MOCK
+chmod +x "$GK/mock-gh.sh"
+printf '{"task":"bk","outcome":"approved","repos":{"goal-agent":{"pr":20,"verdict":"APPROVE"}},"bookkeeping_pr":null,"trips":{"bookkeeping_docs_only":true}}\n' > "$GK/manifest.json"
+
+export FACTORY_WORKSPACE="$GK" FA_RUN_IMPLEMENTER="$GK/bin/stub-implementer.sh" \
+  FA_RUN_REVIEWER="$GK/bin/stub-reviewer.sh" FA_LOG="$GK/calls.log" FA_SLUG="bk" \
+  FACTORY_GH_BIN="$GK/mock-gh.sh" FACTORY_GH_LOG="$GK/gh.log" \
+  BK_MANIFEST="$GK/manifest.json" FACTORY_ROOT_REPO="ak47-arch/workspace"
+: > "$FA_LOG"; : > "$FACTORY_GH_LOG"
+bash "$DRIVER" --task bk --headless > "$GK/bk.out" 2>&1; rc=$?
+[ "$rc" -eq 0 ] && pass "bookkeeping: headless approve exits 0" || fail "bookkeeping headless rc=$rc: $(tail -3 "$GK/bk.out" | tr '\n' ' ')"
+grep -q '<pr> <create>' "$FACTORY_GH_LOG" \
+  && pass "bookkeeping: gh pr create invoked (factory:bookkeeping)" \
+  || fail "bookkeeping: gh pr create missing: $(cat "$FACTORY_GH_LOG" | tr '\n' ' ')"
+grep -q 'factory:bookkeeping' "$FACTORY_GH_LOG" \
+  && pass "bookkeeping: labeled factory:bookkeeping" || fail "bookkeeping: label missing"
+# Tripwire: the bookkeeping branch diff must be docs-only (we committed only docs/).
+grep -q 'bookkeeping' "$GK/bk.out" && pass "bookkeeping: bookkeeping PR path reached" || fail "bookkeeping: no bookkeeping output"
+grep -q 'Run manifest' "$GK/bk.out" \
+  && pass "bookkeeping: manifest printed at loop end" || fail "bookkeeping: manifest not printed: $(cat "$GK/bk.out" | tr '\n' ' ')"
+# Bookkeeping branch pushed to origin (git fixture's bare remote).
+BKB="$(git -C "$GK" log --all --oneline 2>/dev/null | wc -l)"
+git -C "$GK" branch -a 2>/dev/null | grep -q 'bookkeeping' \
+  && pass "bookkeeping: branch created" || fail "bookkeeping: branch missing"
+
+# Tripwire negative: a bookkeeping commit touching bin/ must fail loudly.
+TW="$(mktemp -d)"
+mkdir -p "$TW/bin" "$TW/config"
+( cd "$TW" && git init -q -b master && git config user.email t@e.c && git config user.name T \
+  && echo x > bin/x.txt && git add -A && git commit -qm base )
+echo '# x' > "$TW/bin/y.txt"
+( cd "$TW" && git checkout -qb factory/trip/bk && git add bin/y.txt && git commit -qm 'code trip' )
+DRIVER_DIR="$(dirname "$DRIVER")"
+cp "$DRIVER_DIR/config/implementer.json" "$TW/config/implementer.json" 2>/dev/null || true
+# The docs-only check (bookkeeping_tripwire) against a bookkeeping branch whose
+# HEAD commit touches bin/ → must flag it (story 6).
+(cd "$TW" && IMPLEMENTER_RUN_SOURCED=1 bash -c '
+  source bin/implementer-run.sh >/dev/null 2>&1 || true
+  set +e
+  bookkeeping_tripwire . HEAD >/dev/null 2>&1
+  exit $?
+')
+rc=$?
+[ "$rc" -ne 0 ] && pass "bookkeeping tripwire: bin/ in bookkeeping commit → fail" \
+  || fail "bookkeeping tripwire: bin/ not flagged (rc=$rc)"
+
+# Pickup gate: an open `[factory] bk` PR in a declared repo → loud skip, no impl.
+cat > "$GK/mock-gh-open.sh" <<'MOCK'
+#!/usr/bin/env bash
+LOG="$FACTORY_GH_LOG"
+{ printf 'gh'; for a in "$@"; do printf ' <%s>' "$a"; done; printf '\n'; } >> "$LOG"
+case "$1" in pr) case "$2" in list) printf '[{"number":20}]\n';; esac;; esac
+exit 0
+MOCK
+chmod +x "$GK/mock-gh-open.sh"
+: > "$FA_LOG"; : > "$FACTORY_GH_LOG"
+FACTORY_GH_BIN="$GK/mock-gh-open.sh" FACTORY_REPOS="ak47-arch/workspace" \
+  bash "$DRIVER" --task bk --headless > "$GK/gate.out" 2>&1; rc=$?
+[ "$rc" -eq 0 ] && grep -q "SKIP" "$GK/gate.out" \
+  && pass "pickup gate: open factory PR → loud skip, exit 0" \
+  || fail "pickup gate rc=$rc: $(cat "$GK/gate.out" | tr '\n' ' ')"
+grep -q "implementer" "$FA_LOG" && fail "pickup gate: implementer ran despite skip" \
+  || pass "pickup gate: implementer NOT run on skip"
+unset BK_MANIFEST FACTORY_GH_BIN FACTORY_GH_LOG FACTORY_REPOS FACTORY_ROOT_REPO
+
+# ─── Revision-run additions (review B-1/B-3/B-5 + US9 PR-set) ─────────────
+# make_ws <dir> <slug>: a factory workspace fixture (stub drivers + mock gh + a
+# committed archived report the bookkeeping PR carries). Returns nothing; sets
+# the caller-provided dir's path via echo.
+make_ws() {
+  local d="$1" slug="$2"
+  mkdir -p "$d/docs/tasks" "$d/docs/implementations/2026-08-18-$slug" "$d/bin"
+  printf '# Implementer (%s)\n' "$slug" > "$d/docs/implementations/2026-08-18-$slug/report.md"
+  cat > "$d/docs/tasks/$slug.md" <<TASK
+# Task: $slug
+
+**Status**: in-progress
+
+## PR tracking
+
+- PR: #1 (ak47-arch/workspace)
+TASK
+  ( cd "$d" && git init -q -b master && git config user.email r@e.c && git config user.name R \
+    && git add -A && git commit -qm base )
+  cat > "$d/bin/stub-implementer.sh" <<'STUB'
+#!/usr/bin/env bash
+printf 'implementer %s\n' "$*" >> "$FA_LOG"
+printf '  Task PR tracking: #1 recorded on docs/tasks/%s.md\n' "${FA_SLUG:-t}"
+exit 0
+STUB
+  chmod +x "$d/bin/stub-implementer.sh"
+  cat > "$d/mock-gh.sh" <<'MOCK'
+#!/usr/bin/env bash
+LOG="$FACTORY_GH_LOG"
+{ printf 'gh'; for a in "$@"; do printf ' <%s>' "$a"; done; printf '\n'; } >> "$LOG"
+case "$1" in
+  pr) case "$2" in
+        create) printf 'https://github.com/ak47-arch/workspace/pull/70\n' ;;
+        list) printf '[]\n' ;;
+      esac ;;
+  label) : ;;
+esac
+exit 0
+MOCK
+  chmod +x "$d/mock-gh.sh"
+}
+RR="$(mktemp -d)"
+
+echo "── revision: BK_MANIFEST default + Shape A loop-end invariant holds ──"
+WA="$(mktemp -d)"; make_ws "$WA" prs
+cat > "$WA/bin/stub-reviewer.sh" <<'STUB'
+#!/usr/bin/env bash
+printf 'reviewer %s\n' "$*" >> "$FA_LOG"
+slug="${FA_SLUG:-prs}"
+report="$FACTORY_WORKSPACE/docs/code-reviews/$(date '+%Y-%m-%d')-$slug/report.md"
+mkdir -p "$(dirname "$report")"
+{ echo "# Code Review"; echo ""; echo "## Verdict"; echo "APPROVE"; } > "$report"
+exit 0
+STUB
+chmod +x "$WA/bin/stub-reviewer.sh"
+mkdir -p "$RR/prs-0001"
+printf '%s\n' '{"task":"prs","repos":{"feed_analyser":{"pr":13,"verdict":null}},"bookkeeping_pr":null,"trips":{"bookkeeping_docs_only":true}}' > "$RR/prs-0001/manifest.json"
+export FACTORY_WORKSPACE="$WA" FA_RUN_IMPLEMENTER="$WA/bin/stub-implementer.sh" \
+  FA_RUN_REVIEWER="$WA/bin/stub-reviewer.sh" FA_LOG="$WA/calls.log" FA_SLUG="prs" \
+  FACTORY_GH_BIN="$WA/mock-gh.sh" FACTORY_GH_LOG="$WA/gh.log" FACTORY_ROOT_REPO="ak47-arch/workspace" \
+  FA_RUNS_ROOT="$RR"
+unset BK_MANIFEST   # exercise the B-3 default
+: > "$FA_LOG"; : > "$FACTORY_GH_LOG"
+bash "$DRIVER" --task prs --headless > "$WA/prs.out" 2>&1; rc=$?
+[ "$rc" -eq 0 ] && pass "revision B-3: bookkeeping raised with BK_MANIFEST defaulted (exit 0)" \
+  || fail "revision B-3 default rc=$rc: $(tail -2 "$WA/prs.out" | tr '\n' ' ')"
+grep -q 'BK_MANIFEST defaulted' "$WA/prs.out" \
+  && pass "revision B-3: BK_MANIFEST defaulted to run manifest" \
+  || fail "revision B-3: no 'defaulted' message"
+grep -q '<pr> <create>' "$FACTORY_GH_LOG" && pass "revision B-3: bookkeeping gh pr create invoked" \
+  || fail "revision B-3: no gh pr create"
+grep -q '"bookkeeping_pr": 70' "$RR/prs-0001/manifest.json" && pass "revision B-3: manifest bookkeeping_pr mirrored" \
+  || fail "revision B-3: manifest not mirrored: $(cat "$RR/prs-0001/manifest.json" | tr '\n' ' ')"
+grep -q 'loop-end delivery invariant holds' "$WA/prs.out" \
+  && pass "revision B-1: loop-end invariant asserted + holds (Shape A)" \
+  || fail "revision B-1: no loop-end invariant line"
+
+# Loop-end invariant violation: root_code_pr AND bookkeeping_pr both set → exit 1.
+echo "── revision: loop-end invariant violation → exit 1 ──"
+WB="$(mktemp -d)"; make_ws "$WB" inv
+cat > "$WB/bin/stub-reviewer.sh" <<'STUB'
+#!/usr/bin/env bash
+printf 'reviewer %s\n' "$*" >> "$FA_LOG"
+slug="${FA_SLUG:-inv}"
+report="$FACTORY_WORKSPACE/docs/code-reviews/$(date '+%Y-%m-%d')-$slug/report.md"
+mkdir -p "$(dirname "$report")"
+{ echo "# Code Review"; echo ""; echo "## Verdict"; echo "APPROVE"; } > "$report"
+exit 0
+STUB
+chmod +x "$WB/bin/stub-reviewer.sh"
+mkdir -p "$RR/inv-0001"
+printf '%s\n' '{"task":"inv","repos":{"workspace":{"pr":11}},"root_code_pr":11,"bookkeeping_pr":99,"trips":{"bookkeeping_docs_only":true}}' > "$RR/inv-0001/manifest.json"
+export FACTORY_WORKSPACE="$WB" FA_RUN_IMPLEMENTER="$WB/bin/stub-implementer.sh" \
+  FA_RUN_REVIEWER="$WB/bin/stub-reviewer.sh" FA_LOG="$WB/calls.log" FA_SLUG="inv" \
+  FACTORY_GH_BIN="$WB/mock-gh.sh" FACTORY_GH_LOG="$WB/gh.log" FACTORY_ROOT_REPO="ak47-arch/workspace" \
+  FA_RUNS_ROOT="$RR"
+unset BK_MANIFEST
+: > "$FA_LOG"; : > "$FACTORY_GH_LOG"
+bash "$DRIVER" --task inv --headless > "$WB/inv.out" 2>&1; rc=$?
+[ "$rc" -eq 1 ] && grep -q 'loop-end delivery invariant violated' "$WB/inv.out" \
+  && pass "revision B-1: loop-end invariant violation → exit 1" \
+  || fail "revision B-1 violation rc=$rc: $(tail -3 "$WB/inv.out" | tr '\n' ' ')"
+
+# US9 PR-set: multi-repo manifest (2 PRs) → review the set once, revise ONLY the
+# rejected repo, re-review it, approve, raise bookkeeping.
+echo "── revision US9: PR-set headless — revise only rejected repo ──"
+WC="$(mktemp -d)"; make_ws "$WC" set2
+cat > "$WC/bin/stub-reviewer.sh" <<'STUB'
+#!/usr/bin/env bash
+printf 'reviewer %s\n' "$*" >> "$FA_LOG"
+count=$(($(cat "$FA_COUNT" 2>/dev/null || echo 0) + 1)); echo "$count" > "$FA_COUNT"
+[ -n "$REVIEWER_SET_VERDICTS" ] || exit 0
+python3 - "$REVIEWER_SET_VERDICTS" "$FA_REJECT_PR" "$count" "$@" <<'PY'
+import json, sys
+mf, rej, count = sys.argv[1], sys.argv[2], int(sys.argv[3])
+prs = sys.argv[4:]
+d = {"task": "set2", "repos": {}}
+for pr in prs:
+    v = "REQUEST_CHANGES" if (pr == rej and count == 1) else "APPROVE"
+    d["repos"]["workspace#%s" % pr] = {"verdict": v, "state": "open"}
+with open(mf, "w") as f:
+    json.dump(d, f, indent=2)
+PY
+exit 0
+STUB
+chmod +x "$WC/bin/stub-reviewer.sh"
+mkdir -p "$RR/set2-0001"
+printf '%s\n' '{"task":"set2","repos":{"workspace":{"pr":11},"feed_analyser":{"pr":12}},"bookkeeping_pr":null,"trips":{"bookkeeping_docs_only":true}}' > "$RR/set2-0001/manifest.json"
+export FACTORY_WORKSPACE="$WC" FA_RUN_IMPLEMENTER="$WC/bin/stub-implementer.sh" \
+  FA_RUN_REVIEWER="$WC/bin/stub-reviewer.sh" FA_LOG="$WC/calls.log" FA_SLUG="set2" \
+  FACTORY_GH_BIN="$WC/mock-gh.sh" FACTORY_GH_LOG="$WC/gh.log" FACTORY_ROOT_REPO="ak47-arch/workspace" \
+  FA_RUNS_ROOT="$RR" FA_REJECT_PR="12" FA_COUNT="$WC/count"
+unset BK_MANIFEST
+: > "$FA_LOG"; : > "$FACTORY_GH_LOG"; : > "$FA_COUNT"
+bash "$DRIVER" --task set2 --headless > "$WC/set2.out" 2>&1; rc=$?
+[ "$rc" -eq 0 ] && pass "US9: PR-set headless approves after revising rejected (exit 0)" \
+  || fail "US9 PR-set rc=$rc: $(tail -3 "$WC/set2.out" | tr '\n' ' ')"
+grep -q 'implementer --revise 12' "$FA_LOG" && pass "US9: only rejected PR 12 revised" \
+  || fail "US9: revise 12 missing: $(cat "$FA_LOG" | tr '\n' ' ')"
+grep -q 'implementer --revise 11' "$FA_LOG" && fail "US9: approved PR 11 was revised" \
+  || pass "US9: approved PR 11 NOT revised"
+revcnt="$(grep -c 'reviewer ' "$FA_LOG")"
+[ "$revcnt" -eq 2 ] && pass "US9: 2 reviews across the set (initial 2-PR pass + re-review of pr 12)" \
+  || fail "US9: reviewer count=$revcnt"
+unset BK_MANIFEST FACTORY_GH_BIN FACTORY_GH_LOG FACTORY_ROOT_REPO FA_RUNS_ROOT FA_REJECT_PR \
+      FACTORY_WORKSPACE FA_RUN_IMPLEMENTER FA_RUN_REVIEWER FA_SLUG FA_LOG
+rm -rf "$RR" "$WA" "$WB" "$WC"
+
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "factory-run: $PASS passed, $FAIL failed"
