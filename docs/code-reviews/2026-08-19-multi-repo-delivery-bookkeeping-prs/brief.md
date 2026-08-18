@@ -3,10 +3,10 @@
 - **PR URL**: ak47-arch/workspace#12
 - **Task slug**: multi-repo-delivery-bookkeeping-prs
 - **PRD path** (read-only; also below): /home/anupam/.herdr/worktrees/workspace/factory-local-run-multi-repo-20260819-013126/docs/prd-queue/2026-08-18-multi-repo-delivery-bookkeeping-prs.md
-- **Review session UUID**: 745d22cb-1a68-49b2-b859-07173257e29e
+- **Review session UUID**: 1af5f8c7-cd78-4125-a223-847f6aa4418a
 - **Worktree path** (PR head, read-only for you): /sandbox/worktree
 - **Base ref**: 03418e281fee1d5f70004baa63afcd72f2e29dfd
-- **Head ref**: 68d68f28061cfa7e66b9637908750a02f8f9b097
+- **Head ref**: 3bf06eebb58a2abc9ca34037f671c7617922465e
 - **Outbox path** (write the review report here): /sandbox/outbox
 
 ## Rules (binding)
