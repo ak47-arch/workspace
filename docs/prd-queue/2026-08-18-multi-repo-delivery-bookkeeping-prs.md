@@ -1,7 +1,7 @@
 # PRD: Multi-repo delivery — per-repo implementation PRs + PR-based bookkeeping on the workspace root
 
 **Date**: 2026-08-18 19:59
-**Status**: Draft
+**Status**: Final
 **Owner**: software-factory workspace
 **Task**: multi-repo-delivery-bookkeeping-prs
 **Repos**: workspace (root)
@@ -108,17 +108,20 @@ Mechanics:
 10. `bin/merge-pr.sh` accepts the **PR set**, pre-flights all-open, merges
     each, records a Merge row per PR on the task file, and transitions the
     task to complete only when the **whole set** is merged.
-11. Once the sync step and `merge-pr.sh` master pushes are retired, the
-    `workspace` repo's default branch is protected **merge-only** (branch
-    protection on the public workspace repo — free-plan enforceable) and
-    verified via the protection API: master receives content only via merged
-    PRs.
+11. The direct-push streams are retired: the sync step's `git add -A` +
+    `git push origin master` is gone from `factory.yml`, and `merge-pr.sh`
+    no longer pushes master — master receives content only via merged PRs.
+    (Applying merge-only branch protection to the workspace default branch
+    is the operator capstone **after** UAT — see Acceptance — and is owned
+    by the `branch-protection-merge-only` companion, not this task.)
 
 ## Implementation decisions
 
 - **Repo declaration:** PRD header `**Repos:**` — comma-separated repo_map
   values; `.`/`workspace` = root. Absent → single repo derived from Task
-  `**Project:**` (backward compatible with every existing PRD).
+  `**Project:**` (backward compatible with every existing PRD). Both
+  `software-factory` and `langfuse` map to `.` in repo_map — either key
+  counts as the root; declaring both collapses to a single root entry.
 - **One brain**: a single container / session with N writable worktrees
   (never N containers) — preserves cross-repo coherence and session
   continuation across respawns and revisions.
@@ -219,6 +222,9 @@ print manifest + exit status (fail-loud = non-zero + per-repo table surfaced)
   "trips": {"bookkeeping_docs_only": true}
 }
 ```
+
+Sample keys are illustrative — real keys come from the current
+`config/implementer.json` repo_map.
 
 ### Delivery invariant (assert twice — min, after delivery, after loop end)
 
