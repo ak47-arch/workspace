@@ -65,6 +65,8 @@ tasks:
     - Save compressed sessions on disc not the whole session (software-factory)
     - Bring the product layer to mobile (software-factory)
     - Compress all session files reclaiming disk space (software-factory)
+    - Multi-repo delivery: tasks may touch several repos and raise one implementation PR per repo, with all bookkeeping on a workspace-root PR (collapsed into the root PR when the root is touched); replace the direct-push sync step with PR-based bookkeeping plus a run manifest and fail-fast/fail-loud monitoring (software-factory) [multi-repo-delivery-bookkeeping-prs]
+    - Enforce merge-only on all repos: GitHub branch protection on every default branch so no code is ever pushed directly — everything merges via a reviewed PR (software-factory) [branch-protection-merge-only]
 
     ### Queued
     ### Complete

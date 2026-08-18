@@ -21,9 +21,9 @@ Entries are grouped by project for progressive discovery. When the agent needs t
 
 
 
+
 ### software-factory
 
-- [Code reaches master only via PR merge — tracking/evidence syncs direct](sessions/01a00c50-b714-7811-8086-3bc6e0a8ea64/decisions/09-code-master-pr-gate.md)
 - [implementer delivery failure loud](sessions/8370f85b-3627-49fd-ad16-0df58e6c7cd4/decisions/01-implementer-delivery-failure-loud.md)
 - [delivery failure loud local nounset](sessions/afe61c92-6a16-4510-84ea-96d0f91badf6/decisions/02-delivery-failure-loud-local-nounset.md)
 - [delivery failure loud gh seam](sessions/afe61c92-6a16-4510-84ea-96d0f91badf6/decisions/01-delivery-failure-loud-gh-seam.md)
@@ -97,6 +97,9 @@ Entries are grouped by project for progressive discovery. When the agent needs t
 - [CI runs must sync tracking commits to master — ephemeral runners discard local commits](sessions/01a00c50-b714-7811-8086-3bc6e0a8ea64/decisions/07-ci-tracking-sync-ephemeral-runners.md)
 - [Driver delivery failures must be loud — never false-success Done (exit 0)](sessions/01a00c50-b714-7811-8086-3bc6e0a8ea64/decisions/08-delivery-failure-loud.md)
 - [implementer delivery fail loudly](sessions/d5492a5c-6c07-4f58-b410-5feefa2a43c2/decisions/01-implementer-delivery-fail-loudly.md)
+- [Code reaches master only via PR merge — tracking/evidence syncs direct](sessions/01a00c50-b714-7811-8086-3bc6e0a8ea64/decisions/09-code-master-pr-gate.md)
+- [Multi-repo delivery — per-repo implementation PRs + PR-based bookkeeping on the workspace root](sessions/01a01515-8457-7260-a4d6-45731d61d571/decisions/01-multi-repo-delivery-pr-shapes.md)
+- [Enforce merge-only on every default branch — GitHub branch protection, no direct pushes](sessions/01a01515-8457-7260-a4d6-45731d61d571/decisions/02-branch-protection-merge-only.md)
 
 ### workspace-portability
 
