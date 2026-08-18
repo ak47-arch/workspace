@@ -1,6 +1,6 @@
 ## Decision: Enforce merge-only on every default branch — GitHub branch protection, no direct pushes
 
-**Status**: proposed
+**Status**: accepted
 **Date**: 2026-08-18 19:59
 **Task**: branch-protection-merge-only
 **Project**: software-factory
@@ -85,6 +85,35 @@ the multi-repo refactor removes).
 - Verification of a negative case (push rejected) needs a non-admin token and
   is documented as a one-time manual step per repo; the ruleset GET assertion
   is scripted and CI-runnable.
+
+### Execution (2026-08-18 — executed in-session, not via the loop)
+
+One-time action — the plan's scripts (`bin/enable-branch-protection.sh`,
+`bin/test-branch-protection.sh`) were **dropped as over-engineering** (YAGNI:
+remote enforcement needs no committed tooling; this decision record + the PRD
+execution note are the audit trail).
+
+**Applied + verified via GET on 2026-08-18** (classic branch protection, since
+repository rulesets are Pro-gated on private repos):
+
+- `ak47-arch/llamacpp_inference_server` (master)
+- `ak47-arch/headroom-pi` (main)
+- `ak47-arch/timesheetViewer` (main)
+
+Payload: `required_pull_request_reviews` (0 approvals — the user's merge at
+UAT is the review), `enforce_admins: true` (no bypass, incl. the factory
+PAT), `allow_force_pushes: false`, `allow_deletions: false`.
+
+**Blocked — GitHub free plan:** private repos (`goal-agent`, `feed_analyser`,
+`workspace-portability`, `resume`, `emotional_architecture`) reject BOTH
+repository rulesets and the classic branch-protection API with
+"Upgrade to GitHub Pro or make this repository public" (HTTP 403). There is
+no remote enforcement on free private repos. Open decision: upgrade to Pro,
+or accept the gap under a documented policy until then.
+
+**Sequenced:** the `workspace` repo is **public** → protectable on free; it
+becomes merge-only as the capstone of `multi-repo-delivery-bookkeeping-prs`
+(its sync step and `merge-pr.sh` master pushes must be retired first).
 
 ### Revision triggers
 

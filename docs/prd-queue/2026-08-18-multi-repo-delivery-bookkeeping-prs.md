@@ -108,6 +108,11 @@ Mechanics:
 10. `bin/merge-pr.sh` accepts the **PR set**, pre-flights all-open, merges
     each, records a Merge row per PR on the task file, and transitions the
     task to complete only when the **whole set** is merged.
+11. Once the sync step and `merge-pr.sh` master pushes are retired, the
+    `workspace` repo's default branch is protected **merge-only** (branch
+    protection on the public workspace repo — free-plan enforceable) and
+    verified via the protection API: master receives content only via merged
+    PRs.
 
 ## Implementation decisions
 
@@ -301,7 +306,7 @@ bash bin/test-factory-run.sh          # loop over set, bookkeeping PR raise + ma
 bash bin/test-merge-pr.sh             # pre-flight + multi-merge + complete
 ```
 
-Plus a **live smoke**: one real task with a two-repo PRD through `bin/factory-run.sh --headless` on a scratch branch — assert exactly N code PRs + 1 bookkeeping PR, invariant holds, manifest printed, loop stops at APPROVE. Manual UAT-completion pass `bin/merge-pr.sh <set>`.
+Plus a **live smoke**: one real task with a two-repo PRD through `bin/factory-run.sh --headless` on a scratch branch — assert exactly N code PRs + 1 bookkeeping PR, invariant holds, manifest printed, loop stops at APPROVE. Manual UAT-completion pass `bin/merge-pr.sh <set>`. Operator capstone (after UAT merge): apply + verify workspace branch protection — `gh api -X PUT repos/ak47-arch/workspace/branches/master/protection` with `enforce_admins: true`, PR-required (0 approvals), no force push, no deletions, then GET it back (the workspace is public, so free-plan enforceable).
 
 ## Out-of-scope
 
@@ -317,4 +322,7 @@ This task is itself a workspace-root-only task (`repos: workspace`) — it
 implements Shape B (root PR with code + bookkeeping) end-to-end on the live
 factory, and doubles as the dogfood for the new bookkeeping stream. Land the
 `branch-protection-merge-only` workspace enforcement only after this task
-completes (the sync step must be retired first).
+completes (the sync step must be retired first). Private app repos
+(`goal-agent`, `feed_analyser`, `workspace-portability`, `resume`,
+`emotional_architecture`) remain unenforceable on the GitHub free plan
+(Pro-gated) — see the `branch-protection-merge-only` PRD's execution note.
