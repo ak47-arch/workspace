@@ -12,7 +12,7 @@
     "langfuse": "."
   },
   "model": "openrouter/deepseek/deepseek-v4-flash-0731",
-  "timeout_sec": 1800,
+  "timeout_sec": 3600,
   "respawn_cap": 3,
   "env_allowlist": [
     "OPENROUTER_API_KEY",
