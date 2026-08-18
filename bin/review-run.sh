@@ -330,7 +330,7 @@ prepare_run_dir() {
   echo "  Review session UUID: $REVIEW_UUID" >&2
 
   local src_repo="$WORKSPACE/$TARGET_REPO"
-  [ -d "$src_repo/.git" ] || die "Target repo not a git repo: $src_repo"
+  [ -e "$src_repo/.git" ] || die "Target repo not a git repo: $src_repo"
 
   # Self-contained clone in the run dir (keeps all git metadata writable).
   git clone --quiet --local "$src_repo" "$WORKTREE" 2>/dev/null \

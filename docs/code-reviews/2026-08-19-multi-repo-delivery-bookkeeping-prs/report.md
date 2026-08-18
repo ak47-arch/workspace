@@ -1,0 +1,74 @@
+# Code Review
+- Reviewed: ak47-arch/workspace#12 (repo: workspace, PR #12)
+- Task: multi-repo-delivery-bookkeeping-prs · PRD: docs/prd-queue/2026-08-18-multi-repo-delivery-bookkeeping-prs.md · Review session: 1af5f8c7-cd78-4125-a223-847f6aa4418a
+- Base: 03418e281fee1d5f70004baa63afcd72f2e29dfd → Head: 3bf06eebb58a2abc9ca34037f671c7617922465e
+- Note: this is the **re-review of revision 1** (previous review session 745d22cb on head 68d68f2 returned REQUEST_CHANGES with blockers B-1…B-5 + J2/J3). Base ref 03418e2 is not an ancestor of the head (it carries master-line sync-tracking commits); the authoritative PR delta is the three-dot `base…head` = `diff(3d498f03..3bf06ee)` = **11 modified files, no deletions, no out-of-scope edits**.
+
+## Verdict
+APPROVE — all 5 prior blocking findings (B-1…B-5) plus the J2/J3 conformance items are fixed and verified in the diff and tests; all four PRD acceptance suites pass (229 tests, 0 failures). Remaining items are advisory over-engineering notes and UAT-only (live-CI) items, none blocking.
+
+## Verification results
+All four PRD acceptance commands ran in `/sandbox/worktree` (network-free, mock `gh` — no live remote):
+
+| Command | Result | Evidence |
+|---|---|---|
+| `bash bin/test-implementer-driver.sh` | **ran, exit 0 — 85 passed, 0 failed** | resolve_repo_set unknown-repo→exit2; per-worktree delivery; Shape B collapse (`>=2 commits`, `one gh pr create`); delivery-time invariant (Shape A no-false-fail + B violations loud); bookkeeping tripwire (docs-only) |
+| `bash bin/test-review-driver.sh` | **ran, exit 0 — 66 passed, 0 failed** | PR-set; run-dir verdict path (`reports/verdict.txt`, `reports/report.md`, `verdicts.json`) all written APPROVE |
+| `bash bin/test-factory-run.sh` | **ran, exit 0 — 59 passed, 0 failed** | B-3 (BK_MANIFEST defaulted to run manifest + `gh pr create` invoked + bookkeeping_pr mirrored); B-1 loop-end invariant holds (Shape A) and violation→exit 1; US9 PR-set headless (only rejected PR 12 revised, PR 11 not; 2 reviews across set); pickup gate loud skip exit 0; bookkeeping tripwire (bin/→fail) |
+| `bash bin/test-merge-pr.sh` | **ran, exit 0 — 19 passed, 0 failed** | multi pre-flight abort on already-merged; per-PR Merge rows (2); complete-on-whole-set; partial merge→no complete |
+
+Sum **229 passed / 0 failed** — matches the implementer's revision-1 report claim.
+`bash -n` passes for `bin/factory-run.sh`, `bin/implementer-run.sh`, `bin/review-run.sh`, `bin/merge-pr.sh`.
+**Deferred (needs GitHub/gh/network, driver/operator-side):** the PRD's live smoke (one real two-repo PRD through `factory-run.sh --headless`) and the operator capstone (branch-protection PUT). Both are recorded in UAT.
+
+## Story-by-story
+- [PASS] **US1** Single app repo → exactly 2 PRs. Legacy single non-root path uses `push_and_pr`; the +1 docs-only bookkeeping PR is now raised live by `finish_bookkeeping` (factory-run.sh) with `BK_MANIFEST` defaulted to the implementer's run manifest (`factory_manifest`) — B-3 fixed, so no env seam is required. Tested ("B-3 bookkeeping raised with defaulted BK_MANIFEST", "gh pr create invoked").
+- [PASS] **US2** N app repos → exactly N+1 PRs. `deliver_repo_set` raises one code PR per repo; `assert_delivery_invariant` is now **delivery-time** (Shape A → bookkeeping pending, no false-fail — B-1), and the **full A/B XOR is re-asserted at loop end** in `finalize_headless`/`assert_loop_end_invariant`. Tested (loop-end invariant holds for Shape A; violation → exit 1).
+- [PASS] **US3** Workspace-root-only → 1 PR with code+bookkeeping commits. `deliver_shape_b_root` (implementer-run.sh) does a code commit then a docs-only bookkeeping commit on one root branch, pushes one PR, sets `ROOT_CODE_PR`. Tested (`>=2 commits`, `one gh pr create`).
+- [PASS] **US4** Hybrid → 1 root PR + 1 app PR per app repo. Shape B for root + Shape A for apps via `deliver_repo_set`; invariant (delivery-time + loop-end) covers both legs. Tested as part of implementer-driver + factory-run suites.
+- [PASS] **US5** Delivery invariant holds after every delivery; violation fails loud. `assert_delivery_invariant` (Shape B: root-code-PR required & no bk) + `assert_loop_end_invariant` (full A/B XOR at loop end with per-repo status and non-zero exit). Both violation branches tested.
+- [PASS] **US6** Bookkeeping tripwire (docs-only). `bookkeeping_tripwire` (implementer-run.sh) on the Shape B bookkeeping commit + the staged-diff check in `raise_bookkeeping_pr` (factory-run.sh); any non-`docs/` path → hard fail. Negative (bin/) and positive cases tested in both suites.
+- [PASS] **US7** Run manifest written every run, shown at end, copied into the traces bundle, mirrored into the bookkeeping PR body. `write_run_manifest`+`print_manifest`; workflow copies `$RUN_DIR/manifest.json` into the bundle; `raise_bookkeeping_pr` embeds the manifest in the PR body and `set_manifest_bookkeeping_pr` patches `bookkeeping_pr` post-raise. Manifest content + print tested; mirroring tested (B-3 test asserts `manifest bookkeeping_pr mirrored`).
+- [PASS] **US8** Pickup gate skips a task with an open `[factory] <slug>` PR. `pickup_gate()` now self-resolves `FACTORY_REPOS` from the PRD `**Repos:**` header against local origins (`gate_repos_for`) and is LIVE (`FACTORY_GH_BIN: gh` exported in the workflow); **and** `.github/workflows/factory.yml` gained a "Pickup gate (skip if an open [factory] PR exists)" step that gates the headless loop (`env.FACTORY_SKIP_PICKUP != 'true'`). B-2 fixed on both the driver and workflow paths. Tested (loud skip, exit 0, implementer not run).
+- [PASS] **US9** On REQUEST_CHANGES only rejected repos revised. `review-run.sh` accepts a PR set (`<pr> [<pr2>…]`), reviews each in its own process, merges verdicts into `REVIEWER_SET_VERDICTS`; factory-run `headless_loop` derives the PR set from the run manifest (`resolve_run_ctx`), reviews the set, revises **only** the rejected repos (`revise_pr` per rejected PR), re-reviews those, cap per task. Tested (US9: only PR 12 revised, 11 not, 2 reviews; all-approve → exit 0).
+- [PASS] **US10** merge-pr.sh accepts the PR set, pre-flights all-open, merges each, per-PR Merge rows, completes only on whole-set merge. Implemented + tested (abort on already-merged with split named; 2 per-PR Merge rows; complete only when whole set merged; partial → exit 1, no complete transition).
+- [PASS] **US11** Direct-push streams retired. Workflow "Sync tracking commits to master" → "Commit tracking changes locally (no direct master push)": `git pull`/`git push origin master` removed; the only remaining push is the sanctioned factory-traces stream. `bin/merge-pr.sh` no longer pushes master (commits locally, transitions via `transition-task.sh`). Verified by grep + tests.
+
+## Deterministic checks
+- [PASS] **D1 PR metadata sane** — commit `3bf06ee implementer(multi-repo-delivery-bookkeeping-prs): revision 1 [factory]…` parses to the task slug; base `03418e2` and head `3bf06ee` both resolve; PR delta non-empty and scoped to `bin/`, `.github/workflows/`, `docs/reference/`.
+- [PASS] **D2 Worktree clean / read-only** — HEAD detached at `3bf06ee`; `git status --short` clean before and after; reviewer made no writes; no git mutation.
+- [PASS] **D3 Scope containment** — three-dot `base…head` = exactly 11 files, all within the PRD file-tree (`bin/implementer-run.sh`, `bin/review-run.sh`, `bin/factory-run.sh`, `bin/merge-pr.sh`, 4 `bin/test-*.sh`, `.github/workflows/factory.yml`, `docs/reference/*.md`). No out-of-scope edits. (The stale-`docs/implementations/…-2026-08-18` deletion seen in earlier two-dot comparisons is an artefact of the base ref being a divergent master commit — the PR branch never carried that archive; no deletions appear in the true PR delta.)
+- [PASS] **D4 Scope ⊆ PRD file-map** — every implementation file the PRD lists is present. `bin/lib-pr-tracking.sh` (PRD: "verify schema") needs no change: per-PR Merge rows append through the existing `pr_tracking_add` row mechanism. `docs/tasks.txt`/`config/implementer.json` are driver-owned / intentionally untouched (no map change required).
+- [PASS] **D5 Story → diff coverage** — every user story (US1–US11) maps to concrete hunks (see Story-by-story); no capability present that no story requests.
+- [PASS] **D6 No secrets / stray deps** — diff scan found no private keys/tokens/real values; only env-var *names*; no `.env`; no new third-party deps added.
+- [PASS] **D7 Implementer report matches actual diff** — the archived `revision-1-report.md` claims 229 tests across 4 suites / 0 failures, which I reproduced exactly (85+66+59+19); every B-1…B-5 fix it describes is present in the diff and independently verified. The revision report is not committed in the PR (by design it lands via the dogfood Shape B bookkeeping commit at UAT) — recorded in UAT.
+
+## Judgment checks
+- [PASS] **J1 Story intent** — the observable behaviours of US1/2/4 (N+1 PRs with a durable docs-only bookkeeping PR), US8 (pickup gate), and US9 (per-repo revision) now hold end-to-end: the seams that activate them are wired in the live path (BK_MANIFEST default, self-resolving pickup gate, workflow gate step, PR-set loop) and the invariant no longer false-fails a legitimate Shape A delivery.
+- [PASS] **J2 PRD-decision conformance** — gate in the workflow (US8) ✓; verdict read-back switched to RUN_DIR (`read_verdict` → `review_run_dir`/`reports/verdict.txt`, review-run.sh writes them) ✓; bookkeeping PR raised by factory-run.sh at loop end (success or failure) ✓; "assert twice — after delivery + after loop end" ✓ (`assert_delivery_invariant` delivery-time + `assert_loop_end_invariant` loop-end); Shape B collapse = separate code→bookkeeping commits ✓; per-repo revision, cap per task ✓; merge-pr no master push ✓.
+- [PASS] **J3 Edge / error paths** — Shape A false-fail eliminated; `trap 'true' ERR` override removed; unused `local rc` removed; bookkeeping `gh pr create` failure is now fail-loud (F3) and propagates through `finish_bookkeeping`/`finalize_headless`; loop-end invariant violation → exit 1; cap-exhausted handled; partial delivery reports per-repo status; empty/unreadable verdict treated as non-APPROVE without revising.
+- [PASS] **J4 Ponytail over-engineering pass (ultra)** — the ponytail skills dir is not present in this container (injected only in the review container), so the pass was applied manually in the documented `L<line>: <tag> …` format (see Advisory). `ponytail-debt` harvest: no `ponytail:` shortcut markers found in the changed files.
+- [PASS] **J5 UAT gaps** — captured in the hand-off list.
+
+## Findings
+### Blocking (→ REQUEST_CHANGES)
+None. All five prior blockers (B-1 invariant assert point, B-2 pickup-gate wiring, B-3 inert bookkeeping seam, B-4 multi-PR review/revise loop, B-5 bookkeeping branch origin/swallow) are fixed and verified in the diff + tests.
+
+### Advisory (consider / over-engineering — never alone blocking)
+- `bin/implementer-run.sh:299` — `L299: delete repo_map_has_value` no-jq fallback hard-codes the repo dir list (`.|feed_analyser|workspace-portability|survival-infrastructure|llm|headroom-pi|resume|emotional_architecture|timesheetViewer`); it will drift from `config/implementer.json`. jq is present in the container and workflow — drop the fallback branch.
+- `bin/implementer-run.sh:541` + `bin/factory-run.sh:256` — `L541: stdlib duplicate print_manifest` defined twice with divergent output (implementer = formatted python table; factory = raw `cat`). Factor to a shared `bin/lib-*.sh` if both must keep it.
+- `bin/implementer-run.sh:179,766,791` — `L179: yagni REPO_WORKTREE` associative array is written (root + prepare_run_dirs) but never read anywhere; dead state. Remove or use it.
+- `bin/review-run.sh:852` vs `:863` — `L852: shrink` writes a per-PR `RUN_DIR/verdicts.json` that is overwritten per PR (singular `repos:{pr:…}`) and is redundant with the shared `REVIEWER_SET_VERDICTS` merge at `:863` that the loop actually reads. Keep one durable per-PR verdict source.
+- `bin/review-run.sh:775-840` — `L775: yagni` PR-set review logic: the aggregation of "rejected" depends on `REVIEWER_SET_VERDICTS` being set; when an operator runs `review-run.sh <pr1> <pr2>` directly without that env (only the factory loop sets it), the set branch can report "all approved" without per-PR verdict knowledge. Fine for the factory's internal use; a direct operator invocation should export the seam or the order be documented.
+- `bin/factory-run.sh` `headless_loop` — `L530: shrink run_review "${targets[*]}" "${targets[@]}"` passes the label and the array redundantly; harmless but the label/array split is easy to misread.
+
+## Ponytail debt (harvested from changed files)
+No `ponytail:` shortcut markers found in the changed files (`bin/factory-run.sh`, `bin/implementer-run.sh`, `bin/review-run.sh`, `bin/merge-pr.sh`, `.github/workflows/factory.yml`). ceiling: n/a. upgrade: n/a.
+
+## UAT hand-off list
+1. **Live two-repo smoke** (needs GitHub/gh/network — deferred from sandbox): run one real task with a two-repo PRD through `bin/factory-run.sh --headless` on a scratch branch; assert exactly N code PRs + 1 bookkeeping PR, the bookkeeping branch appears on GitHub (B-5 origin fix), manifest renders in the PR body, loop stops at APPROVE. This is the PRD's mandated live smoke and is now expected to pass (seams wired + invariant no longer false-fails).
+2. **Live pickup gate in CI**: confirm the new workflow "Pickup gate" step + `FACTORY_GH_BIN`/`FACTORY_ROOT_REPO` env and the retired direct-push sync step behave on a scratch task on `master`. Note: the workflow gate step resolves `**Repos:**` identifiers crudely (passes raw repo-map values/keys to `gh pr list --repo …`); the authoritative gate is factory-run.sh's self-resolving `pickup_gate()` (now live with `FACTORY_GH_BIN: gh`). Confirm the workflow's `env.FACTORY_SKIP_PICKUP != 'true'` step condition evaluates correctly with GITHUB_ENV.
+3. **Per-repo revision live**: force REQUEST_CHANGES on one of several repos and confirm only that repo is revised + re-reviewed (US9).
+4. **Shape B live**: confirm the root PR carries both the code commit and the fresh-bookkeeping report+manifest commit, and that the implementer **revision report lands via the bookkeeping commit** (it is not committed in this PR by design).
+5. **Manual UAT merge**: run `bin/merge-pr.sh <set>` for a multi-PR task — pre-flight, per-PR Merge rows, complete-on-whole-set transition (and confirm the task's in-repo status text in `docs/tasks/<slug>.md`).
+6. **Operator capstone (post-UAT, owned by `branch-protection-merge-only` companion)**: apply + GET-back `gh api …/repos/ak47-arch/workspace/branches/master/protection` with `enforce_admins: true`, PR-required (0 approvals), no force-push, no deletions. Private app repos remain Pro-gated/unenforceable on the free plan.

@@ -729,7 +729,7 @@ prepare_run_dir() {
 
   # Target repo, resolved to an absolute path on the host (for clone + push).
   local src_repo; src_repo="$WORKSPACE/$TARGET_REPO"
-  [ -d "$src_repo/.git" ] || die "Target repo not a git repo: $src_repo"
+  [ -e "$src_repo/.git" ] || die "Target repo not a git repo: $src_repo"
 
   # Self-contained clone in the run dir — NOT a host git worktree. A host
   # `git worktree .git` points at the host repo's common dir, which lives on
@@ -1482,7 +1482,7 @@ prepare_revision_dir() {
   echo "  Reusing original impl session UUID: $IMPL_UUID (decision 08, D1)" >&2
 
   local src_repo="$WORKSPACE/$TARGET_REPO"
-  [ -d "$src_repo/.git" ] || die "Target repo not a git repo: $src_repo"
+  [ -e "$src_repo/.git" ] || die "Target repo not a git repo: $src_repo"
 
   # Self-contained clone in the run dir (keeps all git metadata writable).
   git clone --quiet --local "$src_repo" "$WORKTREE" 2>/dev/null \
