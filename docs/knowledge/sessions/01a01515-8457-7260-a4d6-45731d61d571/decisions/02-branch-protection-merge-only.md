@@ -115,6 +115,16 @@ or accept the gap under a documented policy until then.
 becomes merge-only as the capstone of `multi-repo-delivery-bookkeeping-prs`
 (its sync step and `merge-pr.sh` master pushes must be retired first).
 
+**Negative test (observed 2026-08-18):** `git push origin master` from a
+throwaway clone of `ak47-arch/llamacpp_inference_server` using owner
+credentials was rejected server-side — `enforce_admins: true` confirmed live:
+
+```
+remote: error: GH006: Protected branch update failed for refs/heads/master.
+remote: - Changes must be made through a pull request.
+! [remote rejected] master -> master (protected branch hook declined)
+```
+
 ### Revision triggers
 
 - GitHub deprecates or changes repository rulesets semantics (migrate).
