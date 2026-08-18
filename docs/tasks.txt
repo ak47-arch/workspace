@@ -11,6 +11,7 @@ tasks:
     - plan the modularisation of all apps. it would be better if all projects follow same structure (all)
     - integrate langfuse with all applications (all) [langfuse-agentic-operations]
     - deprecate the spec driven process for all projects (all)
+    - Fix open wiki update pipeline for all apps (all)
 
     ### Queued
     ### Complete
