@@ -20,3 +20,11 @@
 
 - `docs/knowledge/sessions/01a01515-8457-7260-a4d6-45731d61d571/decisions/01-multi-repo-delivery-pr-shapes.md`
 - `docs/knowledge/sessions/01a01515-8457-7260-a4d6-45731d61d571/decisions/02-branch-protection-merge-only.md`
+
+## PR tracking
+
+- PR: #12 (ak47-arch/workspace)
+- URL: https://github.com/ak47-arch/workspace/pull/12
+- Branch: factory/multi-repo-delivery-bookkeeping-prs/20260819-013447
+- Base: master · Head: 68d68f28061cfa7e66b9637908750a02f8f9b097 (raised 2026-08-19 02:53)
+- Raised by: implementer run 4d89a859-9d05-4b28-9efd-e56aad8837e7
