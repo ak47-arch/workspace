@@ -125,6 +125,11 @@ remote: - Changes must be made through a pull request.
 ! [remote rejected] master -> master (protected branch hook declined)
 ```
 
+**Task disposition:** `branch-protection-merge-only` is **uncompletable as
+written** on the free plan — kept **open** by policy (nothing is closed
+directly; it stays `in-prd` with PRD Draft so the loop never picks it up).
+Re-evaluate if Pro is adopted.
+
 ### Revision triggers
 
 - GitHub deprecates or changes repository rulesets semantics (migrate).

@@ -141,6 +141,13 @@ trail).
 - This PRD returns to **Draft** so the headless loop does not pick it up while
   the platform constraint is unresolved.
 
+**Disposition:** the task is **uncompletable as written on the free plan** —
+kept open (never closed directly). This PRD stays **Draft** permanently until
+the platform constraint resolves, so the loop can never pick the task up.
+Re-evaluate if GitHub Pro is adopted (then protect the 5 private repos in one
+pass); the workspace portion is sequenced into
+`multi-repo-delivery-bookkeeping-prs`.
+
 ## Out-of-scope
 
 - Legacy branch protection API migration of existing settings.
