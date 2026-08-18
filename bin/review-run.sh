@@ -799,11 +799,26 @@ finalize_session_copy
 if [ "$local_result" -eq 0 ]; then
   echo "=== Review success — archiving + delivering ===" >&2
   archive
+  # Run-dir verdict path (PRD: review reports/verdicts land in the run dir, not
+  # only the checkout archive) — factory-run's loop reads the verdict from here.
+  mkdir -p "$RUN_DIR/reports"
+  if [ -f "$OUTBOX/report.md" ]; then
+    cp "$OUTBOX/report.md" "$RUN_DIR/reports/report.md"
+  fi
   # Determine verdict from the report (driver-side decision, for label + gate).
   # The verdict token appears at line start, bare or markdown-bold — match
   # either so a `**REQUEST_CHANGES**` report is never misread as reviewed-ok.
   verdict="$(grep -m1 -oE '^\*\*(APPROVE|REQUEST_CHANGES)\*\*|^(APPROVE|REQUEST_CHANGES)' "$OUTBOX/report.md" 2>/dev/null \
     | tr -d '*[:space:]' || true)"
+  printf '%s\n' "${verdict:-}" > "$RUN_DIR/reports/verdict.txt"
+  # Per-PR review manifest (PRD): verdicts read off the run dir.
+  python3 - "$RUN_DIR/verdicts.json" "$PRD_SLUG" "$PR_REPO#$PR_NUMBER" "${verdict:-}" <<'PYEOF' || true
+import json, sys
+mf, slug, pr, verdict = sys.argv[1:5]
+data = {"task": slug, "repos": {pr: {"verdict": verdict, "state": "open"}}}
+with open(mf, "w") as f:
+    json.dump(data, f, indent=2)
+PYEOF
   case "$verdict" in
     APPROVE*) REVIEW_OUTCOME="reviewed-ok"; TRANSITION_TO="in-review" ;;
     REQUEST_CHANGES*) REVIEW_OUTCOME="review-blocked"; TRANSITION_TO="" ;;

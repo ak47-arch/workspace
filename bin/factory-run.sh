@@ -107,12 +107,136 @@ trap 'rm -f "$RUN_LOG" "$REV_LOG"' EXIT
 # Headless revision cap (decision 04). Env-configurable, default 3.
 REVISION_CAP="${REVISION_CAP:-3}"
 
+# ─── Multi-repo bookkeeping (PRD: multi-repo delivery bookkeeping PRs) ─────
+# Shape A (workspace root NOT touched) gets exactly one docs-only bookkeeping PR
+# on the workspace root, raised at loop end (success OR failure). Shape B
+# (root touched) gets NO separate bookkeeping PR — the root code PR already
+# carries code + bookkeeping commits (implementer-run.sh). The A/B invariant is
+# therefore preserved by construction.
+#
+# raise_bookkeeping_pr <task> <root-pr-or-empty>: create a scratch clone of the
+# root, copy the run's docs artifacts (archived report/decisions/manifest) under
+# docs/, enforce the docs-only tripwire, push a `factory/<slug>/bookkeeping/<ts>`
+# branch and raise a `factory:bookkeeping` PR. Mirrors the manifest schema into
+# the PR body. Returns the PR url (or '' when gh/no-docs).
+FACTORY_GH_BIN="${FACTORY_GH_BIN:-gh}"
+raise_bookkeeping_pr() {
+  local task="$1"
+  local ts; ts="$(date '+%Y%m%d-%H%M%S')"
+  local branch="factory/$task/bookkeeping/$ts"
+  local bk_dir; bk_dir="$(mktemp -d)"
+  trap 'true' ERR
+  local rc=0
+  git clone --quiet --local "$WORKSPACE" "$bk_dir/root" 2>/dev/null \
+    || git clone --quiet "$WORKSPACE" "$bk_dir/root" || rc=1
+  git -C "$bk_dir/root" checkout -q -b "$branch" origin/master 2>/dev/null \
+    || git -C "$bk_dir/root" checkout -q -b "$branch" master 2>/dev/null || rc=1
+  git -C "$bk_dir/root" config user.name "${IMPL_GIT_NAME:-factory}"
+  git -C "$bk_dir/root" config user.email "${IMPL_GIT_EMAIL:-factory@ak47.local}"
+  # Copy the run's durable docs artifacts under docs/implementation (docs-only).
+  mkdir -p "$bk_dir/root/docs/implementations/$(date '+%Y-%m-%d')-$task"
+  if [ -f "$WORKSPACE/docs/implementations/$(date '+%Y-%m-%d')-$task/report.md" ]; then
+    cp "$WORKSPACE/docs/implementations/$(date '+%Y-%m-%d')-$task/report.md" \
+       "$bk_dir/root/docs/implementations/$(date '+%Y-%m-%d')-$task/" 2>/dev/null || true
+  fi
+  if [ -f "$BK_MANIFEST" ]; then
+    cp "$BK_MANIFEST" "$bk_dir/root/docs/implementations/$(date '+%Y-%m-%d')-$task/manifest.json" 2>/dev/null || true
+  fi
+  git -C "$bk_dir/root" add -A docs/ 2>/dev/null || true
+  if git -C "$bk_dir/root" diff --cached --quiet; then
+    echo "  (bookkeeping) no docs artifacts to commit — skipping bookkeeping PR." >&2
+    return 0
+  fi
+  # Docs-only tripwire (F4 / story 6).
+  local bad=0 f
+  while IFS= read -r f; do
+    [ -z "$f" ] && continue
+    case "$f" in docs/*) : ;; *) echo "  TRIPWIRE: bookkeeping PR touches non-docs path: $f" >&2; bad=1 ;; esac
+  done <<< "$(git -C "$bk_dir/root" diff --cached --name-only)"
+  if [ "$bad" -ne 0 ]; then
+    echo "  FAILED: bookkeeping PR diff touches code paths (tripwire) — run aborted." >&2
+    return 1
+  fi
+  git -C "$bk_dir/root" commit -q -m "factory($task): bookkeeping (docs only)" \
+    || { echo "  (bookkeeping) commit failed." >&2; return 1; }
+  if [ "$DRY_RUN" = true ]; then
+    echo "  [dry-run] would push $branch and raise factory:bookkeeping PR on the root" >&2
+    return 0
+  fi
+  if ! git -C "$bk_dir/root" push -u origin "$branch"; then
+    echo "  ERROR: bookkeeping branch push failed ($branch)." >&2
+    return 1
+  fi
+  if ! command -v "$FACTORY_GH_BIN" >/dev/null 2>&1; then
+    echo "  (bookkeeping) gh not available — bookkeeping branch pushed, PR skipped." >&2
+    return 0
+  fi
+  local body="$bk_dir/body.md"
+  { echo "## Factory Bookkeeping ($task)"; echo ""; echo "Docs-only delivery bookkeeping."; echo "";
+    if [ -f "$BK_MANIFEST" ]; then echo "### Run manifest"; echo '```json'; cat "$BK_MANIFEST"; echo '```'; fi
+  } > "$body"
+  "$FACTORY_GH_BIN" label create "factory:bookkeeping" --repo "${FACTORY_ROOT_REPO:-ak47-arch/workspace}" --force >/dev/null 2>&1 || true
+  local url
+  url="$("$FACTORY_GH_BIN" pr create --repo "${FACTORY_ROOT_REPO:-ak47-arch/workspace}" \
+      --base master --head "$branch" --title "[factory] $task: bookkeeping" \
+      --body-file "$body" --label "factory:bookkeeping" 2>/dev/null || true)"
+  echo "  Bookkeeping PR raised: $url" >&2
+  BK_PR="$url"
+  return 0
+}
+
+# print_manifest: surface the run manifest at loop end (story 7).
+print_manifest() {
+  [ -f "$BK_MANIFEST" ] || { echo "  [manifest] none written" >&2; return 0; }
+  echo "  ── Run manifest ($BK_MANIFEST) ──" >&2
+  cat "$BK_MANIFEST" >&2
+}
+
+# finish_bookkeeping: raise the Shape-A bookkeeping PR + print the manifest at
+# loop end (success or failure). Active only when a manifest seam is provided
+# (BK_MANIFEST) — otherwise a no-op so the legacy single-repo/deferred flows
+# are untouched.
+finish_bookkeeping() {
+  [ -n "${BK_MANIFEST:-}" ] || return 0
+  local slug="${TASK_ARG:-$SLUG}"
+  [ -n "$slug" ] || return 0
+  raise_bookkeeping_pr "$slug" || true
+  print_manifest
+}
+
+# pickup_gate (story 8): skip this task if an open `[factory] <slug>` PR already
+# exists in a declared repo (no re-implementation while in flight). No-op unless
+# a gh binary + a repos seam are provided (tests / live GitHub).
+# Declared repos come from the PRD **Repos:** header, defaulting to the root.
+pickup_gate() {
+  local slug="${TASK_ARG:-}"
+  [ -n "$slug" ] || return 0
+  command -v "$FACTORY_GH_BIN" >/dev/null 2>&1 || return 0
+  [ -n "${FACTORY_REPOS:-}" ] || return 0
+  local repo
+  for repo in ${FACTORY_REPOS}; do
+    local count
+    count="$("$FACTORY_GH_BIN" pr list --repo "$repo" --search "\"[factory] $slug\"" --state open --json number 2>/dev/null \
+      | python3 -c 'import sys,json
+print(len(json.loads(sys.stdin.read() or "[]")))' 2>/dev/null || echo 0)"
+    if [ "$count" -gt 0 ] 2>/dev/null; then
+      echo "  SKIP: task $slug already has an open [factory] PR in $repo — not re-implementing (pickup gate)." >&2
+      exit 0
+    fi
+  done
+  return 0
+}
+
 # ─── Stage 1: implement ───────────────────────────────────────────────────
 echo ""
 echo "── Stage 1: implementer ──"
 IMPL_ARGS=()
 if [ -n "$TASK_ARG" ]; then IMPL_ARGS+=(--task "$TASK_ARG"); else IMPL_ARGS+=(--pick); fi
 [ "$DRY_RUN" = true ] && IMPL_ARGS+=(--dry-run)
+# Pickup gate (story 8): skip a task that already has an open [factory] <slug>
+# PR in any declared repo — no re-implementation while in flight. No-op unless
+# FACTORY_GH_BIN + FACTORY_REPOS are provided (tests / live GitHub).
+pickup_gate
 set +e
 "$IMPLEMENTER" "${IMPL_ARGS[@]}" > "$RUN_LOG" 2>&1
 IMPL_RC=$?
@@ -227,6 +351,7 @@ headless_loop() {
     case "$verdict" in
       APPROVE*)
         echo "  ✓ Review APPROVED (revision $n). Merge-ready PR — task in-review." >&2
+        finish_bookkeeping
         exit 0
         ;;
       REQUEST_CHANGES*)
@@ -240,11 +365,13 @@ headless_loop() {
           cat "$RUN_LOG" >&2
           if [ "$IMPL_RC" -ne 0 ]; then
             echo "  ✗ Revision implementer failed (rc $IMPL_RC)." >&2
+            finish_bookkeeping
             exit 1
           fi
         else
           echo "  ✗ REQUEST_CHANGES persists after ${REVISION_CAP} revision(s) — cap exhausted." >&2
-          surface_report
+          surface_report >&2
+          finish_bookkeeping
           exit 1
         fi
         ;;
@@ -253,6 +380,7 @@ headless_loop() {
         # treat as non-APPROVE, do NOT revise (decision 04 contract).
         echo "  ✗ No valid verdict read back (got '${verdict}') — surfacing report, not revising." >&2
         surface_report
+        finish_bookkeeping
         exit 1
         ;;
     esac
@@ -272,6 +400,9 @@ if [ "$HEADLESS" = true ]; then
 fi
 
 run_review
+
+# Bookkeeping PR is raised at chain end (success OR failure) for Shape A.
+finish_bookkeeping
 
 echo ""
 echo "── Chain complete: implement + review done ──"

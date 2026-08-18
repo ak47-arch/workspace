@@ -48,6 +48,7 @@ implementer); deps are workspace-side.
 | Driver-generated review brief | `<run>/brief.md` |
 | Reviewer's deliverable (report + decisions) | `<run>/outbox/` |
 | pi session evidence (compact) | `<run>/sessions/` |
+| Run-dir verdict + per-PR review manifest (read by the loop) | `<run>/reports/verdict.txt`, `<run>/reports/report.md`, `<run>/verdicts.json` |
 | Worktree = **PR head** (read-only for the worker; base ref fetched) | `<run>/worktree/` |
 | Injected env (`secrets.env`, **no GitHub tokens**, `PONYTAIL_DEFAULT_MODE=ultra`) | `<run>/secrets.env` — deleted after the run |
 | Archived review report + decisions | `docs/code-reviews/<date>-<slug>/` |

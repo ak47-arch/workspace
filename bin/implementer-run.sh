@@ -162,6 +162,22 @@ while [ $# -gt 0 ]; do
 done
 
 # ─── resolve_prd(): select one Final PRD ───────────────────────────────────
+# ─── Multi-repo delivery state (PRD: multi-repo delivery bookkeeping PRs) ───
+# Populated by resolve_repo_set / deliver_repo_* / factory-run.sh cooperatively.
+REPO_KEYS=()
+ROOT_IN_SET=false
+BOOKKEEPING_PR=""
+ROOT_CODE_PR=""
+REVISIONS=0
+SHAPE_OUTCOME="in-progress"
+TRIPS_DOCS_ONLY=true
+RUN_ID="$(now_ts)"
+declare -gA REPO_BRANCH=()
+declare -gA REPO_PR=()
+declare -gA REPO_VERDICT=()
+declare -gA REPO_STATE=()
+declare -gA REPO_WORKTREE=()
+
 # - $MODE_FLAG=--pick: oldest `**Status**: Final` in docs/prd-queue/ whose task
 #   is `**Status**: prd-ready` (the lifecycle's queued-entry state — decision 09).
 #   in-progress (concurrent owner) and in-review (merged/blocked/verifying
@@ -250,6 +266,438 @@ print("master")
 PYEOF
   )"
   echo "  Target repo manifest branch: $MANIFEST_BRANCH" >&2
+  # Multi-repo resolution (PRD: **Repos:** header). Populates REPO_KEYS,
+  # ROOT_IN_SET, REPO_MANIFEST_BRANCH. The single-repo TARGET_REPO flow above
+  # remains for backward compatibility.
+  resolve_repo_set
+}
+
+# ═══════════════════════════════════════════════════════════════════════════
+# Multi-repo delivery (PRD: multi-repo delivery bookkeeping PRs).
+#
+# A task's PRD declares a set of repos via the `**Repos:**` header (comma-
+# separated repo_map values; `.`/`workspace` = root). The root is a repo like
+# any other. Exactly two shapes, no third:
+#   Shape A (root NOT touched): N app code PRs + 1 bookkeeping PR (docs-only)
+#   Shape B (root touched):      N-1 app PRs + 1 root PR (code + bookkeeping
+#                                commits on the SAME branch)
+# Invariant (asserted every delivery):
+#   (root code PR exists AND no bookkeeping PR) XOR (no root code PR AND one bk PR)
+# ═══════════════════════════════════════════════════════════════════════════
+
+# repo_map_has_value <dir>: 0 if <dir> is one of the repo_map VALUES (dir paths),
+# 1 otherwise. Works in both the jq and no-jq (fallback) config paths.
+repo_map_has_value() {
+  local v="$1"
+  if command -v jq >/dev/null 2>&1; then
+    if jq -r --arg v "$v" '.repo_map | to_entries[] | select(.value == $v) | .value' "$CONFIG_FILE" 2>/dev/null | grep -qx "$v"; then
+      return 0
+    fi
+    return 1
+  fi
+  case "$v" in
+    .|feed_analyser|workspace-portability|survival-infrastructure|llm|headroom-pi|resume|emotional_architecture|timesheetViewer) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+# repo_key_for <identifier>: canonical repo-map-value-dir key from a `**Repos:**`
+# identifier. Accepts repo_map KEYS (project names) AND repo_map VALUES (dir
+# paths). `.`/`workspace` = root → canonical key 'workspace'. Echoes '' (errors)
+# when the identifier is neither a repo_map key nor a repo_map value.
+repo_key_for() {
+  local id="$1"
+  case "$id" in
+    .|workspace) echo "workspace"; return 0 ;;
+  esac
+  # repo_map key (project name) → value path.
+  local v; v="$(repo_map_path "$id")"
+  if [ -n "$v" ]; then
+    case "$v" in
+      .) echo "workspace" ;;
+      *) echo "$v" ;;
+    esac
+    return 0
+  fi
+  # repo_map value (dir path) directly.
+  if repo_map_has_value "$id" && [ -d "$WORKSPACE/$id/.git" ]; then
+    echo "$id"; return 0
+  fi
+  echo ""; return 1
+}
+
+# resolve_repo_set(): parse the PRD `**Repos:**` header → canonical REPO_KEYS
+# (array). Absent → backward-compatible single repo derived from Task `**Project:**`.
+# Populates: REPO_KEYS (array), ROOT_IN_SET (bool), and per-repo manifest branch
+# in REPO_MANIFEST_BRANCH[key].
+declare -gA REPO_MANIFEST_BRANCH=()
+resolve_repo_set() {
+  local task_file="$WORKSPACE/docs/tasks/$PRD_SLUG.md"
+  [ -f "$task_file" ] || die "Task file not found: $task_file"
+  PROJECT="$(grep -m1 '^\*\*Project\*\*:' "$task_file" | sed 's/^\*\*Project\*\*: *//')"
+  [ -z "$PROJECT" ] && PROJECT="software-factory"
+
+  local repos_line=""
+  if [ -n "${PRD:-}" ] && [ -f "$PRD" ]; then
+    # `|| true` guards against pipefail: grep exits 1 when a PRD has no
+    # `**Repos:**` header, and set -e would otherwise abort this assignment.
+    repos_line="$(grep -m1 '^\*\*Repos\*\*:' "$PRD" 2>/dev/null | sed 's/^\*\*Repos\*\*: *//' || true)"
+  fi
+  local keys=()
+  if [ -n "$repos_line" ]; then
+    local id key
+    while IFS= read -r id; do
+      id="$(echo "$id" | tr -d ' \`')"
+      [ -z "$id" ] && continue
+      key="$(repo_key_for "$id")"
+      if [ -z "$key" ]; then
+        die "Unavailable repo '$id' declared in PRD **Repos:** — not in repo_map and no local checkout. Declare it in config/implementer.json or remove it from the PRD."
+      fi
+      keys+=("$key")
+    done <<< "$(printf '%s\n' "$repos_line" | tr ',' '\n')"
+  else
+    # Backward compatible: single repo from Task **Project:**.
+    local prj_repo; prj_repo="$(repo_map_path "$PROJECT")"
+    if [ -z "$prj_repo" ] || [ "$prj_repo" = "." ]; then
+      keys=(workspace)
+    else
+      keys=("$prj_repo")
+    fi
+  fi
+
+  # Dedupe + collapse (e.g. software-factory + langfuse both → workspace).
+  local seen=() out=() k
+  for k in "${keys[@]}"; do
+    if ! printf '%s\n' "${seen[@]}" | grep -qx "$k"; then
+      seen+=("$k"); out+=("$k")
+    fi
+  done
+  REPO_KEYS=("${out[@]}")
+
+  ROOT_IN_SET=false
+  for k in "${REPO_KEYS[@]}"; do [ "$k" = "workspace" ] && ROOT_IN_SET=true; done
+
+  # Resolve each repo's manifest branch (workspace-portability manifest).
+  local repo
+  for repo in "${REPO_KEYS[@]}"; do
+    local dir; dir="$repo"; [ "$repo" = "workspace" ] && dir="."
+    REPO_MANIFEST_BRANCH["$repo"]="$(manifest_branch_for "$dir")"
+  done
+
+  echo "  Repo set (${#REPO_KEYS[@]}): ${REPO_KEYS[*]}" >&2
+  echo "  Root touched: $ROOT_IN_SET" >&2
+}
+
+# manifest_branch_for <dir-path>: manifest branch for a repo (root '.' = master
+# default). Reuses the workspace-portability manifest resolution.
+manifest_branch_for() {
+  local repo_dir="$1"
+  python3 - "$repo_dir" "$WORKSPACE" <<'PYEOF'
+import json, sys, os
+repo, workspace = sys.argv[1], sys.argv[2]
+manifest = os.path.join(workspace, "workspace-portability", "workspace_restore_manifest.json")
+try:
+    with open(manifest) as f:
+        data = json.load(f)
+    for r in data.get("repos", []):
+        if r.get("path") == repo:
+            print(r.get("branch", "master"))
+            sys.exit(0)
+except Exception:
+    pass
+print("master")
+PYEOF
+}
+
+# assert_delivery_invariant(): the A/B XOR — (root code PR AND no bookkeeping PR)
+# XOR (no root code PR AND exactly one bookkeeping PR). Dies loudly (exit 1) on a
+# violation, printing the per-repo status table. Returns 0 on hold.
+assert_delivery_invariant() {
+  # In dry-run no real PRs exist — the invariant is asserted on real deliveries.
+  if [ "$DRY_RUN" = true ]; then
+    echo "  [dry-run] delivery invariant skipped (no real PRs in dry-run)" >&2
+    return 0
+  fi
+  local has_root_code=false has_bk=false
+  if [ "$ROOT_IN_SET" = true ]; then
+    for k in "${!REPO_PR[@]}"; do
+      [ "$k" = "workspace" ] && [ -n "${REPO_PR[$k]:-}" ] && has_root_code=true
+    done
+  else
+    has_root_code=false
+  fi
+  [ -n "${BOOKKEEPING_PR:-}" ] && has_bk=true
+  if { [ "$has_root_code" = true ] && [ "$has_bk" = true ]; } \
+     || { [ "$has_root_code" = false ] && [ "$has_bk" = false ]; }; then
+    echo "  FAILED: delivery invariant violated — root_code_pr=$has_root_code bookkeeping_pr=$has_bk" >&2
+    for k in "${REPO_KEYS[@]}"; do
+      echo "    $k: branch=${REPO_BRANCH[$k]:-} pr=${REPO_PR[$k]:-}" >&2
+    done
+    echo "    bookkeeping_pr=${BOOKKEEPING_PR:-}" >&2
+    return 1
+  fi
+  echo "  ✓ delivery invariant holds (A/B XOR satisfied)" >&2
+  return 0
+}
+
+# bookkeeping_tripwire <worktree> [<commit>]: hard-fail (return 1) if the
+# given commit's changed paths include anything outside `docs/`. Defaults to
+# HEAD (the bookkeeping commit, whose parent is the code commit in Shape B).
+# This is the bdac29e-class guard that replaces `git add -A`.
+bookkeeping_tripwire() {
+  local wt="$1"; shift
+  local commit="${1:-HEAD}"
+  local parent; parent="$(git -C "$wt" rev-parse "$commit^" 2>/dev/null || true)"
+  local files=""
+  if [ -n "$parent" ]; then
+    files="$(git -C "$wt" diff --name-only "$parent" "$commit" 2>/dev/null || true)"
+  else
+    files="$(git -C "$wt" diff --name-only --root "$commit" 2>/dev/null || true)"
+  fi
+  local bad=0 f
+  while IFS= read -r f; do
+    [ -z "$f" ] && continue
+    case "$f" in
+      docs/*) : ;;
+      *) echo "  TRIPWIRE: bookkeeping commit touches non-docs path: $f" >&2; bad=1 ;;
+    esac
+  done <<< "$files"
+  if [ "$bad" -eq 0 ]; then
+    echo "  ✓ bookkeeping tripwire: changed paths are docs-only" >&2
+    return 0
+  fi
+  echo "  FAILED: bookkeeping commit touches code paths (tripwire) — run aborted." >&2
+  return 1
+}
+
+# write_run_manifest(): the run-manifest JSON is the monitoring backbone + the
+# bookkeeping PR body source: per-repo {branch, pr, verdict, state}, bookkeeping_pr,
+# root_code_pr, revisions, outcome, trips.
+write_run_manifest() {
+  local mf="${1:-$RUN_DIR/manifest.json}"
+  local k; local -a jkeys=() jbranches=() jprs=() jverdicts=() jstates=()
+  for k in "${REPO_KEYS[@]}"; do
+    jkeys+=("$k")
+    jbranches+=("${REPO_BRANCH[$k]:-}")
+    jprs+=("${REPO_PR[$k]:-}")
+    jverdicts+=("${REPO_VERDICT[$k]:-}")
+    jstates+=("${REPO_STATE[$k]:-""}")
+  done
+  RUN_ID="${RUN_ID:-$(now_ts)}"
+  python3 - "$mf" "$PRD_SLUG" "$RUN_ID" "${SHAPE_OUTCOME:-in-progress}" "${REVISIONS:-0}" \
+    "${jkeys[*]}" "${jbranches[*]}" "${jprs[*]}" "${jverdicts[*]}" "${jstates[*]}" \
+    "${BOOKKEEPING_PR:-}" "${ROOT_CODE_PR:-}" "${TRIPS_DOCS_ONLY:-true}" <<'PYEOF'
+import json, sys
+try:
+    mf, task, run_id, outcome, revisions, keys, branches, prs, verdicts, states, bk, root_code, trips = sys.argv[1:14]
+except Exception:
+    mf, task, run_id, outcome, revisions = sys.argv[1:5]
+    keys = branches = prs = verdicts = states = ""; bk = root_code = trips = ""
+keys = keys.split() if keys and keys.strip() else []
+branches = branches.split() if branches and branches.strip() else []
+prs = prs.split() if prs and prs.strip() else []
+verdicts = verdicts.split() if verdicts and verdicts.strip() else []
+states = states.split() if states and states.strip() else []
+def num(x):
+    try: return int(x)
+    except Exception: return None
+repos = {}
+for i, k in enumerate(keys):
+    repos[k] = {
+        "branch": branches[i] if i < len(branches) else "",
+        "sha": "",
+        "pr": num(prs[i]) if i < len(prs) else None,
+        "verdict": verdicts[i] if i < len(verdicts) else "",
+        "state": states[i] if i < len(states) else "",
+    }
+out = {
+    "task": task, "run_id": run_id, "outcome": outcome,
+    "revisions": int(revisions or 0), "repos": repos,
+    "bookkeeping_pr": num(bk) if bk else None,
+    "root_code_pr": num(root_code) if root_code else None,
+    "trips": {"bookkeeping_docs_only": str(trips).lower() == "true"},
+}
+with open(mf, "w") as f:
+    json.dump(out, f, indent=2)
+PYEOF
+  echo "  Run manifest written: $mf" >&2
+}
+
+# print_manifest(): surface the manifest table at the end of every run.
+print_manifest() {
+  local mf="${1:-$RUN_DIR/manifest.json}"
+  [ -f "$mf" ] || { echo "  [manifest] none written" >&2; return 1; }
+  echo "  ── Run manifest ($mf) ──" >&2
+  python3 -c '
+import json, sys
+m = json.load(open(sys.argv[1]))
+print("  task: %s | run_id: %s | outcome: %s | revisions: %s" % (m["task"], m["run_id"], m["outcome"], m["revisions"]))
+for k, v in m["repos"].items():
+    print("    repo: %-22s branch: %-42s pr: %-6s verdict: %-12s state: %s" % (k, v["branch"], v["pr"] or "-", v["verdict"] or "-", v["state"] or "-"))
+print("  bookkeeping_pr: %s | root_code_pr: %s | trips.bookkeeping_docs_only: %s" % (m.get("bookkeeping_pr") or "-", m.get("root_code_pr") or "-", m.get("trips", {}).get("bookkeeping_docs_only")))
+' "$mf" >&2
+}
+
+# gh_repo_for <repo-key>: the GitHub repo SLUG for a repo key (root → workspace
+# remote). Derived from the local checkout's origin URL.
+gh_repo_for() {
+  local key="$1"
+  local dir; dir="$key"; [ "$key" = "workspace" ] && dir="."
+  local url; url="$(git -C "$WORKSPACE/$dir" remote get-url origin 2>/dev/null || true)"
+  [ -n "$url" ] && { echo "$url" | sed -E 's#.*/([^/]+)\.git#\1#; s#.*/([^/]+)#\1#'; return 0; }
+  echo "workspace"
+}
+
+# raise_one_pr <repo-key> <worktree> <branch> <base> <gh-repo>: push the branch +
+# `gh pr create` for ONE repo. Host-authored commit assumed already in the worktree.
+# Sets REPO_BRANCH/REPO_PR. Returns non-zero on push/PR failure (fail-loud).
+raise_one_pr() {
+  local key="$1" wt="$2" branch="$3" base="$4" gh_repo="$5"
+  if [ "$DRY_RUN" = true ]; then
+    echo "  [dry-run] would push branch $branch (repo $key) and raise a PR against $base" >&2
+    REPO_BRANCH["$key"]="$branch"
+    return 0
+  fi
+  if ! git -C "$wt" push -u origin "$branch"; then
+    echo "  ERROR: git push of branch $branch (repo $key) failed — branch not pushed, no PR raised." >&2
+    return 1
+  fi
+  echo "  Pushed branch $branch (repo $key)" >&2
+  local title="[factory] ${PRD_SLUG}: implementer run ($(now_human)) — $key"
+  local body_file="$RUN_DIR/pr-body-$key.md"
+  {
+    echo "## Implementer Run"
+    echo ""
+    echo "Task: \`${PRD_SLUG}\` (repo: \`$key\`)"
+    echo "Impl session: \`$IMPL_UUID\`"
+    echo ""
+    echo "### Report"
+    echo ""
+    if [ -f "$ARCHIVE_DEST/report.md" ]; then cat "$ARCHIVE_DEST/report.md"; fi
+  } > "$body_file"
+  command -v gh >/dev/null 2>&1 || { echo "  ERROR: gh not installed; PR skipped (branch already pushed, repo $key)." >&2; return 1; }
+  gh label create "factory:needs-review" --repo "ak47-arch/$gh_repo" --force >/dev/null 2>&1 || true
+  local attempt=0 pr_url=""
+  while [ "$attempt" -lt 3 ] && [ -z "$pr_url" ]; do
+    attempt=$((attempt+1))
+    if pr_url="$(gh pr create --repo "ak47-arch/$gh_repo" --base "$base" --head "$branch" \
+        --title "$title" --body-file "$body_file" --label "factory:needs-review")"; then
+      :
+    else
+      if [ "$attempt" -lt 3 ]; then
+        echo "  WARN: gh pr create attempt $attempt/3 failed (transient?) — retrying." >&2
+        sleep "$attempt"; pr_url=""
+      fi
+    fi
+  done
+  if [ -z "$pr_url" ]; then
+    echo "  ERROR: gh pr create failed after 3 attempts (branch remains pushed, repo $key)." >&2
+    return 1
+  fi
+  echo "  PR raised ($key): $pr_url (tagged factory:needs-review)." >&2
+  local pr_num; pr_num="$(printf '%s' "$pr_url" | sed -E 's#.*/pull/([0-9]+).*#\1#')"
+  REPO_BRANCH["$key"]="$branch"
+  REPO_PR["$key"]="$pr_num"
+  return 0
+}
+
+# deliver_shape_b_root <worktree> <branch> <base> <gh-repo>: Shape B collapse for
+# the root repo — the branch carries a CODE commit then a BOOKKEEPING commit
+# (docs-only), pushed as ONE PR. Runs the docs-only tripwire on the bookkeeping
+# commit. Sets REPO_PR[workspace] + ROOT_CODE_PR.
+deliver_shape_b_root() {
+  local wt="$1" branch="$2" base="$3" gh_repo="$4"
+  if [ "$DRY_RUN" = true ]; then
+    echo "  [dry-run] Shape B: would commit code then bookkeeping on $branch (workspace) → 1 root PR" >&2
+    REPO_BRANCH["workspace"]="$branch"
+    return 0
+  fi
+  # 1. Code commit: stage everything EXCEPT docs/ (docs ride the bookkeeping commit).
+  git -C "$wt" add -A ':(exclude)docs/**' 2>/dev/null \
+    || git -C "$wt" add -A
+  if git -C "$wt" diff --cached --quiet; then
+    echo "  [no-op] root repo has no code changes beyond base — no code commit." >&2
+  else
+    git -C "$wt" -c user.name="${IMPL_GIT_NAME:-factory}" \
+        -c user.email="${IMPL_GIT_EMAIL:-factory@ak47.local}" commit -q \
+        -m "implementer($PRD_SLUG): run $IMPL_UUID [factory] (workspace) [code]" \
+      || { echo "  ERROR: Shape B code commit failed (workspace)." >&2; return 2; }
+  fi
+  # 2. Bookkeeping commit: docs/ only (manifest + archived bookkeeping doc).
+  local bkdir="$wt/docs/implementations/$(date '+%Y-%m-%d')-$PRD_SLUG"
+  mkdir -p "$bkdir"
+  write_run_manifest "$bkdir/manifest.json" 2>/dev/null || true
+  git -C "$wt" add -A docs/ 2>/dev/null || true
+  if git -C "$wt" diff --cached --quiet; then
+    echo "  [no-op] no bookkeeping content to commit (workspace)." >&2
+  else
+    git -C "$wt" -c user.name="${IMPL_GIT_NAME:-factory}" \
+        -c user.email="${IMPL_GIT_EMAIL:-factory@ak47.local}" commit -q \
+        -m "implementer($PRD_SLUG): bookkeeping [factory] run $IMPL_UUID" \
+      || { echo "  ERROR: bookkeeping commit failed (workspace)." >&2; return 2; }
+  fi
+  # 3. Docs-only tripwire on the bookkeeping commit (HEAD).
+  if ! bookkeeping_tripwire "$wt" HEAD; then
+    TRIPS_DOCS_ONLY=false
+    return 1
+  fi
+  # 4. Push + PR (one root PR carries code + bookkeeping commits).
+  if ! raise_one_pr "workspace" "$wt" "$branch" "$base" "$gh_repo"; then
+    return 1
+  fi
+  ROOT_CODE_PR="${REPO_PR[workspace]:-}"
+  return 0
+}
+
+# deliver_repo_set(): per-repo delivery across REPO_KEYS. Shape A repos get
+# their own PRs; a touched root gets Shape B collapse (code+bookkeeping on one
+# branch/PR). Asserts the A/B invariant + writes + prints the run manifest.
+deliver_repo_set() {
+  local key
+  for key in "${REPO_KEYS[@]}"; do
+    local branch="factory/$PRD_SLUG/$key/$(now_ts)"
+    local base="${REPO_MANIFEST_BRANCH[$key]:-master}"
+    local dir="$RUN_DIR/worktrees/$key"
+    # Single-repo task: the root worktree lives at RUN_DIR/worktree (from
+    # prepare_run_dir); multi-repo tasks use RUN_DIR/worktrees/<key>/.
+    if [ ! -d "$dir/.git" ] && [ "${#REPO_KEYS[@]}" -eq 1 ]; then
+      dir="$RUN_DIR/worktree"
+    fi
+    local gh_repo; gh_repo="$(gh_repo_for "$key")"
+    [ -d "$dir/.git" ] || { echo "  ERROR: worktree missing for repo $key ($dir) — prepare_run_dirs did not create it." >&2; return 1; }
+    # The worktree may be on the prepare_run_dir branch (single) or an app
+    # worktree's checkout branch — retarget it at the delivery branch so the
+    # push refspec below resolves. Uncommitted implementer changes are kept
+    # (both branches point at the same commit for a clean checkout).
+    git -C "$dir" checkout -q -B "$branch" 2>/dev/null || true
+    if [ "$key" = "workspace" ] && [ "$ROOT_IN_SET" = true ]; then
+      deliver_shape_b_root "$dir" "$branch" "$base" "$gh_repo" || return $?
+    else
+      # Shape A: commit any implementer changes, then push + PR.
+      if [ "$DRY_RUN" != true ]; then
+        git -C "$dir" add -A
+        if ! git -C "$dir" diff --cached --quiet; then
+          git -C "$dir" -c user.name="${IMPL_GIT_NAME:-factory}" \
+              -c user.email="${IMPL_GIT_EMAIL:-factory@ak47.local}" commit -q \
+              -m "implementer($PRD_SLUG): run $IMPL_UUID [factory] ($key)" \
+            || { echo "  ERROR: could not commit worktree changes (repo $key)." >&2; return 2; }
+        else
+          echo "  [no-op] repo $key has no changes beyond base — skipping empty PR." >&2
+          continue
+        fi
+      fi
+      if ! raise_one_pr "$key" "$dir" "$branch" "$base" "$gh_repo"; then
+        echo "  FAILED: partial delivery (repo $key) — aborting; per-repo status:" >&2
+        for k in "${REPO_KEYS[@]}"; do echo "    $k: branch=${REPO_BRANCH[$k]:-} pr=${REPO_PR[$k]:-}" >&2; done
+        return 1
+      fi
+    fi
+  done
+  # Invariant + manifest after every delivery.
+  assert_delivery_invariant || return 1
+  write_run_manifest
+  print_manifest
+  return 0
 }
 
 # ─── prepare_run_dir(): worktree + outbox + brief ──────────────────────────
@@ -300,6 +748,36 @@ prepare_run_dir() {
   local verify_hint="See the PRD `## Testing decisions` for the acceptance commands. Run them inside the worktree as the PRD specifies."
 
   write_brief "$verify_hint"
+  # Register the root worktree in the multi-repo map (Shape B root delivery).
+  REPO_WORKTREE["workspace"]="$WORKTREE"
+}
+
+# ─── prepare_run_dirs(): additional app-repo worktrees for a multi-repo task ─
+# Creates RUN_DIR/worktrees/<key>/ for every non-root REPO_KEYS entry (the root
+# worktree already exists at RUN_DIR/worktree from prepare_run_dir). One clone
+# per repo, branch factory/<slug>/<key>/<ts> from that repo's manifest branch.
+prepare_run_dirs() {
+  local key
+  for key in "${REPO_KEYS[@]}"; do
+    [ "$key" = "workspace" ] && continue
+    local src_repo="$WORKSPACE/$key"
+    [ -d "$src_repo/.git" ] || die "Target repo not a git repo: $src_repo"
+    local wt="$RUN_DIR/worktrees/$key"
+    local base="${REPO_MANIFEST_BRANCH[$key]:-master}"
+    local branch="factory/$PRD_SLUG/$key/$(now_ts)"
+    git clone --quiet --local "$src_repo" "$wt" 2>/dev/null \
+      || git clone --quiet "$src_repo" "$wt"
+    git -C "$wt" checkout -q -B "$branch" "origin/$base" 2>/dev/null \
+      || git -C "$wt" checkout -q -B "$branch" "$base"
+    git -C "$wt" branch "refs/heads/origin-$base" "origin/$base" 2>/dev/null || true
+    local real_url; real_url="$(git -C "$src_repo" remote get-url origin 2>/dev/null || true)"
+    if [ -n "$real_url" ]; then git -C "$wt" remote set-url origin "$real_url"; fi
+    git -C "$wt" config user.name "${IMPL_GIT_NAME:-factory}"
+    git -C "$wt" config user.email "${IMPL_GIT_EMAIL:-factory@ak47.local}"
+    REPO_WORKTREE["$key"]="$wt"
+    echo "  App worktree: $wt (branch $branch, base $base)" >&2
+  done
+  echo "  ${#REPO_KEYS[@]} repo worktrees prepared under $RUN_DIR/worktrees/" >&2
 }
 
 write_brief() {
@@ -1260,6 +1738,12 @@ fi
 resolve_prd
 resolve_repo
 prepare_run_dir
+# Multi-repo: prepare the additional app-repo worktrees (the root worktree
+# already exists). All worktrees live under RUN_DIR/worktrees/<key>/ and are
+# visible to the single container via the -v $RUN_DIR:/sandbox mount.
+if [ "${#REPO_KEYS[@]}" -gt 1 ]; then
+  prepare_run_dirs
+fi
 transition "in-progress"
 write_session_header
 
@@ -1320,7 +1804,8 @@ if [ "$local_result" -eq 0 ]; then
     transition "in-progress"
   fi
   if [ "$DRY_RUN" = true ]; then
-    echo "  [dry-run] would commit+push workspace root, push branch, and raise PR" >&2
+    echo "  [dry-run] would commit+push workspace root, push branch(es), and raise PR(s)" >&2
+    write_run_manifest; print_manifest
   else
     # Commit + push the workspace root (archive, index, task-file session link).
     ( cd "$WORKSPACE" && git add "$ARCHIVES_ROOT" docs/knowledge/sessions/$IMPL_UUID \
@@ -1331,8 +1816,19 @@ if [ "$local_result" -eq 0 ]; then
     # exit 1) — never be swallowed into a false "Done (exit 0)". The guard must
     # be explicit: under `set -e` an unguarded failing call would abort the
     # script before fail_run runs.
-    if ! push_and_pr; then
-      fail_run "delivery failed: branch push or PR creation"
+    if [ "${#REPO_KEYS[@]}" -eq 1 ] && [ "${REPO_KEYS[0]}" != "workspace" ]; then
+      # Legacy single app-repo task: keep the original push_and_pr flow
+      # (backward compatible with every existing PRD).
+      if ! push_and_pr; then
+        fail_run "delivery failed: branch push or PR creation"
+      fi
+      write_run_manifest; print_manifest
+    else
+      # Root (Shape B collapse) or multi-repo (N code PRs): repo-set delivery
+      # enforces the A/B invariant + docs-only tripwire + run manifest.
+      if ! deliver_repo_set; then
+        fail_run "delivery failed: per-repo push/PR, invariant, or tripwire"
+      fi
     fi
   fi
   # The run is delivered: the container is no longer needed, and the host only

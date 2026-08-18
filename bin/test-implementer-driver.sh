@@ -1044,6 +1044,126 @@ else
 fi
 rm -rf "$DELIV" "$REMO"
 
+# ─── Multi-repo delivery (PRD: multi-repo delivery bookkeeping PRs) ─────────
+# Story 1/2: repo-set resolution from the PRD **Repos:** header. Story 5: the
+# A/B delivery invariant. Story 3: Shape B collapse (root code commit THEN
+# bookkeeping commit on the same branch, docs-only tripwire).
+echo "── multi-repo: resolve_repo_set + invariant + Shape B collapse ──"
+source_driver
+MR="$(mktemp -d)"
+mkdir -p "$MR/config" "$MR/docs/tasks" "$MR/docs/prd-queue" "$MR/docs/implementations" \
+         "$MR/workspace-portability"
+( cd "$MR" && git init -q -b master && git config user.email mr@e.c && git config user.name MR \
+  && echo base > base.txt && git add -A && git commit -qm base )
+# Task + PRD declaring TWO repos (workspace + feed_analyser).
+printf '**Status**: prd-ready\n**Project**: software-factory\n' > "$MR/docs/tasks/multi.md"
+printf '**Date**: 2026-08-18 10:00\n**Status**: Final\n**Repos**: workspace, feed_analyser\n' \
+  > "$MR/docs/prd-queue/2026-08-18-multi.md"
+cp "$PWD/config/implementer.json" "$MR/config/implementer.json" 2>/dev/null || true
+cat > "$MR/workspace-portability/workspace_restore_manifest.json" <<'MF'
+{ "repos": [ { "path": ".", "branch": "master" }, { "path": "feed_analyser", "branch": "public-release" } ] }
+MF
+export IMPLEMENTER_WORKSPACE="$MR"
+WORKSPACE="$MR"
+PRD_SLUG="multi"; PRD="$MR/docs/prd-queue/2026-08-18-multi.md"
+# Guard: the driver may not be sourced in this run context; source it explicitly.
+if ! type resolve_repo_set >/dev/null 2>&1; then
+  export IMPLEMENTER_RUN_SOURCED=1; set +e; source "$DRIVER" 2>/dev/null; set +e
+fi
+resolve_repo_set 2>/dev/null
+if printf '%s\n' "${REPO_KEYS[@]:-}" | grep -qx workspace \
+   && printf '%s\n' "${REPO_KEYS[@]:-}" | grep -qx feed_analyser; then
+  pass "resolve_repo_set: PRD **Repos:** → REPO_KEYS=[workspace, feed_analyser]"
+else
+  fail "resolve_repo_set REPO_KEYS='${REPO_KEYS[*]:-}' — expected workspace feed_analyser"
+fi
+[ "$ROOT_IN_SET" = true ] && pass "resolve_repo_set: root in set (ROOT_IN_SET=true)" \
+  || fail "resolve_repo_set: ROOT_IN_SET=$ROOT_IN_SET"
+[ "${REPO_MANIFEST_BRANCH[feed_analyser]:-}" = "public-release" ] \
+  && pass "resolve_repo_set: per-repo manifest branch (feed_analyser→public-release)" \
+  || fail "resolve_repo_set manifest branch: ${REPO_MANIFEST_BRANCH[feed_analyser]:-}"
+
+# Unknown repo declared → die (exit 2) naming it.
+printf '**Date**: 2026-08-18 10:00\n**Status**: Final\n**Repos**: workspace, not-a-real-repo\n' \
+  > "$MR/docs/prd-queue/2026-08-18-unk.md"
+PRD="$MR/docs/prd-queue/2026-08-18-unk.md"
+# die() exits the script — run in a subshell to capture its exit code.
+( resolve_repo_set 2> "$MR/unk.err" )
+rc=$?
+if [ "$rc" -eq 2 ] && grep -q 'not-a-real-repo' "$MR/unk.err"; then
+  pass "resolve_repo_set: unknown repo → exit 2 naming it"
+else
+  fail "resolve_repo_set unknown repo rc=$rc: $(cat "$MR/unk.err" | tr '\n' ' ')"
+fi
+PRD="$MR/docs/prd-queue/2026-08-18-multi.md"
+
+# A/B invariant: violation (both or neither) → loud fail; hold → 0.
+ROOT_IN_SET=true; DRY_RUN=false
+REPO_PR=( [workspace]=101 ); BOOKKEEPING_PR=""
+REPO_KEYS=(workspace)
+set +e; assert_delivery_invariant >/dev/null 2>&1; rc=$?; set -e
+[ "$rc" -eq 0 ] && pass "invariant: root code PR + no bookkeeping PR holds (A side)" \
+  || fail "invariant: A-side rc=$rc"
+REPO_PR=( [workspace]="" ); BOOKKEEPING_PR=102
+set +e; assert_delivery_invariant >/dev/null 2>&1; rc=$?; set -e
+[ "$rc" -eq 0 ] && pass "invariant: no root code PR + one bookkeeping PR holds (B side)" \
+  || fail "invariant: B-side rc=$rc"
+REPO_PR=( [workspace]=101 ); BOOKKEEPING_PR=102
+set +e; assert_delivery_invariant >/dev/null 2>&1; rc=$?; set -e
+[ "$rc" -ne 0 ] && pass "invariant: both root code + bookkeeping → violation (loud fail)" \
+  || fail "invariant: violation not detected"
+REPO_PR=( [workspace]="" ); BOOKKEEPING_PR=""
+set +e; assert_delivery_invariant >/dev/null 2>&1; rc=$?; set -e
+[ "$rc" -ne 0 ] && pass "invariant: neither → violation" || fail "invariant: neither not detected"
+
+# Shape B collapse: root worktree with an UNCOMMITTED code change + a docs
+# change → delivery produces a code commit THEN a bookkeeping (docs-only) commit.
+SB="$(mktemp -d)"; SBREMOTE="$SB-remote"
+mkdir -p "$SB/docs"
+( cd "$SB" && git init -q -b master && git config user.email sb@e.c && git config user.name SB \
+  && echo base > base.txt && mkdir -p docs && echo doc > docs/d.md && git add -A && git commit -qm base )
+git init -q --bare "$SBREMOTE"
+git -C "$SB" remote add origin "$SBREMOTE"; git -C "$SB" push -q origin master
+SB_WT="$SB/worktree"
+( cd "$SB" && git clone -q "$SB" "$SB_WT" && cd "$SB_WT" && git checkout -qb factory/multi/workspace/x \
+  && echo code > bin_code.txt && echo doc2 > docs/d2.md )  # uncommitted implementer edits
+# Mock gh on PATH (raise_one_pr calls the bare `gh` command): logs + PR URL.
+mkdir -p "$SB/shim"
+cat > "$SB/shim/gh" <<'MOCK'
+#!/usr/bin/env bash
+echo "gh $*" >> "$SB_GH_LOG"
+case "$1" in pr) printf 'https://github.com/ak47-arch/workspace/pull/50\n';; label) :;; esac
+exit 0
+MOCK
+chmod +x "$SB/shim/gh"
+export SB_GH_LOG="$SB/gh.log"
+: > "$SB_GH_LOG"
+RUN_DIR="$SB/run"
+mkdir -p "$RUN_DIR"
+REPO_KEYS=(workspace); ROOT_IN_SET=true; DRY_RUN=false
+REPO_MANIFEST_BRANCH=( [workspace]=master )
+PRD_SLUG="multi"; IMPL_UUID="mr-0000"; ARCHIVE_DEST="$SB/docs/implementations/2026-08-18-multi"
+mkdir -p "$ARCHIVE_DEST"; echo '# report' > "$ARCHIVE_DEST/report.md"
+set +e
+PATH="$SB/shim:$PATH" deliver_shape_b_root "$SB_WT" "factory/multi/workspace/x" "master" "workspace"
+rc=$?
+set -e
+[ "$rc" -eq 0 ] && pass "Shape B: root delivery exits 0" || fail "Shape B rc=$rc"
+commit_count="$(git -C "$SB_WT" rev-list --count master..factory/multi/workspace/x 2>/dev/null || echo 0)"
+[ "$commit_count" -ge 2 ] && pass "Shape B: >=2 commits on the root branch (code + bookkeeping)" \
+  || fail "Shape B commit count=$commit_count"
+# Bookkeeping commit (HEAD) is docs-only.
+set +e; bookkeeping_tripwire "$SB_WT" HEAD >/dev/null 2>&1; rc2=$?; set -e
+[ "$rc2" -eq 0 ] && pass "Shape B: bookkeeping commit is docs-only (tripwire holds)" \
+  || fail "Shape B: tripwire failed rc=$rc2"
+grep -q 'pr create' "$SB_GH_LOG" \
+  && pass "Shape B: one gh pr create on the root PR" \
+  || fail "Shape B: gh pr create missing: $(cat "$SB_GH_LOG" | tr '\n' ' ')"
+[ "${REPO_PR[workspace]:-}" = "50" ] && pass "Shape B: REPO_PR[workspace] recorded" \
+  || fail "Shape B: REPO_PR=${REPO_PR[workspace]:-}"
+rm -rf "$SB" "$SBREMOTE" "$MR"
+
+echo ""
 # ─── Summary ───────────────────────────────────────────────────────────────
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "implementer-driver: $PASS passed, $FAIL failed"

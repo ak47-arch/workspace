@@ -198,6 +198,120 @@ grep -q "merge-pr" "$DRIVER" && { grep -q "bin/merge-pr.sh" "$DRIVER" && pass "m
 bash "$DRIVER" --task demo --yes > /dev/null 2>&1
 if grep -q "merge" "$FA_LOG"; then fail "a stub received a merge call"; else pass "no merge call reaches any driver"; fi
 
+# ─── Multi-repo: bookkeeping PR + manifest + pickup gate (PRD) ─────────────
+# Story 6/7: the bookkeeping PR is docs-only (tripwire) and mirrors the manifest;
+# the manifest is printed at loop end. Story 8: the pickup gate skips a task that
+# already has an open `[factory] <slug>` PR in a declared repo.
+echo "── bookkeeping PR (docs-only tripwire) + manifest print + pickup gate ──"
+GK="$(mktemp -d)"
+mkdir -p "$GK/docs/tasks" "$GK/docs/implementations/2026-08-18-bk" "$GK/bin"
+cat > "$GK/docs/tasks/bk.md" <<'TASK'
+# Task: bk
+
+**Status**: in-progress
+
+## PR tracking
+
+- PR: #20 (ak47-arch/workspace)
+TASK
+( cd "$GK" && git init -q -b master && git config user.email b@e.c && git config user.name B \
+  && git add -A && git commit -qm base )
+# The archived report the bookkeeping PR must carry (docs-only).
+echo "# Implementer (bk)" > "$GK/docs/implementations/2026-08-18-bk/report.md"
+( cd "$GK" && git add -A && git commit -qm 'archive report' )
+cat > "$GK/bin/stub-implementer.sh" <<'STUB'
+#!/usr/bin/env bash
+printf 'implementer %s\n' "$*" >> "$FA_LOG"
+printf '  Task PR tracking: #20 recorded on docs/tasks/bk.md\n'
+exit 0
+STUB
+cat > "$GK/bin/stub-reviewer.sh" <<'STUB'
+#!/usr/bin/env bash
+printf 'reviewer %s\n' "$*" >> "$FA_LOG"
+slug="${FA_SLUG:-bk}"
+report="$FACTORY_WORKSPACE/docs/code-reviews/$(date '+%Y-%m-%d')-$slug/report.md"
+mkdir -p "$(dirname "$report")"
+{ echo "# Code Review"; echo ""; echo "## Verdict"; echo "APPROVE"; } > "$report"
+exit 0
+STUB
+chmod +x "$GK/bin/stub-implementer.sh" "$GK/bin/stub-reviewer.sh"
+# Mock gh: logs calls; `pr create` emits a URL; `pr list` returns no open PRs.
+cat > "$GK/mock-gh.sh" <<'MOCK'
+#!/usr/bin/env bash
+LOG="$FACTORY_GH_LOG"
+{ printf 'gh'; for a in "$@"; do printf ' <%s>' "$a"; done; printf '\n'; } >> "$LOG"
+case "$1" in
+  pr) case "$2" in
+        create) printf 'https://github.com/ak47-arch/workspace/pull/99\n' ;;
+        list) printf '[]\n' ;;
+      esac ;;
+  label) : ;;
+esac
+exit 0
+MOCK
+chmod +x "$GK/mock-gh.sh"
+printf '{"task":"bk","outcome":"approved","repos":{"goal-agent":{"pr":20,"verdict":"APPROVE"}},"bookkeeping_pr":null,"trips":{"bookkeeping_docs_only":true}}\n' > "$GK/manifest.json"
+
+export FACTORY_WORKSPACE="$GK" FA_RUN_IMPLEMENTER="$GK/bin/stub-implementer.sh" \
+  FA_RUN_REVIEWER="$GK/bin/stub-reviewer.sh" FA_LOG="$GK/calls.log" FA_SLUG="bk" \
+  FACTORY_GH_BIN="$GK/mock-gh.sh" FACTORY_GH_LOG="$GK/gh.log" \
+  BK_MANIFEST="$GK/manifest.json" FACTORY_ROOT_REPO="ak47-arch/workspace"
+: > "$FA_LOG"; : > "$FACTORY_GH_LOG"
+bash "$DRIVER" --task bk --headless > "$GK/bk.out" 2>&1; rc=$?
+[ "$rc" -eq 0 ] && pass "bookkeeping: headless approve exits 0" || fail "bookkeeping headless rc=$rc: $(tail -3 "$GK/bk.out" | tr '\n' ' ')"
+grep -q '<pr> <create>' "$FACTORY_GH_LOG" \
+  && pass "bookkeeping: gh pr create invoked (factory:bookkeeping)" \
+  || fail "bookkeeping: gh pr create missing: $(cat "$FACTORY_GH_LOG" | tr '\n' ' ')"
+grep -q 'factory:bookkeeping' "$FACTORY_GH_LOG" \
+  && pass "bookkeeping: labeled factory:bookkeeping" || fail "bookkeeping: label missing"
+# Tripwire: the bookkeeping branch diff must be docs-only (we committed only docs/).
+grep -q 'bookkeeping' "$GK/bk.out" && pass "bookkeeping: bookkeeping PR path reached" || fail "bookkeeping: no bookkeeping output"
+grep -q 'Run manifest' "$GK/bk.out" \
+  && pass "bookkeeping: manifest printed at loop end" || fail "bookkeeping: manifest not printed: $(cat "$GK/bk.out" | tr '\n' ' ')"
+# Bookkeeping branch pushed to origin (git fixture's bare remote).
+BKB="$(git -C "$GK" log --all --oneline 2>/dev/null | wc -l)"
+git -C "$GK" branch -a 2>/dev/null | grep -q 'bookkeeping' \
+  && pass "bookkeeping: branch created" || fail "bookkeeping: branch missing"
+
+# Tripwire negative: a bookkeeping commit touching bin/ must fail loudly.
+TW="$(mktemp -d)"
+mkdir -p "$TW/bin" "$TW/config"
+( cd "$TW" && git init -q -b master && git config user.email t@e.c && git config user.name T \
+  && echo x > bin/x.txt && git add -A && git commit -qm base )
+echo '# x' > "$TW/bin/y.txt"
+( cd "$TW" && git checkout -qb factory/trip/bk && git add bin/y.txt && git commit -qm 'code trip' )
+DRIVER_DIR="$(dirname "$DRIVER")"
+cp "$DRIVER_DIR/config/implementer.json" "$TW/config/implementer.json" 2>/dev/null || true
+# The docs-only check (bookkeeping_tripwire) against a bookkeeping branch whose
+# HEAD commit touches bin/ → must flag it (story 6).
+(cd "$TW" && IMPLEMENTER_RUN_SOURCED=1 bash -c '
+  source bin/implementer-run.sh >/dev/null 2>&1 || true
+  set +e
+  bookkeeping_tripwire . HEAD >/dev/null 2>&1
+  exit $?
+')
+rc=$?
+[ "$rc" -ne 0 ] && pass "bookkeeping tripwire: bin/ in bookkeeping commit → fail" \
+  || fail "bookkeeping tripwire: bin/ not flagged (rc=$rc)"
+
+# Pickup gate: an open `[factory] bk` PR in a declared repo → loud skip, no impl.
+cat > "$GK/mock-gh-open.sh" <<'MOCK'
+#!/usr/bin/env bash
+LOG="$FACTORY_GH_LOG"
+{ printf 'gh'; for a in "$@"; do printf ' <%s>' "$a"; done; printf '\n'; } >> "$LOG"
+case "$1" in pr) case "$2" in list) printf '[{"number":20}]\n';; esac;; esac
+exit 0
+MOCK
+chmod +x "$GK/mock-gh-open.sh"
+: > "$FA_LOG"; : > "$FACTORY_GH_LOG"
+FACTORY_GH_BIN="$GK/mock-gh-open.sh" FACTORY_REPOS="ak47-arch/workspace" \
+  bash "$DRIVER" --task bk --headless > "$GK/gate.out" 2>&1; rc=$?
+[ "$rc" -eq 0 ] && grep -q "SKIP" "$GK/gate.out" \
+  && pass "pickup gate: open factory PR → loud skip, exit 0" \
+  || fail "pickup gate rc=$rc: $(cat "$GK/gate.out" | tr '\n' ' ')"
+grep -q "implementer" "$FA_LOG" && fail "pickup gate: implementer ran despite skip" \
+  || pass "pickup gate: implementer NOT run on skip"
+unset BK_MANIFEST FACTORY_GH_BIN FACTORY_GH_LOG FACTORY_REPOS FACTORY_ROOT_REPO
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "factory-run: $PASS passed, $FAIL failed"
