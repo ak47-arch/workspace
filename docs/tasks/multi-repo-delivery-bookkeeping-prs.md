@@ -29,3 +29,4 @@
 - Base: master · Head: 68d68f28061cfa7e66b9637908750a02f8f9b097 (raised 2026-08-19 02:53)
 - Raised by: implementer run 4d89a859-9d05-4b28-9efd-e56aad8837e7
 - Review: session 745d22cb-1a68-49b2-b859-07173257e29e · verdict REQUEST_CHANGES · report docs/code-reviews/2026-08-19-multi-repo-delivery-bookkeeping-prs/
+- Revised: 3bf06eebb58a2abc9ca34037f671c7617922465e (2026-08-19 03:44, impl session 4d89a859-9d05-4b28-9efd-e56aad8837e7, addressing review 745d22cb-1a68-49b2-b859-07173257e29e)
