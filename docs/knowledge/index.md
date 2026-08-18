@@ -22,8 +22,10 @@ Entries are grouped by project for progressive discovery. When the agent needs t
 
 
 
+
 ### software-factory
 
+- [multi repo repo key resolution](sessions/4d89a859-9d05-4b28-9efd-e56aad8837e7/decisions/01-multi-repo-repo-key-resolution.md)
 - [implementer delivery failure loud](sessions/8370f85b-3627-49fd-ad16-0df58e6c7cd4/decisions/01-implementer-delivery-failure-loud.md)
 - [delivery failure loud local nounset](sessions/afe61c92-6a16-4510-84ea-96d0f91badf6/decisions/02-delivery-failure-loud-local-nounset.md)
 - [delivery failure loud gh seam](sessions/afe61c92-6a16-4510-84ea-96d0f91badf6/decisions/01-delivery-failure-loud-gh-seam.md)
