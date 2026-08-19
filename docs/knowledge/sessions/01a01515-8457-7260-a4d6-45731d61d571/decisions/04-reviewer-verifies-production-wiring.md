@@ -5,6 +5,7 @@
 **Task**: multi-repo-delivery-bookkeeping-prs
 **Project**: software-factory
 **Session**: sessions/01a01515-8457-7260-a4d6-45731d61d571/session.jsonl
+**Summary**: Reviewer must verify production wiring (driver seams), not just a green test suite — tests that set seams themselves can mask real integration blockers (B-1..B-5 in PR #12).
 
 ### Context
 

@@ -25,12 +25,11 @@ Invoked via the `product-layer` skill.
 Tooling: `bin/transition-task.sh`.
 
 **PRD lifecycle.** A PRD enters `docs/prd-queue/` when its task reaches
-`prd-ready`, and it leaves the queue (moves to `docs/prd-archive/`) only when
-its task is genuinely done. "Done" means the feature passed user acceptance
-testing **and** the user explicitly gave the go-ahead — **code written + unit
-tests passing is NOT "complete."** Until UAT passes and the user signs off,
-keep the task at `prd-ready` and the PRD in the queue. To reopen an archived
-PRD: move it back to `docs/prd-queue/`, set the task to `prd-ready`, and
+`prd-ready`, and leaves for `docs/prd-archive/` only when the task is genuinely
+done: feature passed user acceptance testing **and** the user explicitly gave
+the go-ahead — **code written + unit tests passing is NOT "complete."** Until
+UAT + sign-off, keep the task at `prd-ready` and the PRD in the queue. To reopen
+an archived PRD: move back to `docs/prd-queue/`, set the task to `prd-ready`,
 re-point the Plan artifact path. (See decision
 [PRD moves to archive only after UAT + user go-ahead](knowledge/index.md).)
 
@@ -126,37 +125,18 @@ record with a link to the raw session trace for full reconstruction.
 
 Each first-party project has its own `openwiki/` for project-specific documentation.
 
-| Project | Status | Docs |
-|---------|--------|------|
-| `llm/` | Inference server. ✅ Running | [openwiki](openwiki/projects/llm-server-client.md) |
-| `survival-infrastructure/` | Personal intelligence pipeline. 🟡 Broken preflight | [openwiki](openwiki/projects/survival-infrastructure.md) |
-| `feed_analyser/` | Capture instrument: thin Chrome extension + minimal local server. Legacy version archived. | [archive/openwiki](https://github.com/ak47-arch/feed_analyser/tree/main/archive/openwiki) (legacy) |
-| `headroom-pi/` | Compression proxy for pi. 🟡 Needs eval | project's own `openwiki/` |
-| `workspace-portability/` | Backup/restore/bootstrap. ✅ Phase 1 done | project's own `openwiki/` |
-| `resume/` | Resume editor. Deferred — not actively developed | project's own `openwiki/` |
-| `emotional_architecture/` | Personal operating manual. Static | — |
-| `timesheetViewer/` | Timesheet validation. Deferred | — |
+| Project | Status | Vision | Docs |
+|---------|--------|--------|------|
+| `llm/` | Inference server. ✅ Running | [VISION](../llm/docs/vision/VISION.md) ✅ | [openwiki](openwiki/projects/llm-server-client.md) |
+| `survival-infrastructure/` | Personal intelligence pipeline. 🟡 Broken preflight | [VISION](../survival-infrastructure/docs/technical/VISION.md) ✅ · [TECHNICAL](../survival-infrastructure/docs/technical/TECHNICAL_VISION.md) ✅ | [openwiki](openwiki/projects/survival-infrastructure.md) |
+| `feed_analyser/` | Capture instrument: thin Chrome extension + minimal local server (legacy archived) | [capture VISION](../feed_analyser/capture/docs/vision/VISION.md) ✅ | [legacy archive openwiki](https://github.com/ak47-arch/feed_analyser/tree/main/archive/openwiki) |
+| `headroom-pi/` | Compression proxy for pi. 🟡 Needs eval | [VISION](../headroom-pi/docs/vision/VISION.md) ✅ | project's own `openwiki/` |
+| `workspace-portability/` | Backup/restore/bootstrap. ✅ Phase 1 done | [VISION](../workspace-portability/docs/vision/VISION.md) ✅ | project's own `openwiki/` |
+| `resume/` | Resume editor. Deferred — not actively developed | ❌ Missing (deferred) | project's own `openwiki/` |
+| `emotional_architecture/` | Personal operating manual. Static | — | — |
+| `timesheetViewer/` | Timesheet validation. Deferred | — | — |
 
-## Vision / Design Intent
-
-When you need to understand **why** something was built or why it works a
-particular way, consult each project's vision or design doc.
-
-**Convention**: [docs/vision-convention.md](vision-convention.md)
-
-| Project | Vision Doc | Status |
-|---------|-----------|--------|
-| `survival-infrastructure/` | [`docs/technical/VISION.md`](../survival-infrastructure/docs/technical/VISION.md) — stakeholder vision | ✅ Written |
-| `survival-infrastructure/` | [`docs/technical/TECHNICAL_VISION.md`](../survival-infrastructure/docs/technical/TECHNICAL_VISION.md) — technical roadmap | ✅ Written |
-| `feed_analyser/capture/` | [`docs/vision/VISION.md`](../feed_analyser/capture/docs/vision/VISION.md) — capture instrument vision | ✅ Written |
-| `llm/` | [`docs/vision/VISION.md`](../llm/docs/vision/VISION.md) — inference server & client vision | ✅ Written |
-| `headroom-pi/` | [`docs/vision/VISION.md`](../headroom-pi/docs/vision/VISION.md) — compression proxy vision | ✅ Written |
-| `workspace-portability/` | [`docs/vision/VISION.md`](../workspace-portability/docs/vision/VISION.md) — portability system vision | ✅ Written |
-| `resume/` | — | ❌ Missing (deferred) |
-
-These give you the bigger picture of what each project is about and where it's
-headed. Read the relevant one when you need context about purpose or direction
-before making changes.
+Vision-doc convention: [docs/vision-convention.md](vision-convention.md).
 
 ## Temporal Metadata
 

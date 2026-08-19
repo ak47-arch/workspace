@@ -6,6 +6,11 @@ Code is the source of truth. When you need deeper context, consult OpenWiki
 documentation. The knowledge base is the last resort — only contains manually
 curated entries from past sessions about design decisions and issues.
 
+**Search first.** Prefer `rg`/`grep` narrow queries before opening a file — a
+one-line match often answers the question without loading the whole doc. Only
+read a file fully when its content is actually needed; stop at the checkpoint
+that resolves it.
+
 For a full inventory of projects, tasks, issues, and documentation, see
 `docs/factory-context.md`.
 

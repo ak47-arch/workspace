@@ -5,6 +5,7 @@
 **Task**: multi-repo-delivery-bookkeeping-prs
 **Project**: software-factory
 **Session**: sessions/01a01515-8457-7260-a4d6-45731d61d571/session.jsonl
+**Summary**: Retain complete message-level sessions (minus inert delta-replay) — compressed, versioned, self-describing — for retrospective Langfuse evals; ingestion bridge + retention tiers follow.
 
 ### Context
 

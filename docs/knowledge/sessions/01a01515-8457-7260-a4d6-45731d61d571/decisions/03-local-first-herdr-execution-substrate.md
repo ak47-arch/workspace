@@ -5,6 +5,7 @@
 **Task**: multi-repo-delivery-bookkeeping-prs
 **Project**: software-factory
 **Session**: sessions/01a01515-8457-7260-a4d6-45731d61d571/session.jsonl
+**Summary**: Local-first execution substrate via herdr: dedicated worktree branch + pane, host owns git, sandbox container is containment, GitHub is repo/PR/evidence layer; --continue respawn continuity works; timeout cap 7200s.
 
 ### Context
 

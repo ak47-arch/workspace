@@ -5,6 +5,7 @@
 **Task**: multi-repo-delivery-bookkeeping-prs
 **Project**: software-factory
 **Session**: sessions/01a01515-8457-7260-a4d6-45731d61d571/session.jsonl
+**Summary**: Evidence-stream pathology — pi `toolcall_delta` (message_update) replay is O(n²) — the single root cause of multi-GB session evidence bloat.
 
 ### Context
 
