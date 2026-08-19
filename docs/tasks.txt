@@ -54,7 +54,7 @@ tasks:
 
     ### Pending
     - think about how entire monitoring can be automated (software_factory)
-    - see how opensource/cognee can be intgrated into our ecosystem and what benefits it might provide and evaluate the benefits(software_factory)
+    - [x] see how opensource/cognee can be intgrated into our ecosystem and what benefits it might provide and evaluate the benefits(software_factory) [cognee-integration-evaluation]
     - improve the shared context infrastructure and add architecture design step (software_factory)
     - clearly define the projects so the context infrastructure is is more efficient. the projects are survival-infrastructure, feed_analyser, llm, resume, workspace-portability, headroom-pi, software_factory (software_factory)
     - Add another abstraction layer on the tasks.txt that helps the user select the next task based on the overall state of the system and reasoning on priorities (software-factory) [task-selection-abstraction-layer]

@@ -20,7 +20,24 @@
 - [x] Integrate Langfuse into all first-party applications (survey + phased plan in task file: `llm/` first, then `survival-infrastructure/`, phase 2 apps; execution gated on project preflights)
 - [x] PRD → `docs/prd-queue/2026-08-09-langfuse-agentic-operations.md`
 
-## First-party integration inventory (survey 2026-08-09)
+## Requirement change (2026-08-19)
+
+**Change**: deliverable C priority reordered — the **software factory's own agentic SDLC**
+is now the first-class Langfuse eval target; first-party app integration (`llm/`,
+`survival-infrastructure/`, phase-2 apps) is demoted to **deferred follow-on**
+(inventory + phased plan stand as documented; execution postponed).
+
+**Why**: development effort is concentrated on the agentic factory, and its closed
+loops are the richest eval surface available today — prd-reviewer gate → implementer
+run → code-reviewer verdict are already traced live to Langfuse, and every run retains
+its full session (`~/.factory/runs/<slug>/sessions/`, decision 06) plus run
+manifests/verdicts (`docs/implementations/`, `docs/code-reviews/`), knowledge decision
+records, and task lifecycle states. Row-app eval has lower marginal value now.
+
+**Impact**: PRD "Integration order" decision amended (see PRD §Requirement change).
+Monitoring of factory agents is already live; the new work is the **eval layer** on
+those loops (surface taxonomy, eval approach, import path — under discussion; recorded
+here once decided).
 
 | Project | What it is | LLM/agent surface | Langfuse today | Priority |
 |---|---|---|---|---|

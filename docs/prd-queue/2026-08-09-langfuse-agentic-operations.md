@@ -1,7 +1,7 @@
 # PRD: Langfuse Agentic Operations — official skill integration, platform operations, and first-party app tracing
 
 **Date**: 2026-08-09
-**Status**: Draft
+**Status**: Draft (amended 2026-08-19 — requirement change, see below)
 **Owner**: software-factory workspace
 **Task**: langfuse-agentic-operations
 **Session**: `docs/knowledge/sessions/019fc40a-5458-7310-89c4-53e098060973/session.jsonl`
@@ -79,6 +79,32 @@ the 🟡 preflight stacks are running.
   `trace-evaluator-upgrade.md`); teaching follows v4-native shapes.
 - **Integration order**: `llm/` client first (single choke point) → `survival-infrastructure/`
   → phase 2 (`headroom-pi/`, `feed_analyser/capture/`) → skip `resume/` (deferred).
+  **Amended 2026-08-19**: superseded by the requirement change below — factory SDLC
+evals first, app integration deferred.
+
+## Requirement change (2026-08-19)
+
+**Change**: deliverable C re-scoped. The **software factory's own agentic SDLC loops**
+become the first-class eval target; first-party app integration (`llm/`,
+`survival-infrastructure/`, phase-2 apps) is deferred follow-on, keeping the existing
+inventory + phases unchanged.
+
+**Why**: the factory's closed loops are already traced live to Langfuse (prd-reviewer
+gates, implementer runs, code-reviewer re-reviews all present as traces,
+2026-07-23 → 2026-08-19) and every run retains its full session plus run
+manifests/verdicts, knowledge decision records, and task lifecycle states — the
+richest evaluable corpus available today. App eval has lower marginal value now.
+
+**Amends**: the "Integration order" implementation decision above; out-of-scope item
+"Actual code changes inside first-party apps (inventory + plan only; execution is
+follow-on)" now reads "deferred until the factory SDLC eval layer is live".
+
+**Open (under discussion)**: eval surface taxonomy, per-loop eval approach (annotation
+queues → LLM-as-judge on v4-native observations → cross-run regression), and whether
+evals run on live per-run traces or on retained session `.jsonl` imports. **Resolution
+2026-08-19**: decided — one shared eval spine, seeded on the decision-record loop with
+deterministic checks on live traces, extending surface-by-surface; see
+`docs/knowledge/sessions/01a01a70-b2b6-7c00-96ca-7292e6e067e2/decisions/01-langfuse-factory-eval-spine-decision-loop.md`.
 
 ## Testing decisions
 

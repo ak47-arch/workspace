@@ -112,6 +112,9 @@ Entries are grouped by project for progressive discovery. When the agent needs t
 - [Complete session retention for Langfuse retrospective evals](sessions/01a01515-8457-7260-a4d6-45731d61d571/decisions/06-langfuse-complete-session-retention.md)
 - [PR dependency invariant — no undeclared ride-along commits](sessions/01a01515-8457-7260-a4d6-45731d61d571/decisions/07-pr-dependency-invariant.md)
 
+- [Cognee ingestion test — fidelity assessment](sessions/019f9a5c-c31c-7bb6-a440-9b6e88c059b3/decisions/01-cognee-ingestion-test-fidelity-assessment.md)
+- [Graphify does not fit the progressive disclosure context engine](sessions/019f9a5c-c31c-7bb6-a440-9b6e88c059b3/decisions/02-graphify-mismatch-with-context-engine.md)
+
 ### workspace-portability
 
 - [GitHub Browser Auth Flow for Workspace Restore](sessions/019f937c-9afe-731e-a70d-c88d4eb9d675/decisions/01-github-browser-auth-flow.md)
@@ -157,6 +160,7 @@ Entries are grouped by project for progressive discovery. When the agent needs t
 ### langfuse-agentic-operations
 
 - [Self-hosted Langfuse v3 → v4 Upgrade with Data Recovery](sessions/019fc40a-5458-7310-89c4-53e098060973/decisions/01-langfuse-v3-to-v4-upgrade.md)
+- [Langfuse factory-SDLC eval spine — seed on the decision-record loop, deterministic-then-grounded](sessions/01a01a70-b2b6-7c00-96ca-7292e6e067e2/decisions/01-langfuse-factory-eval-spine-decision-loop.md)
 
 ### Uncategorised (topic-based)
 
