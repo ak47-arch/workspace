@@ -21,7 +21,7 @@
 # ============================================================================
 set -uo pipefail
 
-DRIVER="$(cd "$(dirname "$0")" && pwd)/implementer-run.sh"
+DRIVER="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/implementer-run.sh"
 MANIFEST_SRC="$(cd "$(dirname "$0")/.." && pwd)/workspace-portability/workspace_restore_manifest.json"
 VERBOSE=false
 [ "${1:-}" = "-v" ] && VERBOSE=true
@@ -61,7 +61,7 @@ setup_fixture() {
   printf '**Status**: in-review\n**Project**: software-factory\n' > "$dir/docs/tasks/ddd.md"
 
   # Driver config (kept minimal — resolves to defaults via jq or fallback).
-  cp "$(cd "$(dirname "$0")/.." && pwd)/config/implementer.json" "$dir/config/implementer.json"
+  cp "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../config/implementer.json" "$dir/config/implementer.json"
 
   # Portability manifest for manifest-branch resolution. Fall back to a
   # self-contained fixture manifest when the sibling workspace-portability repo
@@ -1049,7 +1049,11 @@ rm -rf "$DELIV" "$REMO"
 # A/B delivery invariant. Story 3: Shape B collapse (root code commit THEN
 # bookkeeping commit on the same branch, docs-only tripwire).
 echo "── multi-repo: resolve_repo_set + invariant + Shape B collapse ──"
-source_driver
+# Fixture FIRST, driver source SECOND: implementer-run.sh jq-reads
+# CONFIG_FILE at source time (top-level MODEL/TIMEOUT_* assignments), so the
+# fixture workspace incl. config/implementer.json must exist before the driver
+# is sourced. Sourcing with a stale IMPLEMENTER_WORKSPACE (left exported by a
+# previous section) makes source-time jq abort the whole script.
 MR="$(mktemp -d)"
 mkdir -p "$MR/config" "$MR/docs/tasks" "$MR/docs/prd-queue" "$MR/docs/implementations" \
          "$MR/workspace-portability"
@@ -1059,17 +1063,15 @@ mkdir -p "$MR/config" "$MR/docs/tasks" "$MR/docs/prd-queue" "$MR/docs/implementa
 printf '**Status**: prd-ready\n**Project**: software-factory\n' > "$MR/docs/tasks/multi.md"
 printf '**Date**: 2026-08-18 10:00\n**Status**: Final\n**Repos**: workspace, feed_analyser\n' \
   > "$MR/docs/prd-queue/2026-08-18-multi.md"
-cp "$PWD/config/implementer.json" "$MR/config/implementer.json" 2>/dev/null || true
+SRC_CONFIG="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../config/implementer.json"
+cp "$SRC_CONFIG" "$MR/config/implementer.json"
 cat > "$MR/workspace-portability/workspace_restore_manifest.json" <<'MF'
 { "repos": [ { "path": ".", "branch": "master" }, { "path": "feed_analyser", "branch": "public-release" } ] }
 MF
 export IMPLEMENTER_WORKSPACE="$MR"
 WORKSPACE="$MR"
 PRD_SLUG="multi"; PRD="$MR/docs/prd-queue/2026-08-18-multi.md"
-# Guard: the driver may not be sourced in this run context; source it explicitly.
-if ! type resolve_repo_set >/dev/null 2>&1; then
-  export IMPLEMENTER_RUN_SOURCED=1; set +e; source "$DRIVER" 2>/dev/null; set +e
-fi
+source_driver
 resolve_repo_set 2>/dev/null
 if printf '%s\n' "${REPO_KEYS[@]:-}" | grep -qx workspace \
    && printf '%s\n' "${REPO_KEYS[@]:-}" | grep -qx feed_analyser; then
