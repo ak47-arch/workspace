@@ -1,10 +1,10 @@
 # Decision-Loop Evaluation — 2026-08-19
 
-Decisions: 117 · PASS 21 / FAIL 2 / SKIP 94
+Decisions: 118 · PASS 22 / FAIL 0 / SKIP 96
 
 | decision | session | verdict | claim failures | trace |
 |---|---|---|---|---|
-| 01-factory-architecture-decisions.md | 019f8faf | FAIL | — | pi-mrxp02tn-inia6fyu-7fhf |
+| 01-factory-architecture-decisions.md | 019f8faf | SKIP | — | pi-mrxp02tn-inia6fyu-7fhf |
 | 01-github-browser-auth-flow.md | 019f937c | SKIP | — | — |
 | 01-parallel-repo-clone.md | 019f93aa | SKIP | — | — |
 | 01-capture-instrument-architecture.md | 019f9487 | SKIP | — | — |
@@ -15,12 +15,13 @@ Decisions: 117 · PASS 21 / FAIL 2 / SKIP 94
 | 02-gdrive-auth-and-configuration.md | 019f9a16 | SKIP | — | — |
 | 03-gdrive-file-export-and-storage.md | 019f9a16 | SKIP | — | — |
 | 01-cognee-ingestion-test-fidelity-assessment.md | 019f9a5c | SKIP | — | pi-ms0nn5rn-jm34e4bi-fg47 |
+| 02-graphify-mismatch-with-context-engine.md | 019f9a5c | SKIP | — | pi-ms0nn5rn-jm34e4bi-fg47 |
 | 01-opensource-repo-manifest-registration-skill.md | 019fa31b | PASS | — | — |
 | 01-voice-input-via-whisper-cpp.md | 019fa825 | PASS | — | pi-ms4helkb-zwk8yw8r-3krx |
 | 01-survival-infrastructure-core-product-architecture.md | 019faf18 | PASS | — | pi-ms6eqb47-sqru5lkh-mjdg |
 | 01-github-device-auth-flow-implementation.md | 019faf44 | SKIP | — | pi-ms6ggbo8-2qv0guw0-0ac1 |
 | 02-device-flow-test-verification.md | 019faf44 | SKIP | — | pi-ms6ggbo8-2qv0guw0-0ac1 |
-| 01-herdr-pi-session-repopulation.md | 019fb3a9 | FAIL | — | — |
+| 01-herdr-pi-session-repopulation.md | 019fb3a9 | PASS | — | — |
 | 01-mission-control-deprecation.md | 019fb3b8 | PASS | — | — |
 | 01-task-identification.md | 019fb3ee | SKIP | — | — |
 | 02-task-centric-storage.md | 019fb3ee | SKIP | — | — |
@@ -124,8 +125,7 @@ Decisions: 117 · PASS 21 / FAIL 2 / SKIP 94
 
 ## Gaps
 
-- decision 01-factory-architecture-decisions.md: no/odd Date ('<yyyy-mm-dd>')
-- decision 01-herdr-pi-session-repopulation.md: session 019fb3a9-bf84-79db-b194-c580b76e4228/session.jsonl missing
+- (none)
 
 _JSON: docs/evaluations/2026-08-19-decisions.json_
 
