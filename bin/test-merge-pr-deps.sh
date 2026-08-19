@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # test-merge-pr-deps.sh — unit suite for the PR dependency invariant in
-# merge-pr.sh (decision 09: no undeclared ride-along commits).
+# merge-pr.sh (decision 07-pr-dependency-invariant).
 #
 # Scenario under test is the real incident that motivated it: PR B is a branch
 # STACKED on PR A (its branch contains all of A's commits). Without a declared

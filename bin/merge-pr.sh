@@ -108,7 +108,7 @@ if [ -z "$SLUG" ]; then
   exit 2
 fi
 
-# ─── Dependency invariant (decision 09): no undeclared ride-along commits ──
+# ─── Dependency invariant (decision 07-pr-dependency-invariant): no undeclared ride-along commits ──
 # A PR may bring another open PR's unmerged commits ONLY if it declares
 # `**Depends on:** #N`. Declared deps also fix merge order (dependencies merge
 # first). When PR heads are resolvable (real gh + git available), a PR whose
@@ -163,7 +163,7 @@ for A in "${PREFLIGHT[@]}"; do
       # PR B is a superset of PR A: B carries all of A's commits.
       dep="${DEPON[$BNUM]:-}"
       if [ "$dep" != "$ANUM" ]; then
-        echo "ERROR: PR #$BNUM brings commits from open PR #$ANUM without declaring **Depends on:** #$ANUM — refusing ambiguous ride-along (decision 09)." >&2
+        echo "ERROR: PR #$BNUM brings commits from open PR #$ANUM without declaring **Depends on:** #$ANUM — refusing ambiguous ride-along (decision 07-pr-dependency-invariant)." >&2
         echo "  Resolve: add \"**Depends on:** #$ANUM\" to PR #$BNUM's body (base merges first), or rebase PR #$BNUM onto master." >&2
         exit 1
       fi
@@ -187,7 +187,7 @@ TS="$(date '+%Y-%m-%d %H:%M')"
 MERGED=0
 
 # ─── Merge each PR + record a Merge row per PR ─────────────────────────────
-# Order the set so declared dependencies merge first (decision 09). Single-level
+# Order the set so declared dependencies merge first (decision 07-pr-dependency-invariant). Single-level
 # deps (the realistic case): no-dep PRs first, then PRs whose dep is already in.
 ORDERED=(); ORDERED_NUMS=()
 for pr in "${PREFLIGHT[@]}"; do

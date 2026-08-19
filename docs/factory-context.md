@@ -34,17 +34,38 @@ PRD: move it back to `docs/prd-queue/`, set the task to `prd-ready`, and
 re-point the Plan artifact path. (See decision
 [PRD moves to archive only after UAT + user go-ahead](knowledge/index.md).)
 
-**assembly_line** — CI/CD, agents, sandboxes, testing. Built YAGNI — least
-developed component. Its first real component is the **implementer agent**: a
-decoupled brain/hands pipeline (`bin/implementer-run.sh` host driver + a
-disposable sandbox container) that picks a `Final` PRD from `docs/prd-queue/`,
-implements it in a durable host-side worktree via a headless `pi` worker, and
-raises a PR — the user only inspects/accepts the result. Its twin is the
-**code-reviewer agent**: a sibling pipeline (`bin/review-run.sh` host driver +
-a read-only `pi` worker) that picks up a raised PR, checks it against its PRD
-(runs deterministic + judgment checks incl. the PRD's verification commands and
-a ponytail over-engineering pass) and returns a structured APPROVE /
-REQUEST_CHANGES report posted to the PR — it never merges or completes a task.
+**assembly_line** — CI/CD, agents, sandboxes, testing. Orchestrated by
+`bin/factory-run.sh` (headless loop + per-task orchestration) and staffed by
+two agents:
+- **implementer agent** — a decoupled brain/hands pipeline
+  (`bin/implementer-run.sh` host driver + a disposable sandbox container) that
+  picks a `Final` PRD from `docs/prd-queue/`, implements it in a durable
+  host-side worktree via a headless `pi` worker, and **raises one code PR per
+touched repo + a bookkeeping PR to the workspace root** (multi-repo delivery,
+  decision 01: Shape A = N app code PRs + 1 bookkeeping PR; Shape B = 1 root
+  PR carrying code + bookkeeping commits). The user only UAT-inspects/merges.
+- **code-reviewer agent** — a sibling pipeline (`bin/review-run.sh` host driver
+  + a read-only `pi` worker) that picks up a raised PR, checks it against its
+  PRD (deterministic + judgment checks incl. the PRD's verification commands
+  and a ponytail over-engineering pass) and returns a structured APPROVE /
+  REQUEST_CHANGES report posted to the PR — it never merges or completes a task.
+
+**Execution substrate**: local-first via herdr (dedicated worktree branch +
+pane, sandbox container as containment, host driver owns git; GitHub stays the
+repo/PR/evidence layer) — decision 03. GitHub Actions remains a trigger/
+fallback. **Master is never pushed directly**: every default branch is
+merge-only (branch protection, decision 02) and all content — including
+bookkeeping — lands via reviewed PRs; `bin/merge-pr.sh` is the single operator
+gate (user UAT → merge → Merge rows → task complete), now enforcing the **PR
+dependency invariant** (decision 07: no undeclared ride-along commits, declared
+`**Depends on:** #N` deps merge first). A pickup gate skips a task with an open
+`factory/<slug>` PR.
+
+**Evidence pipeline** (decision 05/06): durable per-run session logs are
+filtered of the O(n²) `message_update` delta-replay (`bin/session-filter.sh`)
+while keeping the complete message-level session for retrospective Langfuse
+evals; run manifests + verdicts are written per run.
+
 Durable stores: `~/.factory/runs/<slug>-<ts>/` (per-run) and
 `docs/implementations/` (installer reports + decisions) +
 `docs/code-reviews/` (review reports + decisions).
