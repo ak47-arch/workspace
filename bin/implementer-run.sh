@@ -49,6 +49,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 # Test seam: IMPLEMENTER_WORKSPACE lets fixture-based tests point the driver
 # at a disposable workspace without any real git context.
 WORKSPACE="${IMPLEMENTER_WORKSPACE:-$SCRIPT_DIR}"
+SESSION_FILTER="${SESSION_FILTER:-$SCRIPT_DIR/bin/session-filter.sh}"
 CONFIG_FILE="$WORKSPACE/config/implementer.json"
 
 # ─── Config loading ────────────────────────────────────────────────────────
@@ -1005,7 +1006,7 @@ run_container() {
         --append-system-prompt /workspace/.pi/agents/implementer.md \
         "${model_arg[@]}" \
         "$directive"
-  ) > "$container_out" 2>&1 & local pid=$!
+  ) 2>&1 | "$SESSION_FILTER" > "$container_out" & local pid=$!
 
   # Liveness watch: tail-running, plus a hard overall timeout. The idle watchdog
   # keys on new bytes; a long-running tool (e.g. `... | tail`) emits nothing until

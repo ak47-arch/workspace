@@ -39,6 +39,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 # Test seam: REVIEWER_WORKSPACE lets fixture-based tests point the driver at a
 # disposable workspace without any real git/gh context.
 WORKSPACE="${REVIEWER_WORKSPACE:-$SCRIPT_DIR}"
+SESSION_FILTER="${SESSION_FILTER:-$SCRIPT_DIR/bin/session-filter.sh}"
 CONFIG_FILE="$WORKSPACE/config/reviewer.json"
 
 # ─── Config loading ────────────────────────────────────────────────────────
@@ -559,7 +560,7 @@ run_container() {
         --append-system-prompt /workspace/.pi/agents/code-reviewer.md \
         "${model_arg[@]}" \
         "$directive"
-  ) > "$container_out" 2>&1 & local pid=$!
+  ) 2>&1 | "$SESSION_FILTER" > "$container_out" & local pid=$!
 
   local deadline=$(( $(date +%s) + TIMEOUT_SEC ))
   local last_activity=0
