@@ -1,0 +1,2604 @@
+{
+  "generated": "2026-08-19",
+  "total": 117,
+  "verdicts": {
+    "PASS": 21,
+    "FAIL": 2,
+    "SKIP": 94
+  },
+  "decisions": [
+    {
+      "decision": "01-factory-architecture-decisions.md",
+      "session": "019f8faf-c8f2-7612-a79d-10e18e6f78cf",
+      "title": "<title>",
+      "task": "",
+      "project": "software-factory",
+      "status": "accepted",
+      "date": "<yyyy-mm-dd>",
+      "schema": {
+        "status": true,
+        "date": false
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "FAIL",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-mrxp02tn-inia6fyu-7fhf",
+        "score_posted": true
+      }
+    },
+    {
+      "decision": "01-github-browser-auth-flow.md",
+      "session": "019f937c-9afe-731e-a70d-c88d4eb9d675",
+      "title": "GitHub Browser Auth Flow for Workspace Restore",
+      "task": "",
+      "project": "workspace-portability",
+      "status": "accepted",
+      "date": "2026-07-24 15:53",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": false,
+        "trace_id": null,
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "01-parallel-repo-clone.md",
+      "session": "019f93aa-ee32-7014-b963-8bec75928d5d",
+      "title": "Parallel Repo Clone",
+      "task": "",
+      "project": "workspace-portability",
+      "status": "accepted",
+      "date": "2026-07-24 17:07",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": false,
+        "trace_id": null,
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "01-capture-instrument-architecture.md",
+      "session": "019f9487-9ea0-7905-8ae6-eaa2aff6bbdd",
+      "title": "Capture instrument architecture (thin extension + dumb server + decoupled backend)",
+      "task": "",
+      "project": "feed-analyser",
+      "status": "accepted",
+      "date": "2026-07-25 20:01",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": false,
+        "trace_id": null,
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "02-extension-platform-and-ux.md",
+      "session": "019f9487-9ea0-7905-8ae6-eaa2aff6bbdd",
+      "title": "Chrome MV3 extension with manual capture via side panel",
+      "task": "",
+      "project": "feed-analyser",
+      "status": "accepted",
+      "date": "2026-07-25 20:01",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": false,
+        "trace_id": null,
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "03-artefact-data-model-and-storage.md",
+      "session": "019f9487-9ea0-7905-8ae6-eaa2aff6bbdd",
+      "title": "Artefact data model and JSONL storage",
+      "task": "",
+      "project": "feed-analyser",
+      "status": "accepted",
+      "date": "2026-07-25 20:01",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": false,
+        "trace_id": null,
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "04-legacy-feed-analyser-archiving.md",
+      "session": "019f9487-9ea0-7905-8ae6-eaa2aff6bbdd",
+      "title": "Legacy feed_analyser archiving",
+      "task": "",
+      "project": "feed-analyser",
+      "status": "accepted",
+      "date": "2026-07-25 20:01",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [
+        {
+          "claim": "feed_analyser legacy archive is archived (local archive dir)",
+          "pass": true,
+          "evidence": "feed_analyser/archive present"
+        }
+      ],
+      "verdict": "PASS",
+      "trace": {
+        "matched": false,
+        "trace_id": null,
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "01-gdrive-integration-model.md",
+      "session": "019f9a16-9363-7e5a-a9a7-f696fc32e4c6",
+      "title": "GDrive Integration Model and Source Type",
+      "task": "",
+      "project": "survival-infrastructure",
+      "status": "accepted",
+      "date": "2026-07-25 23:34",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": false,
+        "trace_id": null,
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "02-gdrive-auth-and-configuration.md",
+      "session": "019f9a16-9363-7e5a-a9a7-f696fc32e4c6",
+      "title": "GDrive Auth and Configuration Approach",
+      "task": "",
+      "project": "survival-infrastructure",
+      "status": "accepted",
+      "date": "2026-07-25 23:34",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": false,
+        "trace_id": null,
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "03-gdrive-file-export-and-storage.md",
+      "session": "019f9a16-9363-7e5a-a9a7-f696fc32e4c6",
+      "title": "GDrive File Export, Dedup, and Metadata Strategy",
+      "task": "",
+      "project": "survival-infrastructure",
+      "status": "accepted",
+      "date": "2026-07-25 23:34",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": false,
+        "trace_id": null,
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "01-cognee-ingestion-test-fidelity-assessment.md",
+      "session": "019f9a5c-c31c-7bb6-a440-9b6e88c059b3",
+      "title": "Cognee ingestion test \u2014 fidelity assessment",
+      "task": "cognee-integration-evaluation",
+      "project": "software-factory",
+      "status": "accepted",
+      "date": "2026-08-19 22:46",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-ms0nn5rn-jm34e4bi-fg47",
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "01-opensource-repo-manifest-registration-skill.md",
+      "session": "019fa31b-694b-7f94-ad00-bbc57a0c88df",
+      "title": "Opensource Repo Manifest Registration Skill Design",
+      "task": "",
+      "project": "workspace-portability",
+      "status": "accepted",
+      "date": "2026-07-27 23:02",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [
+        {
+          "claim": "opensource registration skill path resolves",
+          "pass": true,
+          "evidence": "agent-skills present"
+        }
+      ],
+      "verdict": "PASS",
+      "trace": {
+        "matched": false,
+        "trace_id": null,
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "01-voice-input-via-whisper-cpp.md",
+      "session": "019fa825-a262-7020-afec-0c733d21536d",
+      "title": "Voice Input to Pi via whisper.cpp",
+      "task": "",
+      "project": "software-factory",
+      "status": "accepted",
+      "date": "2026-07-29 02:07",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [
+        {
+          "claim": "voice-input (whisper.cpp) skill path resolves",
+          "pass": true,
+          "evidence": ".agents/skills/transcribe/SKILL.md present"
+        }
+      ],
+      "verdict": "PASS",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-ms4helkb-zwk8yw8r-3krx",
+        "score_posted": true
+      }
+    },
+    {
+      "decision": "01-survival-infrastructure-core-product-architecture.md",
+      "session": "019faf18-7a30-7afe-87ba-3070f248c536",
+      "title": "Survival Infrastructure as Core Product \u2014 Two-Agent Architecture",
+      "task": "",
+      "project": "survival-infrastructure",
+      "status": "accepted",
+      "date": "2026-07-30 00:31",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [
+        {
+          "claim": "survival-infrastructure is a live first-party project",
+          "pass": true,
+          "evidence": "survival-infrastructure dir present"
+        }
+      ],
+      "verdict": "PASS",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-ms6eqb47-sqru5lkh-mjdg",
+        "score_posted": true
+      }
+    },
+    {
+      "decision": "01-github-device-auth-flow-implementation.md",
+      "session": "019faf44-901a-73f9-aa74-817eead12980",
+      "title": "GitHub Device Authorization Flow Implementation",
+      "task": "",
+      "project": "workspace-portability",
+      "status": "accepted",
+      "date": "2026-07-30 01:09",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-ms6ggbo8-2qv0guw0-0ac1",
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "02-device-flow-test-verification.md",
+      "session": "019faf44-901a-73f9-aa74-817eead12980",
+      "title": "Device Flow End-to-End Test Verification",
+      "task": "",
+      "project": "workspace-portability",
+      "status": "accepted",
+      "date": "2026-07-30 01:50",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-ms6ggbo8-2qv0guw0-0ac1",
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "01-herdr-pi-session-repopulation.md",
+      "session": "019fb3a9-bf84-79db-b194-c580b76e4228",
+      "title": "Herdr-Pi Session Repopulation Architecture",
+      "task": "",
+      "project": "headroom-pi",
+      "status": "accepted",
+      "date": "2026-07-30 21:18",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": false,
+      "claims": [
+        {
+          "claim": "herdr repo is present for session repopulation",
+          "pass": true,
+          "evidence": "opensource/herdr present"
+        }
+      ],
+      "verdict": "FAIL",
+      "trace": {
+        "matched": false,
+        "trace_id": null,
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "01-mission-control-deprecation.md",
+      "session": "019fb3b8-27d7-7b8e-b8a4-3a0274646646",
+      "title": "Mission Control Deprecation",
+      "task": "",
+      "project": "software-factory",
+      "status": "accepted",
+      "date": "2026-07-30 21:31",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [
+        {
+          "claim": "mission-control is deprecated (no live dir)",
+          "pass": true,
+          "evidence": "docs/mission-control absent"
+        }
+      ],
+      "verdict": "PASS",
+      "trace": {
+        "matched": false,
+        "trace_id": null,
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "01-task-identification.md",
+      "session": "019fb3ee-9573-78d2-9d4b-a4bf49a742a7",
+      "title": "Task Identification",
+      "task": "end-to-end-traceability",
+      "project": "software-factory",
+      "status": "accepted",
+      "date": "2026-07-30 23:32",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": false,
+        "trace_id": null,
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "02-task-centric-storage.md",
+      "session": "019fb3ee-9573-78d2-9d4b-a4bf49a742a7",
+      "title": "Task-Centric Reference Hub",
+      "task": "end-to-end-traceability",
+      "project": "software-factory",
+      "status": "accepted",
+      "date": "2026-07-30 23:32",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": false,
+        "trace_id": null,
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "03-prd-queue-lifecycle.md",
+      "session": "019fb3ee-9573-78d2-9d4b-a4bf49a742a7",
+      "title": "PRD Queue Lifecycle",
+      "task": "end-to-end-traceability",
+      "project": "software-factory",
+      "status": "accepted",
+      "date": "2026-07-30 23:32",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": false,
+        "trace_id": null,
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "04-traceability-links.md",
+      "session": "019fb3ee-9573-78d2-9d4b-a4bf49a742a7",
+      "title": "Traceability Links via Task Field",
+      "task": "end-to-end-traceability",
+      "project": "software-factory",
+      "status": "accepted",
+      "date": "2026-07-30 23:32",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": false,
+        "trace_id": null,
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "01-vision-document-convention.md",
+      "session": "019fb45b-9f0f-79e2-ac55-a0a084ac3156",
+      "title": "Vision Document Convention for Upstream Traceability",
+      "task": "_(none \u2014 part of the ongoing context infrastructure initiative)_",
+      "project": "software-factory",
+      "status": "accepted",
+      "date": "2026-07-31 01:21",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [
+        {
+          "claim": "vision-doc convention file present",
+          "pass": true,
+          "evidence": "docs/vision-convention.md present"
+        }
+      ],
+      "verdict": "PASS",
+      "trace": {
+        "matched": false,
+        "trace_id": null,
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "01-make-repos-private.md",
+      "session": "019fb4a3-3b15-7363-838d-100a18ed270f",
+      "title": "Make feed_analyser and goal-agent (survival-infrastructure) Private",
+      "task": "feed-analyser-survival-infra-private-repos",
+      "project": "workspace-portability",
+      "status": "accepted",
+      "date": "2026-07-31 01:56",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": false,
+        "trace_id": null,
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "01-three-phase-product-layer.md",
+      "session": "019fb4f8-7a69-7968-b884-f4902565e512",
+      "title": "Three-Phase Product Layer with Vertical Slicing as Guiding Principle",
+      "task": "extend-software-factory-wsff",
+      "project": "software-factory",
+      "status": "accepted",
+      "date": "2026-07-31 23:57",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [
+        {
+          "claim": "product-layer skill is the UX-layer entry",
+          "pass": true,
+          "evidence": ".agents/skills/product-layer/SKILL.md present"
+        }
+      ],
+      "verdict": "PASS",
+      "trace": {
+        "matched": false,
+        "trace_id": null,
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "01-task-lifecycle-state-machine-and-transition-tooling.md",
+      "session": "019fb98c-22b4-7a11-8ef5-fc3baa6634c0",
+      "title": "Task Lifecycle State Machine and Transition Tooling",
+      "task": "task-file-dashboard",
+      "project": "software-factory",
+      "status": "accepted",
+      "date": "2026-08-01 16:36",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [
+        {
+          "claim": "task lifecycle transition tooling exists",
+          "pass": true,
+          "evidence": "bin/transition-task.sh present"
+        }
+      ],
+      "verdict": "PASS",
+      "trace": {
+        "matched": false,
+        "trace_id": null,
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "01-single-factory-context-document.md",
+      "session": "019fbd12-7ea3-7152-9eec-f865cf69d6f7",
+      "title": "Single Factory Context Document for Token-Efficient Context",
+      "task": "combine-factory-context-factory-txt",
+      "project": "software-factory",
+      "status": "accepted",
+      "date": "2026-08-02 15:09",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [
+        {
+          "claim": "single factory-context document is the hub",
+          "pass": true,
+          "evidence": "docs/factory-context.md present"
+        }
+      ],
+      "verdict": "PASS",
+      "trace": {
+        "matched": false,
+        "trace_id": null,
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "02-context-engine-nomenclature.md",
+      "session": "019fbd12-7ea3-7152-9eec-f865cf69d6f7",
+      "title": "Rename knowledge_base Factory Component to context_engine",
+      "task": "combine-factory-context-factory-txt",
+      "project": "software-factory",
+      "status": "accepted",
+      "date": "2026-08-02 15:09",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": false,
+        "trace_id": null,
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "03-reliable-transition-script-with-tests.md",
+      "session": "019fbd12-7ea3-7152-9eec-f865cf69d6f7",
+      "title": "Reliable Lifecycle Transition Script with Test Suite",
+      "task": "combine-factory-context-factory-txt",
+      "project": "software-factory",
+      "status": "accepted",
+      "date": "2026-08-02 21:41",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [
+        {
+          "claim": "transition tooling has tests",
+          "pass": true,
+          "evidence": "bin/test-*transition*.sh present"
+        }
+      ],
+      "verdict": "PASS",
+      "trace": {
+        "matched": false,
+        "trace_id": null,
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "01-temporal-metadata-convention.md",
+      "session": "019fc389-c171-7c69-9eeb-6100abd6bc87",
+      "title": "Temporal Metadata Convention",
+      "task": "chronological-tracking",
+      "project": "software-factory",
+      "status": "accepted",
+      "date": "2026-08-02 18:00",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [
+        {
+          "claim": "task files carry **Created**: (temporal metadata convention)",
+          "pass": true,
+          "evidence": "all docs/tasks/*.md carry **Created**"
+        }
+      ],
+      "verdict": "PASS",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-mt094v09-56tombia-suox",
+        "score_posted": true
+      }
+    },
+    {
+      "decision": "01-langfuse-v3-to-v4-upgrade.md",
+      "session": "019fc40a-5458-7310-89c4-53e098060973",
+      "title": "Self-hosted Langfuse v3 \u2192 v4 Upgrade with Data Recovery",
+      "task": "langfuse-agentic-operations",
+      "project": "langfuse-agentic-operations",
+      "status": "accepted",
+      "date": "2026-08-09 22:40",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [
+        {
+          "claim": "v4 write mode stays `dual` (pi tracing must not break on restart)",
+          "pass": true,
+          "evidence": "runtime dual=True; compose/.env carries literal=False"
+        }
+      ],
+      "verdict": "PASS",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-mt094v09-56tombia-suox",
+        "score_posted": true
+      }
+    },
+    {
+      "decision": "01-capture-text-only-scope-and-vision.md",
+      "session": "019fc8f4-ad2b-7aea-ac8b-df06363d0aba",
+      "title": "Capture v1 is text-only; keep the vision a product document",
+      "task": "x-capture-instrument",
+      "project": "feed-analyser",
+      "status": "accepted",
+      "date": "2026-08-04 12:22",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-mt094v09-56tombia-suox",
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "02-capture-api-contract.md",
+      "session": "019fc8f4-ad2b-7aea-ac8b-df06363d0aba",
+      "title": "Capture API contract \u2014 one POST endpoint, flat artefact",
+      "task": "x-capture-instrument",
+      "project": "feed-analyser",
+      "status": "accepted",
+      "date": "2026-08-04 12:22",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [
+        {
+          "claim": "capture server (X capture) still present",
+          "pass": true,
+          "evidence": "feed_analyser/capture present"
+        }
+      ],
+      "verdict": "PASS",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-mt094v09-56tombia-suox",
+        "score_posted": true
+      }
+    },
+    {
+      "decision": "03-capture-server-fixed-config.md",
+      "session": "019fc8f4-ad2b-7aea-ac8b-df06363d0aba",
+      "title": "Capture server uses fixed defaults, no config surface",
+      "task": "x-capture-instrument",
+      "project": "feed-analyser",
+      "status": "accepted",
+      "date": "2026-08-04 12:22",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-mt094v09-56tombia-suox",
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "01-prd-as-routing-document-context-engine-depth.md",
+      "session": "019fd00b-4e86-76ed-966b-186ea09c775c",
+      "title": "PRD as Routing Document, Context Engine Provides Depth",
+      "task": "extend-pm-assembly-line",
+      "project": "software-factory",
+      "status": "accepted",
+      "date": "2026-08-05 09:22",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-mt094v09-56tombia-suox",
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "02-review-sub-agent-in-session-validation-gate.md",
+      "session": "019fd00b-4e86-76ed-966b-186ea09c775c",
+      "title": "Review Sub-Agent as In-Session PRD Verification Gate",
+      "task": "extend-pm-assembly-line",
+      "project": "software-factory",
+      "status": "accepted",
+      "date": "2026-08-05 09:22",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-mt094v09-56tombia-suox",
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "03-scope-boundary-ci-and-implementer-deferred-to-part2.md",
+      "session": "019fd00b-4e86-76ed-966b-186ea09c775c",
+      "title": "Scope Boundary \u2014 CI and Implementer Agent Deferred to Part 2 (Assembly Line)",
+      "task": "extend-pm-assembly-line",
+      "project": "software-factory",
+      "status": "accepted",
+      "date": "2026-08-05 09:22",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-mt094v09-56tombia-suox",
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "04-subagent-infrastructure-pi-extension-project-local.md",
+      "session": "019fd00b-4e86-76ed-966b-186ea09c775c",
+      "title": "Subagent Infrastructure \u2014 Official Pi Extension, Project-Local, Read-Only Reviews",
+      "task": "extend-pm-assembly-line",
+      "project": "software-factory",
+      "status": "accepted",
+      "date": "2026-08-05 09:22",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-mt094v09-56tombia-suox",
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "01-capture-v1-single-intent-save-whole-post.md",
+      "session": "019fd314-9339-7a30-9b8b-f6d8892b5226",
+      "title": "Capture v1 ships a single intent \u2014 save the whole post (Intent A)",
+      "task": "x-capture-instrument",
+      "project": "feed-analyser",
+      "status": "accepted",
+      "date": "2026-08-06",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": false,
+        "trace_id": null,
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "02-capture-links-embedded-tweets-and-tco-resolution.md",
+      "session": "019fd314-9339-7a30-9b8b-f6d8892b5226",
+      "title": "Capture links include embedded/quote tweets and resolve t.co shortlinks",
+      "task": "x-capture-instrument",
+      "project": "feed-analyser",
+      "status": "accepted",
+      "date": "2026-08-06",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": false,
+        "trace_id": null,
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "03-prd-archive-requires-uat-and-user-signoff.md",
+      "session": "019fd314-9339-7a30-9b8b-f6d8892b5226",
+      "title": "PRD moves to archive only after UAT passes and the user gives go-ahead",
+      "task": "x-capture-instrument",
+      "project": "feed-analyser",
+      "status": "accepted",
+      "date": "2026-08-06",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": false,
+        "trace_id": null,
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "04-capture-recursive-node-tree-comment-is-tweet.md",
+      "session": "019fd314-9339-7a30-9b8b-f6d8892b5226",
+      "title": "Capture artefact is a recursive node tree \u2014 a comment is a tweet",
+      "task": "x-capture-instrument",
+      "project": "feed-analyser",
+      "status": "accepted",
+      "date": "2026-08-06",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": false,
+        "trace_id": null,
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "05-capture-resolve-links-and-restart-server.md",
+      "session": "019fd314-9339-7a30-9b8b-f6d8892b5226",
+      "title": "Resolve t.co links from display text robustly; restart server after schema changes",
+      "task": "x-capture-instrument",
+      "project": "feed-analyser",
+      "status": "accepted",
+      "date": "2026-08-06",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": false,
+        "trace_id": null,
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "01-pi-sdk-agent-service.md",
+      "session": "019fd8a4-73ca-7c92-bbcc-b5d74e7d0817",
+      "title": "Agent runs on pi SDK in a local Node service; extension is the UI",
+      "task": "extension-inline-agent",
+      "project": "feed_analyser",
+      "status": "accepted",
+      "date": "2026-08-08 21:43",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-mt094v09-56tombia-suox",
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "02-openrouter-inference-server-side-key.md",
+      "session": "019fd8a4-73ca-7c92-bbcc-b5d74e7d0817",
+      "title": "Inference via OpenRouter; key stays server-side",
+      "task": "extension-inline-agent",
+      "project": "feed_analyser",
+      "status": "accepted",
+      "date": "2026-08-08 21:43",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-mt094v09-56tombia-suox",
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "03-agent-tools-fetch-url-only.md",
+      "session": "019fd8a4-73ca-7c92-bbcc-b5d74e7d0817",
+      "title": "Agent tools restricted to fetch_url for v1 \u2014 no bash, no web search",
+      "task": "extension-inline-agent",
+      "project": "feed_analyser",
+      "status": "accepted",
+      "date": "2026-08-08 21:43",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-mt094v09-56tombia-suox",
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "04-artefact-session-evidence-model.md",
+      "session": "019fd8a4-73ca-7c92-bbcc-b5d74e7d0817",
+      "title": "One artefact per capture + the full pi session as evidence",
+      "task": "extension-inline-agent",
+      "project": "feed_analyser",
+      "status": "accepted",
+      "date": "2026-08-08 21:43",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-mt094v09-56tombia-suox",
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "05-twitter-kb-plain-files-fts5-read-api.md",
+      "session": "019fd8a4-73ca-7c92-bbcc-b5d74e7d0817",
+      "title": "Twitter knowledge base \u2014 plain files as truth, SQLite FTS5 derived index, thin read API",
+      "task": "extension-inline-agent",
+      "project": "feed_analyser",
+      "status": "accepted",
+      "date": "2026-08-08 21:43",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-mt094v09-56tombia-suox",
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "06-browser-control-deferred.md",
+      "session": "019fd8a4-73ca-7c92-bbcc-b5d74e7d0817",
+      "title": "Browser control by the agent deferred to a follow-on phase",
+      "task": "extension-inline-agent",
+      "project": "feed_analyser",
+      "status": "accepted",
+      "date": "2026-08-08 21:43",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-mt094v09-56tombia-suox",
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "07-prd-status-lifecycle.md",
+      "session": "019fd8a4-73ca-7c92-bbcc-b5d74e7d0817",
+      "title": "PRD status lifecycle \u2014 Final when the review gate passes",
+      "task": "extension-inline-agent",
+      "project": "software-factory",
+      "status": "accepted",
+      "date": "2026-08-09 21:18",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-mt094v09-56tombia-suox",
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "08-subagent-handover-hang-herdr.md",
+      "session": "019fd8a4-73ca-7c92-bbcc-b5d74e7d0817",
+      "title": "Subagent runs hang at handover \u2014 herdr heartbeat root cause, fix applied + persist-step mitigation",
+      "task": "extension-inline-agent",
+      "project": "software-factory",
+      "status": "accepted",
+      "date": "2026-08-09 21:25",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-mt094v09-56tombia-suox",
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "09-large-documents-written-incrementally.md",
+      "session": "019fd8a4-73ca-7c92-bbcc-b5d74e7d0817",
+      "title": "Large documents are written incrementally, never in one tool call",
+      "task": "extension-inline-agent",
+      "project": "software-factory",
+      "status": "accepted",
+      "date": "2026-08-09 21:18",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-mt094v09-56tombia-suox",
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "01-implementer-harness-host-cattle-container.md",
+      "session": "019fe7d2-aa31-77e6-8ea0-9df3d6b3c6ed",
+      "title": "Implementer as host harness + cattle container (brain/hands decoupling)",
+      "task": "implementer-agent",
+      "project": "software-factory",
+      "status": "accepted",
+      "date": "2026-08-10 20:59",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [
+        {
+          "claim": "host driver owns git; container is disposable",
+          "pass": true,
+          "evidence": "bin/implementer-run.sh manages worktrees"
+        }
+      ],
+      "verdict": "PASS",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-mt094v09-56tombia-suox",
+        "score_posted": true
+      }
+    },
+    {
+      "decision": "02-durable-state-host-session-outside-container.md",
+      "session": "019fe7d2-aa31-77e6-8ea0-9df3d6b3c6ed",
+      "title": "Durable state lives on the host \u2014 session outside the container, docs read-only by mount",
+      "task": "implementer-agent",
+      "project": "software-factory",
+      "status": "accepted",
+      "date": "2026-08-10 20:59",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-mt094v09-56tombia-suox",
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "03-sandbox-on-workspace-portability.md",
+      "session": "019fe7d2-aa31-77e6-8ea0-9df3d6b3c6ed",
+      "title": "Sandbox built on workspace-portability \u2014 new profile, pi install in-scope, container definition in portability",
+      "task": "implementer-agent",
+      "project": "software-factory",
+      "status": "accepted",
+      "date": "2026-08-10 20:59",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [
+        {
+          "claim": "implementer runs inside a sandbox container (podman)",
+          "pass": true,
+          "evidence": "bin/implementer-run.sh references sandbox"
+        }
+      ],
+      "verdict": "PASS",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-mt094v09-56tombia-suox",
+        "score_posted": true
+      }
+    },
+    {
+      "decision": "04-implementer-runtime-config-model-skills-extensions.md",
+      "session": "019fe7d2-aa31-77e6-8ea0-9df3d6b3c6ed",
+      "title": "Implementer runtime set \u2014 current model, langfuse-tracing, embedded ponytail, implementer-ops skill",
+      "task": "implementer-agent",
+      "project": "software-factory",
+      "status": "accepted",
+      "date": "2026-08-10 20:59",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [
+        {
+          "claim": "implementer persona + runtime config exist",
+          "pass": true,
+          "evidence": ".pi/agents/implementer.md + config/implementer.json present"
+        }
+      ],
+      "verdict": "PASS",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-mt094v09-56tombia-suox",
+        "score_posted": true
+      }
+    },
+    {
+      "decision": "05-implementer-lifecycle-traceability.md",
+      "session": "019fe7d2-aa31-77e6-8ea0-9df3d6b3c6ed",
+      "title": "Implementer lifecycle & traceability \u2014 in-progress until merge, PRD stays queued, driver-shielded index",
+      "task": "implementer-agent",
+      "project": "software-factory",
+      "status": "accepted",
+      "date": "2026-08-10 20:59",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-mt094v09-56tombia-suox",
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "01-implementer-false-kill-tool-liveness-session-continuation.md",
+      "session": "019fecde-70b4-78e7-ab7d-e91886af42a7",
+      "title": "Implementer container false-kill \u2014 tool-aware liveness + native session continuation",
+      "task": "implementer-agent",
+      "project": "software-factory",
+      "status": "accepted",
+      "date": "2026-08-12 01:55",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [
+        {
+          "claim": "implementer resumes sessions (--continue/--session-dir)",
+          "pass": true,
+          "evidence": "bin/implementer-run.sh has session continuation"
+        }
+      ],
+      "verdict": "PASS",
+      "trace": {
+        "matched": false,
+        "trace_id": null,
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "02-fix-silent-delivery-loss-git-identity.md",
+      "session": "019fecde-70b4-78e7-ab7d-e91886af42a7",
+      "title": "Fix silent delivery loss \u2014 configure git identity in the run-dir clone before the host commit",
+      "task": "implementer-agent",
+      "project": "software-factory",
+      "status": "accepted",
+      "date": "2026-08-12 03:40",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [
+        {
+          "claim": "git identity is set inside the sandbox (no silent delivery loss)",
+          "pass": true,
+          "evidence": "bin/implementer-run.sh sets git identity"
+        }
+      ],
+      "verdict": "PASS",
+      "trace": {
+        "matched": false,
+        "trace_id": null,
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "03-pointer-map-not-bundle-agents-as-roster.md",
+      "session": "019fecde-70b4-78e7-ab7d-e91886af42a7",
+      "title": "Organize the implementer as a pointer map, not a physical bundle \u2014 agents as a workforce roster",
+      "task": "implementer-agent",
+      "project": "software-factory",
+      "status": "accepted",
+      "date": "2026-08-12 05:20",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": false,
+        "trace_id": null,
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "04-cleanup-shutdown-durable-disposable.md",
+      "session": "019fecde-70b4-78e7-ab7d-e91886af42a7",
+      "title": "Enforce disposable-vs-durable in the driver \u2014 container shutdown + automatic run-dir cleanup after delivery",
+      "task": "implementer-agent",
+      "project": "software-factory",
+      "status": "accepted",
+      "date": "2026-08-13 01:50",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": false,
+        "trace_id": null,
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "01-code-review-manual-trigger.md",
+      "session": "019ff79e-181d-7e8b-a869-398b6417d28a",
+      "title": "Code-review agent uses a manual trigger (no polling infra)",
+      "task": "code-review-agent",
+      "project": "software-factory",
+      "status": "accepted",
+      "date": "2026-08-13 23:00",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-msqj59zm-usg0efuu-t5g4",
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "02-code-review-archive-location.md",
+      "session": "019ff79e-181d-7e8b-a869-398b6417d28a",
+      "title": "Code-review reports archive under docs/code-reviews/, not docs/reviews/",
+      "task": "code-review-agent",
+      "project": "software-factory",
+      "status": "accepted",
+      "date": "2026-08-13 23:00",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-msqj59zm-usg0efuu-t5g4",
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "03-review-worker-read-only-git.md",
+      "session": "019ff79e-181d-7e8b-a869-398b6417d28a",
+      "title": "Review worker is read-only \u2014 may run read-only git, never gh",
+      "task": "code-review-agent",
+      "project": "software-factory",
+      "status": "accepted",
+      "date": "2026-08-13 23:00",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-msqj59zm-usg0efuu-t5g4",
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "04-ponytail-review-worker-skills.md",
+      "session": "019ff79e-181d-7e8b-a869-398b6417d28a",
+      "title": "Ponytail wired as review-worker skills via `--skill` flags \u2014 not the interactive pi-extension or MCP",
+      "task": "code-review-agent",
+      "project": "software-factory",
+      "status": "accepted",
+      "date": "2026-08-14 00:30",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-msqj59zm-usg0efuu-t5g4",
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "05-review-never-merges.md",
+      "session": "019ff79e-181d-7e8b-a869-398b6417d28a",
+      "title": "The code-review agent never merges PRs \u2014 merge stays a human-gated operator step",
+      "task": "code-review-agent",
+      "project": "software-factory",
+      "status": "accepted",
+      "date": "2026-08-14",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [
+        {
+          "claim": "code-reviewer never merges (read-only worker)",
+          "pass": true,
+          "evidence": "bin/review-run.sh has no merge-pr call"
+        }
+      ],
+      "verdict": "PASS",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-msqj59zm-usg0efuu-t5g4",
+        "score_posted": true
+      }
+    },
+    {
+      "decision": "06-task-pr-tracking.md",
+      "session": "019ff79e-181d-7e8b-a869-398b6417d28a",
+      "title": "Task files carry a PR-tracking section \u2014 PR\u2194task\u2194review\u2194merge data is attached for retrospective evaluation",
+      "task": "code-review-agent",
+      "project": "software-factory",
+      "status": "accepted",
+      "date": "2026-08-14",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-msqj59zm-usg0efuu-t5g4",
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "07-merge-tool-operator-authority-split.md",
+      "session": "019ff79e-181d-7e8b-a869-398b6417d28a",
+      "title": "Operator merge-tool \u2014 authority-split enforced by tooling + container",
+      "task": "code-review-agent",
+      "project": "software-factory",
+      "status": "accepted",
+      "date": "2026-08-14 17:28",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-msqj59zm-usg0efuu-t5g4",
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "08-implementer-revision-same-session.md",
+      "session": "019ff79e-181d-7e8b-a869-398b6417d28a",
+      "title": "Review-feedback fixes are made by the implementer, resuming its original session",
+      "task": "implementer-revision-mode",
+      "project": "software-factory",
+      "status": "accepted",
+      "date": "2026-08-14 22:13",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-msqj59zm-usg0efuu-t5g4",
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "09-pick-prd-ready-only.md",
+      "session": "019ff79e-181d-7e8b-a869-398b6417d28a",
+      "title": "`--pick` selects only `prd-ready` tasks with Final PRDs; `--task` is the explicit override",
+      "task": "task-selection-abstraction-layer",
+      "project": "software-factory",
+      "status": "accepted",
+      "date": "2026-08-14 22:37",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-msqj59zm-usg0efuu-t5g4",
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "10-mock-gh-reject-unknown-fields.md",
+      "session": "019ff79e-181d-7e8b-a869-398b6417d28a",
+      "title": "Mock gh must reject unknown `pr view --json` fields \u2014 host-gh compatibility is a live seam",
+      "task": "software-factory",
+      "project": "software-factory",
+      "status": "accepted",
+      "date": "2026-08-15 01:10",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-msqj59zm-usg0efuu-t5g4",
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "11-merge-pr-requires-master-branch.md",
+      "session": "019ff79e-181d-7e8b-a869-398b6417d28a",
+      "title": "`merge-pr.sh` operates on the checked-out branch \u2014 operator must run it on master",
+      "task": "software-factory",
+      "project": "software-factory",
+      "status": "accepted",
+      "date": "2026-08-15 01:12",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [
+        {
+          "claim": "merge-pr.sh enforces the master branch (operator runs it on master)",
+          "pass": true,
+          "evidence": "bin/merge-pr.sh references master"
+        }
+      ],
+      "verdict": "PASS",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-msqj59zm-usg0efuu-t5g4",
+        "score_posted": true
+      }
+    },
+    {
+      "decision": "12-manual-host-delivery-fallback.md",
+      "session": "019ff79e-181d-7e8b-a869-398b6417d28a",
+      "title": "If the implementer driver dies before host delivery, the operator completes it manually",
+      "task": "software-factory",
+      "project": "software-factory",
+      "status": "accepted",
+      "date": "2026-08-15 01:14",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-msqj59zm-usg0efuu-t5g4",
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "13-revise-cross-repo-uuid-join.md",
+      "session": "019ff79e-181d-7e8b-a869-398b6417d28a",
+      "title": "`--revise` supports cross-repo / pre-reviewer-era PRs \u2014 requires a 36-char impl-session UUID on the task's `Raised by` row",
+      "task": "extension-inline-agent",
+      "project": "feed_analyser",
+      "status": "accepted",
+      "date": "2026-08-15 01:45",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [
+        {
+          "claim": "`--revise` resolves a 36-char impl-session UUID",
+          "pass": true,
+          "evidence": "bin/implementer-run.sh --revise + 36-char uuid join"
+        }
+      ],
+      "verdict": "PASS",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-msqj59zm-usg0efuu-t5g4",
+        "score_posted": true
+      }
+    },
+    {
+      "decision": "01-ponytail-skills-fixed-mount.md",
+      "session": "01a005a8-7302-74e2-8c1a-c6e8e74358c7",
+      "title": "Ponytail skills delivered via fixed `/skills` mount \u2014 D2 delivery-path repair",
+      "task": "ponytail-skills-fixed-mount",
+      "project": "software-factory",
+      "status": "accepted",
+      "date": "2026-08-16 21:28",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-mt094v09-56tombia-suox",
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "02-opensource-restore-manifest-reclone.md",
+      "session": "01a005a8-7302-74e2-8c1a-c6e8e74358c7",
+      "title": "opensource/ disaster recovery via manifest re-clone \u2014 stale fork URLs fall back to upstream",
+      "task": "ponytail-skills-fixed-mount",
+      "project": "software-factory",
+      "status": "accepted",
+      "date": "2026-08-16 23:20",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-mt094v09-56tombia-suox",
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "01-capture-agent-followup-persistence-reconnect-fixes.md",
+      "session": "01a00610-13dd-72ee-a5d4-2f3765c07cb3",
+      "title": "Capture extension agent \u2014 follow-up turns, persistence, and reconnect UX fixes",
+      "task": "x-capture-instrument",
+      "project": "feed-analyser",
+      "status": "accepted",
+      "date": "2026-08-15 22:40",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-msujfeaj-vdv38dx5-0oag",
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "01-headless-backend-host-scope.md",
+      "session": "01a00c50-b714-7811-8086-3bc6e0a8ea64",
+      "title": "Headless backend host takes over once a PRD is Final",
+      "task": "headless-agent-containerisation",
+      "project": "software-factory",
+      "status": "accepted",
+      "date": "2026-08-17 02:56",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-mt094v09-56tombia-suox",
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "02-merge-ready-deliverable.md",
+      "session": "01a00c50-b714-7811-8086-3bc6e0a8ea64",
+      "title": "Backend delivers a merge-ready PR; merge stays human",
+      "task": "headless-agent-containerisation",
+      "project": "software-factory",
+      "status": "accepted",
+      "date": "2026-08-17 02:56",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-mt094v09-56tombia-suox",
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "03-github-actions-fast-path.md",
+      "session": "01a00c50-b714-7811-8086-3bc6e0a8ea64",
+      "title": "GitHub Actions as the fast-path backend runtime (YAGNI)",
+      "task": "headless-agent-containerisation",
+      "project": "software-factory",
+      "status": "accepted",
+      "date": "2026-08-17 03:26",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-mt094v09-56tombia-suox",
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "04-factory-run-headless-loop.md",
+      "session": "01a00c50-b714-7811-8086-3bc6e0a8ea64",
+      "title": "Extend factory-run.sh with --headless loop to APPROVE",
+      "task": "headless-agent-containerisation",
+      "project": "software-factory",
+      "status": "accepted",
+      "date": "2026-08-17 03:26",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-mt094v09-56tombia-suox",
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "05-github-actions-free-execution-infra.md",
+      "session": "01a00c50-b714-7811-8086-3bc6e0a8ea64",
+      "title": "GitHub Actions on the public workspace repo is the factory's execution infra \u2014 cost is LLM tokens",
+      "task": "headless-agent-containerisation",
+      "project": "software-factory",
+      "status": "accepted",
+      "date": "2026-08-17 17:27",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-mt094v09-56tombia-suox",
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "06-workflow-scope-gh-auth-pattern.md",
+      "session": "01a00c50-b714-7811-8086-3bc6e0a8ea64",
+      "title": "Workflow-file pushes need `workflow` scope; use GH_TOKEN + git insteadOf, not `gh auth login`",
+      "task": "headless-agent-containerisation",
+      "project": "software-factory",
+      "status": "accepted",
+      "date": "2026-08-17 17:27",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-mt094v09-56tombia-suox",
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "07-ci-tracking-sync-ephemeral-runners.md",
+      "session": "01a00c50-b714-7811-8086-3bc6e0a8ea64",
+      "title": "CI runs must sync tracking commits to master \u2014 ephemeral runners discard local commits",
+      "task": "headless-agent-containerisation",
+      "project": "software-factory",
+      "status": "accepted",
+      "date": "2026-08-17 17:27",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-mt094v09-56tombia-suox",
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "08-delivery-failure-loud.md",
+      "session": "01a00c50-b714-7811-8086-3bc6e0a8ea64",
+      "title": "Driver delivery failures must be loud \u2014 never false-success \"Done (exit 0)\"",
+      "task": "implementer-delivery-failure-loud",
+      "project": "software-factory",
+      "status": "accepted",
+      "date": "2026-08-17 17:27",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-mt094v09-56tombia-suox",
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "09-code-master-pr-gate.md",
+      "session": "01a00c50-b714-7811-8086-3bc6e0a8ea64",
+      "title": "Code reaches master only via PR merge \u2014 tracking/evidence syncs direct",
+      "task": "implementer-delivery-failure-loud",
+      "project": "software-factory",
+      "status": "accepted",
+      "date": "2026-08-18 02:27",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-mt094v09-56tombia-suox",
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "01-multi-repo-delivery-pr-shapes.md",
+      "session": "01a01515-8457-7260-a4d6-45731d61d571",
+      "title": "Multi-repo delivery \u2014 per-repo implementation PRs + PR-based bookkeeping on the workspace root",
+      "task": "multi-repo-delivery-bookkeeping-prs",
+      "project": "software-factory",
+      "status": "proposed",
+      "date": "2026-08-18 19:59",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-msypig8f-8yn3ttdr-uxmu",
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "02-branch-protection-merge-only.md",
+      "session": "01a01515-8457-7260-a4d6-45731d61d571",
+      "title": "Enforce merge-only on every default branch \u2014 GitHub branch protection, no direct pushes",
+      "task": "branch-protection-merge-only",
+      "project": "software-factory",
+      "status": "accepted",
+      "date": "2026-08-18 19:59",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-msypig8f-8yn3ttdr-uxmu",
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "03-local-first-herdr-execution-substrate.md",
+      "session": "01a01515-8457-7260-a4d6-45731d61d571",
+      "title": "Local-first herdr execution substrate (validated operating model)",
+      "task": "multi-repo-delivery-bookkeeping-prs",
+      "project": "software-factory",
+      "status": "accepted",
+      "date": "2026-08-19 04:20",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-msypig8f-8yn3ttdr-uxmu",
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "04-reviewer-verifies-production-wiring.md",
+      "session": "01a01515-8457-7260-a4d6-45731d61d571",
+      "title": "Reviewer must verify production wiring \u2014 not just green tests",
+      "task": "multi-repo-delivery-bookkeeping-prs",
+      "project": "software-factory",
+      "status": "accepted",
+      "date": "2026-08-19 04:20",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-msypig8f-8yn3ttdr-uxmu",
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "05-evidence-stream-toolcall-delta-replay.md",
+      "session": "01a01515-8457-7260-a4d6-45731d61d571",
+      "title": "Evidence stream pathology \u2014 toolcall_delta replay is O(n\u00b2)",
+      "task": "multi-repo-delivery-bookkeeping-prs",
+      "project": "software-factory",
+      "status": "accepted",
+      "date": "2026-08-19 04:20",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-msypig8f-8yn3ttdr-uxmu",
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "06-langfuse-complete-session-retention.md",
+      "session": "01a01515-8457-7260-a4d6-45731d61d571",
+      "title": "Complete session retention for Langfuse retrospective evals",
+      "task": "multi-repo-delivery-bookkeeping-prs",
+      "project": "software-factory",
+      "status": "accepted",
+      "date": "2026-08-19 04:55",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-msypig8f-8yn3ttdr-uxmu",
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "07-pr-dependency-invariant.md",
+      "session": "01a01515-8457-7260-a4d6-45731d61d571",
+      "title": "PR dependency invariant \u2014 no undeclared ride-along commits",
+      "task": "multi-repo-delivery-bookkeeping-prs",
+      "project": "software-factory",
+      "status": "accepted",
+      "date": "2026-08-19 05:20",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-msypig8f-8yn3ttdr-uxmu",
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "01-langfuse-factory-eval-spine-decision-loop.md",
+      "session": "01a01a70-b2b6-7c00-96ca-7292e6e067e2",
+      "title": "Langfuse factory-SDLC eval spine \u2014 seed on the decision-record loop, deterministic-then-grounded",
+      "task": "langfuse-agentic-operations",
+      "project": "langfuse-agentic-operations",
+      "status": "accepted",
+      "date": "2026-08-19 21:42",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-mt06ywqz-0hydteyc-j0cj",
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "01-ponytail-skills-fixed-mount-conditional-mount.md",
+      "session": "0ded66e7-a908-4838-ace5-03de80e8fc0d",
+      "title": "Skills `/skills` bind mount is conditional on host-skills presence",
+      "task": "ponytail-skills-fixed-mount",
+      "project": "software-factory",
+      "status": "accepted",
+      "date": "2026-08-16",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-msz3da2q-5reclg2z-nm81",
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "02-review-simulation-blind-spot-real-driver-bugs.md",
+      "session": "19cb853b-a2e9-4eb6-865a-138864ba1934",
+      "title": "Code-review agent APPROVED PR #1, but a real host run surfaced 3 driver bugs the in-container review could not see",
+      "task": "",
+      "project": "",
+      "status": "accepted (operator observation from the first dogfood run of the review agent)",
+      "date": "2026-08-14",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-msz7zrc6-f65v577p-wudh",
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "03-label-seam-gh-pr-edit.md",
+      "session": "19cb853b-a2e9-4eb6-865a-138864ba1934",
+      "title": "Label seam \u2014 `gh pr edit --add-label` fails on this gh (classic-Projects GraphQL error); use the REST labels API",
+      "task": "",
+      "project": "",
+      "status": "accepted (found during UAT hand-off of the first dogfood review)",
+      "date": "2026-08-14",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-msz7zrc6-f65v577p-wudh",
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "01-task-similarity-check-scope.md",
+      "session": "357a4c1d-cfd2-47d4-b3a8-a831dd310daf",
+      "title": "Task similarity check scope and merge policy",
+      "task": "task-pickup-similarity-merge",
+      "project": "software-factory",
+      "status": "accepted",
+      "date": "2026-08-16 23:49",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-mt094v09-56tombia-suox",
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "02-semantic-similarity-assessment.md",
+      "session": "357a4c1d-cfd2-47d4-b3a8-a831dd310daf",
+      "title": "Semantic similarity assessment with partial-split support",
+      "task": "task-pickup-similarity-merge",
+      "project": "software-factory",
+      "status": "accepted",
+      "date": "2026-08-16 23:49",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-mt094v09-56tombia-suox",
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "03-partial-split-remainder-registration.md",
+      "session": "357a4c1d-cfd2-47d4-b3a8-a831dd310daf",
+      "title": "Partial-split remainder registered as new pending task",
+      "task": "task-pickup-similarity-merge",
+      "project": "software-factory",
+      "status": "accepted",
+      "date": "2026-08-16 23:49",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-mt094v09-56tombia-suox",
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "04-llm-credential-resolution-from-auth-json.md",
+      "session": "357a4c1d-cfd2-47d4-b3a8-a831dd310daf",
+      "title": "LLM credential resolution from pi's auth.json for sandboxed agents",
+      "task": "sandbox-credential-mounting",
+      "project": "software-factory",
+      "status": "accepted",
+      "date": "2026-08-17 01:41",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-mt094v09-56tombia-suox",
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "05-direct-implementation-for-assembly-line-self-repair.md",
+      "session": "357a4c1d-cfd2-47d4-b3a8-a831dd310daf",
+      "title": "Direct implementation for assembly-line self-repair",
+      "task": "sandbox-credential-mounting",
+      "project": "software-factory",
+      "status": "accepted",
+      "date": "2026-08-17 02:12",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-mt094v09-56tombia-suox",
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "06-driver-sourcing-hazard.md",
+      "session": "357a4c1d-cfd2-47d4-b3a8-a831dd310daf",
+      "title": "Driver-sourcing hazard \u2014 never run driver mains from a test shell",
+      "task": "sandbox-credential-mounting",
+      "project": "software-factory",
+      "status": "accepted",
+      "date": "2026-08-17 02:12",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-mt094v09-56tombia-suox",
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "01-multi-repo-repo-key-resolution.md",
+      "session": "4d89a859-9d05-4b28-9efd-e56aad8837e7",
+      "title": "Repo-key resolution semantics for the PRD **Repos:** header",
+      "task": "multi-repo-delivery-bookkeeping-prs",
+      "project": "software-factory",
+      "status": "accepted",
+      "date": "2026-08-18",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-msz3da2q-5reclg2z-nm81",
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "02-loop-end-delivery-invariant.md",
+      "session": "4d89a859-9d05-4b28-9efd-e56aad8837e7",
+      "title": "Split the A/B delivery invariant into a delivery-time assert and a loop-end assert",
+      "task": "multi-repo-delivery-bookkeeping-prs",
+      "project": "software-factory",
+      "status": "accepted",
+      "date": "2026-08-18",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-msz3da2q-5reclg2z-nm81",
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "01-extension-inline-agent.md",
+      "session": "60c0c537-b9c7-4c4c-8b8a-0be438950151",
+      "title": "Implementation deviations & small decisions for extension-inline-agent",
+      "task": "extension-inline-agent",
+      "project": "feed_analyser / capture",
+      "status": "accepted",
+      "date": "2026-08-11 (original run); revision 2026-08-14 \u2014 unchanged",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-msz3da2q-5reclg2z-nm81",
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "05-headless-ci-gitignore-track-workflow.md",
+      "session": "771b4017-a17d-4464-9896-476407652701",
+      "title": "Negate the root `.github/` directory in `.gitignore` so the factory workflow is",
+      "task": "",
+      "project": "",
+      "status": "Accepted",
+      "date": "2026-08-17",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-msz3da2q-5reclg2z-nm81",
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "01-implementer-delivery-failure-loud.md",
+      "session": "82eae199-b670-4199-99f3-c1c9edcfb749",
+      "title": "Explicit guard + return discipline for delivery failures",
+      "task": "implementer-delivery-failure-loud",
+      "project": "software-factory",
+      "status": "accepted",
+      "date": "2026-08-17",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-msz3da2q-5reclg2z-nm81",
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "01-implementer-delivery-failure-loud.md",
+      "session": "8370f85b-3627-49fd-ad16-0df58e6c7cd4",
+      "title": "Implementer delivery failures route to the existing `fail_run` failure path",
+      "task": "implementer-delivery-failure-loud",
+      "project": "software-factory",
+      "status": "Accepted",
+      "date": "2026-08-17",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-msz3da2q-5reclg2z-nm81",
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "01-implementer-ponytail-test-env.md",
+      "session": "8483b243-ad9a-4e00-be82-0cdf26a8801d",
+      "title": "drop the committed `opensource` symlink from the PR; gitignore matches a bare symlink (REVISED)",
+      "task": "implementer-ponytail",
+      "project": "software-factory",
+      "status": "accepted",
+      "date": "2026-08-14 18:45 (revised after review)",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-msz3da2q-5reclg2z-nm81",
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "02-implementer-ponytail-restore-vanishing-scope.md",
+      "session": "8483b243-ad9a-4e00-be82-0cdf26a8801d",
+      "title": "restore the \"say no to vanishing scope\" and \"verify what you build\" binding rules to the implementer persona",
+      "task": "implementer-ponytail",
+      "project": "software-factory",
+      "status": "accepted",
+      "date": "2026-08-14",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-msz3da2q-5reclg2z-nm81",
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "01-delivery-failure-loud-gh-seam.md",
+      "session": "afe61c92-6a16-4510-84ea-96d0f91badf6",
+      "title": "Delivery uses the IMPLEMENTER_GH_BIN seam for gh",
+      "task": "implementer-delivery-failure-loud",
+      "project": "software-factory",
+      "status": "accepted",
+      "date": "2026-08-17",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-msz3da2q-5reclg2z-nm81",
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "02-delivery-failure-loud-local-nounset.md",
+      "session": "afe61c92-6a16-4510-84ea-96d0f91badf6",
+      "title": "Initialize push_and_pr locals to avoid bash set -u crash",
+      "task": "implementer-delivery-failure-loud",
+      "project": "software-factory",
+      "status": "accepted",
+      "date": "2026-08-17",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-msz3da2q-5reclg2z-nm81",
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "01-pickup-similarity-merge.md",
+      "session": "b77c5e2b-a870-40c7-bcad-effcbc45332a",
+      "title": "Single-line relocation project for multi-line bundles",
+      "task": "task-pickup-similarity-merge",
+      "project": "",
+      "status": "accepted",
+      "date": "2026-08-16",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-msz3da2q-5reclg2z-nm81",
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "01-implementer-revision-test-seams.md",
+      "session": "cb6a90c1-f8d0-4da5-b413-1f82a0f32376",
+      "title": "Revision mode adds the podman/gh test seams and a stable revision number as part of this task (D8 dependency resolution)",
+      "task": "implementer-revision-mode",
+      "project": "software-factory",
+      "status": "accepted",
+      "date": "2026-08-14",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-msz3da2q-5reclg2z-nm81",
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "01-implementer-delivery-fail-loudly.md",
+      "session": "d5492a5c-6c07-4f58-b410-5feefa2a43c2",
+      "title": "push_and_pr must honor the gh_call seam and fail loudly on delivery failure",
+      "task": "implementer-delivery-failure-loud",
+      "project": "software-factory",
+      "status": "accepted",
+      "date": "2026-08-17 20:05",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-msz3da2q-5reclg2z-nm81",
+        "score_posted": null
+      }
+    },
+    {
+      "decision": "01-review-driver-gh-call-and-test-seam.md",
+      "session": "d7a5fbb9-c030-4800-8f3d-fb217d36d1cd",
+      "title": "Reviewer resolves the active `gh` lazily via a `gh_call` function so host-only gh is mockable",
+      "task": "code-review-agent",
+      "project": "software-factory",
+      "status": "accepted",
+      "date": "2026-08-13 21:11",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-msz3da2q-5reclg2z-nm81",
+        "score_posted": null
+      }
+    }
+  ],
+  "gaps": [
+    "decision 01-factory-architecture-decisions.md: no/odd Date ('<yyyy-mm-dd>')",
+    "decision 01-herdr-pi-session-repopulation.md: session 019fb3a9-bf84-79db-b194-c580b76e4228/session.jsonl missing"
+  ]
+}

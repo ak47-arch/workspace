@@ -11,9 +11,11 @@
 # Patterns redacted (value → REDACTED, prefix kept for readability):
 #   sk-or-v1-*        OpenRouter API keys
 #   sk-lf-*           Langfuse secret keys
-#   gho_*             GitHub OAuth tokens (gh hosts.yml)
+#   gho_*             GitHub OAuth access tokens
+#   ghu_*             GitHub OAuth user tokens (refresh tokens)
 #   ghp_*             GitHub classic PATs
 #   github_pat_*      GitHub fine-grained PATs
+#   nvapi-*           NVIDIA API keys
 #   xoxb-/xoxp-*      Slack tokens
 #   AKIA*             AWS access key ids
 #
@@ -44,7 +46,9 @@ SED_PROG=(
   -e 's/(sk-or-v1-)[A-Za-z0-9_-]{20,}/\1REDACTED/g'
   -e 's/(sk-lf-)[A-Za-z0-9-]{20,}/\1REDACTED/g'
   -e 's/(gho_)[A-Za-z0-9]{20,}/\1REDACTED/g'
+  -e 's/(ghu_)[A-Za-z0-9]{20,}/\1REDACTED/g'
   -e 's/(ghp_)[A-Za-z0-9]{20,}/\1REDACTED/g'
+  -e 's/(nvapi-)[A-Za-z0-9_-]{20,}/\1REDACTED/g'
   -e 's/(xox[abprs]-)[A-Za-z0-9-]{10,}/\1REDACTED/g'
   -e 's/(AKIA)[A-Z0-9]{16}/\1REDACTED/g'
 )
@@ -58,7 +62,7 @@ fi
 
 sed -i "${SED_PROG[@]}" "$FILE"
 # Verify nothing redacted-looking remains unredacted and report the tally.
-FOUND=$(grep -coE "sk-or-v1-[A-Za-z0-9_-]{20,}|sk-lf-[A-Za-z0-9-]{20,}|gho_[A-Za-z0-9]{20,}|ghp_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|xox[abprs]-[A-Za-z0-9-]{10,}|AKIA[A-Z0-9]{16}" "$FILE" || true)
+FOUND=$(grep -coE "sk-or-v1-[A-Za-z0-9_-]{20,}|sk-lf-[A-Za-z0-9-]{20,}|gho_[A-Za-z0-9]{20,}|ghu_[A-Za-z0-9]{20,}|ghp_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|nvapi-[A-Za-z0-9_-]{20,}|xox[abprs]-[A-Za-z0-9-]{10,}|AKIA[A-Z0-9]{16}" "$FILE" || true)
 if [ -n "$FOUND" ] && [ "$FOUND" -ne 0 ]; then
   echo "  ✗ WARN: $FILE still has $FOUND unredacted secret(s)" >&2
   exit 3
