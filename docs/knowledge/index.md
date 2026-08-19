@@ -107,6 +107,7 @@ Entries are grouped by project for progressive discovery. When the agent needs t
 - [Local-first herdr execution substrate (validated operating model)](sessions/01a01515-8457-7260-a4d6-45731d61d571/decisions/03-local-first-herdr-execution-substrate.md)
 - [Reviewer must verify production wiring — not just green tests](sessions/01a01515-8457-7260-a4d6-45731d61d571/decisions/04-reviewer-verifies-production-wiring.md)
 - [Evidence stream pathology — toolcall_delta replay is O(n²)](sessions/01a01515-8457-7260-a4d6-45731d61d571/decisions/05-evidence-stream-toolcall-delta-replay.md)
+- [Complete session retention for Langfuse retrospective evals](sessions/01a01515-8457-7260-a4d6-45731d61d571/decisions/06-langfuse-complete-session-retention.md)
 
 ### workspace-portability
 
