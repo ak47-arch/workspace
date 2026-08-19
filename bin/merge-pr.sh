@@ -108,6 +108,72 @@ if [ -z "$SLUG" ]; then
   exit 2
 fi
 
+# ─── Dependency invariant (decision 09): no undeclared ride-along commits ──
+# A PR may bring another open PR's unmerged commits ONLY if it declares
+# `**Depends on:** #N`. Declared deps also fix merge order (dependencies merge
+# first). When PR heads are resolvable (real gh + git available), a PR whose
+# branch is a superset of another open PR's branch (head-ancestry) with no
+# declared dependency fails loudly — that shared commit's ownership is
+# ambiguous, and automatic merging must never guess.
+#
+# Backward compatible: a minimal gh mock (`{}`) yields no body/head and simply
+# skips the ancestry part; declared-dep ordering still applies on body text.
+declare -A DEPON=()     # NUM -> declared prerequisite PR number
+declare -A HEAD_REF=()  # NUM -> headRefName
+json_get() { python3 -c "import sys,json
+s=sys.stdin.read() or '{}'
+try:
+ d=json.loads(s); print(d.get('$1') or '')
+except Exception: print('')" 2>/dev/null; }
+for pr in "${PREFLIGHT[@]}"; do
+  REPO="${pr%#*}"; NUM="${pr#*#}"
+  meta="$(gh pr view "$NUM" --repo "$REPO" --json body,headRefName 2>/dev/null || true)"
+  BODY="$(printf '%s' "$meta" | json_get body)"
+  HEAD_REF[$NUM]="$(printf '%s' "$meta" | json_get headRefName)"
+  dnum="$(printf '%s\n' "$BODY" | sed -nE 's/.*\*\*Depends on:\*\*[[:space:]]*#?([0-9]+).*/\1/p' | head -1)"
+  if [ -n "$dnum" ]; then DEPON[$NUM]="$dnum"; fi
+done
+# Every declared dependency must be inside the merge set (no dangling deps).
+for NUM in "${!DEPON[@]}"; do
+  want="${DEPON[$NUM]}"; in_set=false
+  for e in "${PREFLIGHT[@]}"; do [ "${e#*#}" = "$want" ] && in_set=true; done
+  if [ "$in_set" = false ]; then
+    echo "ERROR: PR #$NUM declares **Depends on:** #$want which is not in the merge set ${PREFLIGHT[*]:-none}." >&2
+    exit 1
+  fi
+done
+# Materialize each resolvable PR head locally; enforce the ride-along rule.
+UNVERIFIABLE=0
+for pr in "${PREFLIGHT[@]}"; do
+  NUM="${pr#*#}"; H="${HEAD_REF[$NUM]:-}"
+  if [ -n "$H" ] && git -C "$WORKSPACE" fetch -q origin "$H:refs/prheads/$NUM" 2>/dev/null; then
+    : # head materialized
+  else
+    UNVERIFIABLE=1
+  fi
+done
+for A in "${PREFLIGHT[@]}"; do
+  ANUM="${A#*#}"
+  [ -n "${HEAD_REF[$ANUM]:-}" ] || continue
+  for B in "${PREFLIGHT[@]}"; do
+    BNUM="${B#*#}"
+    [ "$ANUM" != "$BNUM" ] || continue
+    [ -n "${HEAD_REF[$BNUM]:-}" ] || continue
+    if git -C "$WORKSPACE" merge-base --is-ancestor "refs/prheads/$ANUM" "refs/prheads/$BNUM" 2>/dev/null; then
+      # PR B is a superset of PR A: B carries all of A's commits.
+      dep="${DEPON[$BNUM]:-}"
+      if [ "$dep" != "$ANUM" ]; then
+        echo "ERROR: PR #$BNUM brings commits from open PR #$ANUM without declaring **Depends on:** #$ANUM — refusing ambiguous ride-along (decision 09)." >&2
+        echo "  Resolve: add \"**Depends on:** #$ANUM\" to PR #$BNUM's body (base merges first), or rebase PR #$BNUM onto master." >&2
+        exit 1
+      fi
+    fi
+  done
+done
+if [ "$UNVERIFIABLE" -eq 1 ] && [ "${#PREFLIGHT[@]}" -gt 1 ]; then
+  echo "  WARN: some PR heads unresolvable — ride-along ancestry check skipped for those; declared deps still enforced." >&2
+fi
+
 if [ "$DRY_RUN" = true ]; then
   echo "  [dry-run] would pre-flight + merge ${PREFLIGHT[*]} and append Merge rows to docs/tasks/$SLUG.md, completing the task only when the whole set is merged."
   exit 0
@@ -121,6 +187,22 @@ TS="$(date '+%Y-%m-%d %H:%M')"
 MERGED=0
 
 # ─── Merge each PR + record a Merge row per PR ─────────────────────────────
+# Order the set so declared dependencies merge first (decision 09). Single-level
+# deps (the realistic case): no-dep PRs first, then PRs whose dep is already in.
+ORDERED=(); ORDERED_NUMS=()
+for pr in "${PREFLIGHT[@]}"; do
+  NUM="${pr#*#}"; [ -n "${DEPON[$NUM]:-}" ] && continue
+  ORDERED+=("$pr"); ORDERED_NUMS+=("$NUM")
+done
+for pr in "${PREFLIGHT[@]}"; do
+  NUM="${pr#*#}"; dep="${DEPON[$NUM]:-}"; [ -n "$dep" ] || continue
+  if [[ " ${ORDERED_NUMS[*]} " == *" $dep "* ]]; then ORDERED+=("$pr"); ORDERED_NUMS+=("$NUM"); fi
+done
+for pr in "${PREFLIGHT[@]}"; do
+  NUM="${pr#*#}"; [[ " ${ORDERED_NUMS[*]} " == *" $NUM "* ]] || ORDERED+=("$pr")
+done
+PREFLIGHT=( "${ORDERED[@]}" )
+
 for entry in "${PREFLIGHT[@]}"; do
   REPO="${entry%#*}"; NUM="${entry#*#}"
   gh pr merge "$NUM" --repo "$REPO" --merge
