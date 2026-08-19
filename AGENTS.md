@@ -9,8 +9,7 @@ curated entries from past sessions about design decisions and issues.
 For a full inventory of projects, tasks, issues, and documentation, see
 `docs/factory-context.md`.
 
-**Workforce**: 2 agents staff the SDLC — `prd-reviewer` (PRD gating) and
-`implementer` (build → PR). Full roster in `docs/factory-context.md`; see each
+**Workforce**: 3 agents staff the SDLC — `prd-reviewer` (PRD gating), `implementer` (build → PR), and `code-reviewer` (post-implementation review → APPROVE/REQUEST_CHANGES; never merges). Full roster in `docs/factory-context.md`; see each
 in `.pi/agents/`.
 
 <!-- OPENWIKI:START -->
