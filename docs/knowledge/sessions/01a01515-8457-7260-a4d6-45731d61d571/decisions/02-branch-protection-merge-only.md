@@ -5,6 +5,7 @@
 **Task**: branch-protection-merge-only
 **Project**: software-factory
 **Session**: sessions/01a01515-8457-7260-a4d6-45731d61d571/session.jsonl
+**Summary**: Enforce merge-only on every default branch (incl. workspace root) via GitHub branch protection (no direct pushes); `bin/merge-pr.sh` is the single operator merge gate.
 
 ### Context
 

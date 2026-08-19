@@ -3,6 +3,8 @@
 
 Entries are grouped by project for progressive discovery. When the agent needs to understand design intent for a specific project, it opens the relevant section.
 
+**Convention**: every decision file carries a one-line `**Summary**:` in its front-matter (right after the metadata block) so an agent can decide, from the index title + summary alone, whether to drill into the full Context/Alternatives prose. The summary is the “read-skip” line: if the title already resolves the question, do **not** open the body.
+
 
 
 

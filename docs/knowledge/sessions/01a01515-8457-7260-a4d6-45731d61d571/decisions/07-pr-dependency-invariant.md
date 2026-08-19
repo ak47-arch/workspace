@@ -5,6 +5,7 @@
 **Task**: multi-repo-delivery-bookkeeping-prs
 **Project**: software-factory
 **Session**: sessions/01a01515-8457-7260-a4d6-45731d61d571/session.jsonl
+**Summary**: A PR may carry another open PR's unmerged commits only with a declared `**Depends on:** #N`; undeclared ride-alongs fail loudly at merge-time and declared deps merge first.
 
 ### Context
 
