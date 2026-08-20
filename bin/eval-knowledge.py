@@ -105,6 +105,65 @@ def index_coverage():
     return rows, unindexed
 
 
+# ── K4: session-resolvability (depth) ─────────────────────────────────────
+# Every decision must resolve to a session union.jsonl — the decision→evidence
+# link (decision 06).  Format-tolerant: accepts the several reference forms the
+# corpus actually uses (bold-asterisk path, bare UUID, bare-UUID-with-parenthetical,
+# colon-form 'Session:', review-session marker).  Only genuine gaps are flagged:
+# a decision with NO session reference at all, or a reference whose session.jsonl
+# does not exist under sessions/.
+def session_resolvable():
+    rows, missing = [], []
+    for sess in sorted(os.listdir(os.path.join(KNOW, "sessions"))):
+        dec_dir = os.path.join(KNOW, "sessions", sess, "decisions")
+        if not os.path.isdir(dec_dir):
+            continue
+        for f in sorted(os.listdir(dec_dir)):
+            if not f.endswith(".md"):
+                continue
+            rel = f"sessions/{sess}/decisions/{f}"
+            t = read(os.path.join(dec_dir, f))
+            # accepted reference forms, first match wins
+            ref = None
+            m = re.search(r"\*\*Session\*\*:\s*sessions/([0-9a-f-]+)/session\.jsonl", t)
+            if m:
+                ref = "sessions/{}/session.jsonl".format(m.group(1))
+            if not ref:
+                m = re.search(r"\*\*Session\*\*:\s*([0-9a-f-]{16,})", t)
+                if m:
+                    ref = "sessions/{}/session.jsonl".format(m.group(1))
+            if not ref:
+                m = re.search(r"\bSession:\s*sessions/([0-9a-f-]+)/session\.jsonl", t)
+                if m:
+                    ref = "sessions/{}/session.jsonl".format(m.group(1))
+            if not ref:
+                m = re.search(r"Review\s+session:\s*([0-9a-f-]{16,})", t, re.I)
+                if m:
+                    ref = "sessions/{}/session.jsonl".format(m.group(1))
+            rows.append({"decision": rel, "session_ref": ref})
+            if not ref:
+                missing.append(rel + " (no session reference)")
+            elif not _fexists("docs", "knowledge", ref):
+                missing.append(rel + " → " + ref + " (session.jsonl missing)")
+    return rows, missing
+
+
+# ── K5: reverse index coverage (depth 5) ─────────────────────────────────────
+# K3 checks file→index (every decision is indexed).  K5 checks index→file
+# (every index row points at a decision that exists).  A dead index row = a
+# record of a still-accepted decision that was never captured as a file, or a
+# deleted/renamed decision left referenced in the index.
+def reverse_index():
+    idx = read(os.path.join(KNOW, "index.md"))
+    rows, missing = [], []
+    for m in re.finditer(r"\]\((sessions/\S+\.md)", idx):
+        rel = m.group(1)
+        rows.append({"index": rel})
+        if not os.path.isfile(os.path.join(KNOW, rel)):
+            missing.append(rel)
+    return rows, missing
+
+
 # ── Langfuse ────────────────────────────────────────────────────────────────
 def langfuse_creds():
     try:
@@ -162,6 +221,8 @@ def main():
     idx, idx_broken = index_links()
     sess_rows, sess_missing = session_evidence()
     cov_rows, unindexed = index_coverage()
+    k4_rows, k4_missing = session_resolvable()
+    k5_rows, k5_missing = reverse_index()
 
     checks = {
         "K1-index-links": {"total": len(idx), "broken": idx_broken,
@@ -170,10 +231,16 @@ def main():
                                 "pass": not sess_missing},
         "K3-index-coverage": {"decisions": len(cov_rows), "unindexed": unindexed,
                               "pass": not unindexed},
+        "K4-session-resolvable": {"total": len(k4_rows), "missing": k4_missing,
+                                  "pass": not k4_missing},
+        "K5-reverse-index": {"total": len(k5_rows), "missing": k5_missing,
+                             "pass": not k5_missing},
     }
     gaps = (["K1 broken link: " + b for b in idx_broken]
             + ["K2 missing evidence: " + m for m in sess_missing]
-            + ["K3 unindexed: " + u for u in unindexed])
+            + ["K3 unindexed: " + u for u in unindexed]
+            + ["K4 unresolved session: " + m for m in k4_missing]
+            + ["K5 dead index row: " + m for m in k5_missing])
     failures = [c for c, v in checks.items() if not v["pass"]]
 
     out = {"generated": DATE, "checks": checks, "gaps": gaps,

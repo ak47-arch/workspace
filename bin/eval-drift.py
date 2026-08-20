@@ -259,6 +259,38 @@ def s4_report_body_fidelity():
         else "report-body mismatch: " + "; ".join(bad)
 
 
+def _load_sibling(mod):
+    """Import a bin/*.py sibling by path (bin/ is not a package)."""
+    import importlib.util
+    spec = importlib.util.spec_from_file_location(mod, os.path.join(WS, "bin", mod + ".py"))
+    m = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(m)
+    return m
+
+
+def s3_session_resolvable():
+    """S3 K4 invariant — every decision resolves to a session.jsonl (depth fix)."""
+    _k = _load_sibling("eval-knowledge")  # reuse the same resolver
+    _rows, missing = _k.session_resolvable()
+    return not missing, "all decisions resolve to session.jsonl" if not missing \
+        else "unresolved: " + "; ".join(missing)
+
+
+def s7_section_balance():
+    """S7 C4 invariant — no single factory-context section exceeds the 45% share cap."""
+    _c = _load_sibling("eval-context")
+    _rows, fails = _c.intra_doc_sections()
+    return not fails, "factory-context sections balanced (max share under 45%)" if not fails \
+        else "; ".join(fails)
+
+
+def s7_no_dangling_backref():
+    """S7 C5 invariant — no link targets an anchor that isn't a defined heading."""
+    _c = _load_sibling("eval-context")
+    _rows, dangling = _c.reverse_reachability()
+    return not dangling, "no dangling back-references in spine" if not dangling \
+        else "; ".join(dangling)
+
 
 GOLD = [
     {"id": "s1-dual-mode", "surface": "S1", "desc": "dual-mode drift pinned (compose + .env)",
@@ -288,6 +320,13 @@ GOLD = [
      "first": "2026-08-20", "check": s2_merged_complete},
     {"id": "s4-report-body-fidelity", "surface": "S4", "desc": "final review verdict == report body (P4)",
      "first": "2026-08-20", "check": s4_report_body_fidelity},
+    # S3/S7 depth fixes (2026-08-21)
+    {"id": "s3-session-resolvable", "surface": "S3", "desc": "every decision resolves to session.jsonl (K4)",
+     "first": "2026-08-21", "check": s3_session_resolvable},
+    {"id": "s7-section-balance", "surface": "S7", "desc": "no factory-context section >45% share (C4)",
+     "first": "2026-08-21", "check": s7_section_balance},
+    {"id": "s7-no-dangling-backref", "surface": "S7", "desc": "no dangling back-reference in spine (C5)",
+     "first": "2026-08-21", "check": s7_no_dangling_backref},
 ]
 
 

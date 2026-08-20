@@ -1,5 +1,5 @@
 {
-  "generated": "2026-08-20",
+  "generated": "2026-08-21",
   "verdict": "PASS",
   "rows": [
     {
@@ -7,7 +7,7 @@
       "surface": "S1",
       "desc": "dual-mode drift pinned (compose + .env)",
       "first": "2026-08-20",
-      "last": "2026-08-20",
+      "last": "2026-08-21",
       "status": "HOLD",
       "ok": true,
       "evidence": "dual-mode anchor in compose; .env write-mode=dual"
@@ -17,7 +17,7 @@
       "surface": "S1",
       "desc": "decision session.jsonl retained (PR #24)",
       "first": "2026-08-20",
-      "last": "2026-08-20",
+      "last": "2026-08-21",
       "status": "HOLD",
       "ok": true,
       "evidence": "all decision sessions retain session.jsonl"
@@ -27,7 +27,7 @@
       "surface": "S3",
       "desc": "orphaned decision indexed + reachable",
       "first": "2026-08-20",
-      "last": "2026-08-20",
+      "last": "2026-08-21",
       "status": "HOLD",
       "ok": true,
       "evidence": "orphaned decision (ponytail-skills-fixed-mount-conditional-mount) reachable in index"
@@ -37,7 +37,7 @@
       "surface": "S4",
       "desc": "7 legacy tasks honestly marked pre-PR-era",
       "first": "2026-08-20",
-      "last": "2026-08-20",
+      "last": "2026-08-21",
       "status": "HOLD",
       "ok": true,
       "evidence": "all 7 legacy tasks carry pre-PR-era marker"
@@ -47,7 +47,7 @@
       "surface": "S4",
       "desc": "implementer-ponytail final verdict=APPROVE",
       "first": "2026-08-20",
-      "last": "2026-08-20",
+      "last": "2026-08-21",
       "status": "HOLD",
       "ok": true,
       "evidence": "implementer-ponytail final review recorded as APPROVE"
@@ -57,7 +57,7 @@
       "surface": "S8",
       "desc": "roster triads complete (incl. prd-reviewer)",
       "first": "2026-08-20",
-      "last": "2026-08-20",
+      "last": "2026-08-21",
       "status": "HOLD",
       "ok": true,
       "evidence": "all 4 roster agents have complete triads"
@@ -67,7 +67,7 @@
       "surface": "S9",
       "desc": "no new key class leaked (only local langfuse)",
       "first": "2026-08-20",
-      "last": "2026-08-20",
+      "last": "2026-08-21",
       "status": "HOLD",
       "ok": true,
       "evidence": "no new key class leaked (only pre-existing local langfuse keys)"
@@ -77,7 +77,7 @@
       "surface": "S7",
       "desc": "factory-context spine links resolve (openwiki ../ fix)",
       "first": "2026-08-20",
-      "last": "2026-08-20",
+      "last": "2026-08-21",
       "status": "HOLD",
       "ok": true,
       "evidence": "all 20 factory-context links resolve"
@@ -87,7 +87,7 @@
       "surface": "S7",
       "desc": "AGENTS.md + factory-context stay lean (budgets)",
       "first": "2026-08-20",
-      "last": "2026-08-20",
+      "last": "2026-08-21",
       "status": "HOLD",
       "ok": true,
       "evidence": "AGENTS.md ~579 tok, factory-context ~3133 tok (lean)"
@@ -97,7 +97,7 @@
       "surface": "S2",
       "desc": "no complete task's PRD still queued (UAT gate)",
       "first": "2026-08-20",
-      "last": "2026-08-20",
+      "last": "2026-08-21",
       "status": "HOLD",
       "ok": true,
       "evidence": "no complete task's PRD still queued"
@@ -107,7 +107,7 @@
       "surface": "S2",
       "desc": "merged task's last review is APPROVE (T4)",
       "first": "2026-08-20",
-      "last": "2026-08-20",
+      "last": "2026-08-21",
       "status": "HOLD",
       "ok": true,
       "evidence": "all merged tasks last-review APPROVE"
@@ -117,7 +117,7 @@
       "surface": "S2",
       "desc": "merged task is complete (T5)",
       "first": "2026-08-20",
-      "last": "2026-08-20",
+      "last": "2026-08-21",
       "status": "HOLD",
       "ok": true,
       "evidence": "all merged tasks complete"
@@ -127,10 +127,40 @@
       "surface": "S4",
       "desc": "final review verdict == report body (P4)",
       "first": "2026-08-20",
-      "last": "2026-08-20",
+      "last": "2026-08-21",
       "status": "HOLD",
       "ok": true,
       "evidence": "final review verdict equals report body"
+    },
+    {
+      "id": "s3-session-resolvable",
+      "surface": "S3",
+      "desc": "every decision resolves to session.jsonl (K4)",
+      "first": "2026-08-21",
+      "last": "2026-08-21",
+      "status": "HOLD",
+      "ok": true,
+      "evidence": "all decisions resolve to session.jsonl"
+    },
+    {
+      "id": "s7-section-balance",
+      "surface": "S7",
+      "desc": "no factory-context section >45% share (C4)",
+      "first": "2026-08-21",
+      "last": "2026-08-21",
+      "status": "HOLD",
+      "ok": true,
+      "evidence": "factory-context sections balanced (max share under 45%)"
+    },
+    {
+      "id": "s7-no-dangling-backref",
+      "surface": "S7",
+      "desc": "no dangling back-reference in spine (C5)",
+      "first": "2026-08-21",
+      "last": "2026-08-21",
+      "status": "HOLD",
+      "ok": true,
+      "evidence": "no dangling back-references in spine"
     }
   ],
   "drifts": []

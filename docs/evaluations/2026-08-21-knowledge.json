@@ -1,0 +1,32 @@
+{
+  "generated": "2026-08-21",
+  "checks": {
+    "K1-index-links": {
+      "total": 126,
+      "broken": [],
+      "pass": true
+    },
+    "K2-session-evidence": {
+      "total": 120,
+      "missing": [],
+      "pass": true
+    },
+    "K3-index-coverage": {
+      "decisions": 120,
+      "unindexed": [],
+      "pass": true
+    },
+    "K4-session-resolvable": {
+      "total": 120,
+      "missing": [],
+      "pass": true
+    },
+    "K5-reverse-index": {
+      "total": 126,
+      "missing": [],
+      "pass": true
+    }
+  },
+  "gaps": [],
+  "verdict": "PASS"
+}

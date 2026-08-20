@@ -27,11 +27,11 @@ Read top-down as an **evolution timeline**: each surface accrues a dated row whe
 |---|---|---|---|---|---|
 | S1 | **Decision-record loop** | `bin/eval-decisions.py` → `decisions.{json,md}` | schema + session-link + claim-vs-repo holds; SKIP if nothing checkable | 🟢 live | 2026-08-20 |
 | S2 | **Task loop** | `bin/eval-pipeline.py` → `pipeline.{json,md}` | T1 state-legal · T2 complete→archived (UAT gate) · T3 complete+PR→impl/rev evidence · T4 merged→APPROVE · T5 merged→complete · T6 queue-gate; zero-evidence completions = SKIP | 🟢 live | 2026-08-20 |
-| S3 | **Knowledge loop** | `bin/eval-knowledge.py` → `knowledge.{json,md}` | K1 index links resolve (GFM anchors) · K2 session evidence · K3 every decision indexed | 🟢 live | 2026-08-20 |
+| S3 | **Knowledge loop** | `bin/eval-knowledge.py` → `knowledge.{json,md}` | K1 index links resolve (GFM anchors) · K2 session evidence · K3 every decision indexed · K4 every decision resolves to session.jsonl · K5 reverse index (every index row → real decision) | 🟢 live | 2026-08-21 |
 | S4 | **PRD/review loop** | `bin/eval-prd.py` → `prd.{json,md}` | P1 PRD→task→PR-tracking · P2 review verdict + merge fidelity · P3 no post-merge revert (cross-repo SHAs unverifiable) · P4 report-body fidelity (final review matches report) · P5 approve-on-merge · P6 report→task resolution (no orphans) · P7 every PR reviewed | 🟢 live | 2026-08-20 |
 | S5 | **Drift / L2** | `bin/eval-drift.py` → `{date}-drift.md` + `drift.json` (trend store) | cross-run: prior fixed findings stay fixed (HOLD/DRIFT, first/last-verified). Not liveness — liveness is ops | 🟢 live — 13 gold rows HOLD | 2026-08-20 |
 | S6 | **Infra-invariant fidelity** *(superseded)* | — | liveness is ops, not eval (see anti-pattern note); invariant fidelity already covered by S1's dual-mode claim | 🔴 declared (retracted) | — |
-| S7 | **Context-engine surface** | `bin/eval-context.py` → `{date}-context.{json,md}` + `context.json` (trend) | C1 footprint/leanness (budgets + 2× growth) · C2 spine-link reachability (GFM anchors) · C3 summary fidelity (5 components, roster, vision links, footprint claim) | 🟢 live | 2026-08-20 |
+| S7 | **Context-engine surface** | `bin/eval-context.py` → `{date}-context.{json,md}` + `context.json` (trend) | C1 footprint/leanness (budgets + 2× growth) · C2 spine-link reachability (GFM anchors) · C3 summary fidelity (5 components, roster, vision links, footprint claim) · C4 intra-doc section share (≤45%) · C5 no dangling back-reference | 🟢 live | 2026-08-21 |
 | S8 | **Roster completeness** | `bin/eval-hygiene.py` → `hygiene.{json,md}` | every worker has persona + run-contract + artifact-map | 🟢 live | 2026-08-20 |
 | S9 | **Repo-hygiene** | `bin/eval-hygiene.py` → `hygiene.{json,md}` | master merge-only; `opensource/` gitignored; no secrets in tracked files | 🟢 live | 2026-08-20 |
 | S10 | **App family** | (register per app) | tracepoint/extraction/inference quality — the signal the context engine eats at production volume | 🟡 deferred | — |
@@ -157,6 +157,24 @@ dives into richer checks, then the grounded-judge + drift tiers) follows in late
 - No LLM-judge until the deterministic tier for that surface has covered what it can, and the judge
   is grounded + calibrated against independent gold.
 - No finetune motive: eval output improves the context engine (decision 03), not model weights.
+
+---
+
+## Depth passes (2026-08-21)
+
+- **S3 depth — K4 session-resolvability + K5 reverse-index.** Every decision must resolve to a
+  session.jsonl (format-tolerant: bold-asterisk path, bare UUID, colon-form, review-session marker).
+  K5 ensures every index row points at a decision that exists (K3's reverse). Both PASS; the 2
+  review decisions in session 19cb853b (which lacked a `**Session:**` field) now resolve via their
+  `Review session:` marker to the real session.jsonl.
+- **S7 depth — C4 intra-doc section share + C5 no-dangling-backref.** C4 flags a single
+  factory-context section consuming >45% of the doc (biggest today: Software Factory at 41%); C5
+  flags a link targeting an anchor that isn't a defined heading (injection-tested: a fake
+  `#ghost-anchor` link flips it to FAIL). Both PASS.
+- **S8/S9 depth — no gap found.** The roster triads are already complete + coherent (every skill
+  bin-ref resolves; no bare unprefixed secret-shaped value slips the current scan). Per the
+  honesty rule, no can't-fail check was fabricated — the depth pass's honest verdict is
+  "no gap". Registered as drift gold rows so regressions still trip S5.
 
 ---
 
