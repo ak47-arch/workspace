@@ -19,6 +19,7 @@
 - [x] Agentic operations (Level B: start/stop/restart/health/logs) — Operations section in wrapper SKILL.md (verified against live stack)
 - [x] Integrate Langfuse into all first-party applications (survey + phased plan in task file: `llm/` first, then `survival-infrastructure/`, phase 2 apps; execution gated on project preflights)
 - [x] PRD → `docs/prd-queue/2026-08-09-langfuse-agentic-operations.md`
+- [x] **Evals integrated as a factory department (evaluation component, 2026-08-20)** — fifth factory component (decision 02): roster evaluator agent (`.pi/agents/evaluator.md`), run-contract skill (`.agents/skills/eval-ops/SKILL.md`), artifact map (`docs/reference/evaluator-agent.md`), home `docs/evaluations/README.md`. Seed surfaces (decision-record loop + task loop) tooled by `bin/eval-decisions.py` + `bin/eval-pipeline.py`; grounded-judge + drift registered later per decision 01 extension map.
 
 ## Requirement change (2026-08-19)
 

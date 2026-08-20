@@ -161,6 +161,8 @@ Entries are grouped by project for progressive discovery. When the agent needs t
 
 - [Self-hosted Langfuse v3 → v4 Upgrade with Data Recovery](sessions/019fc40a-5458-7310-89c4-53e098060973/decisions/01-langfuse-v3-to-v4-upgrade.md)
 - [Langfuse factory-SDLC eval spine — seed on the decision-record loop, deterministic-then-grounded](sessions/01a01a70-b2b6-7c00-96ca-7292e6e067e2/decisions/01-langfuse-factory-eval-spine-decision-loop.md)
+- [Evals integrated as a software-factory department (the evaluation component)](sessions/01a01a70-b2b6-7c00-96ca-7292e6e067e2/decisions/02-eval-factory-department.md)
+- [Evaluation department output feeds the context engine — not model finetuning](sessions/01a01a70-b2b6-7c00-96ca-7292e6e067e2/decisions/03-eval-feedback-target-context-engine.md)
 
 ### Uncategorised (topic-based)
 
