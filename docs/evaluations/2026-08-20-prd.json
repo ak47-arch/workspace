@@ -15,6 +15,26 @@
       "total": 15,
       "gaps": [],
       "pass": true
+    },
+    "P4-report-body-fidelity": {
+      "total": 8,
+      "gaps": [],
+      "pass": true
+    },
+    "P5-approve-on-merge": {
+      "total": 8,
+      "gaps": [],
+      "pass": true
+    },
+    "P6-report-to-task": {
+      "total": 10,
+      "gaps": [],
+      "pass": true
+    },
+    "P7-review-pr-coverage": {
+      "total": 8,
+      "gaps": [],
+      "pass": true
     }
   },
   "gaps": [],

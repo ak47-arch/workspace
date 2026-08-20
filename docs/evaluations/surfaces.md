@@ -28,7 +28,7 @@ Read top-down as an **evolution timeline**: each surface accrues a dated row whe
 | S1 | **Decision-record loop** | `bin/eval-decisions.py` → `decisions.{json,md}` | schema + session-link + claim-vs-repo holds; SKIP if nothing checkable | 🟢 live | 2026-08-20 |
 | S2 | **Task loop** | `bin/eval-pipeline.py` → `pipeline.{json,md}` | T1 state-legal · T2 complete→archived (UAT gate) · T3 complete+PR→impl/rev evidence · T4 merged→APPROVE · T5 merged→complete · T6 queue-gate; zero-evidence completions = SKIP | 🟢 live | 2026-08-20 |
 | S3 | **Knowledge loop** | `bin/eval-knowledge.py` → `knowledge.{json,md}` | K1 index links resolve (GFM anchors) · K2 session evidence · K3 every decision indexed | 🟢 live | 2026-08-20 |
-| S4 | **PRD/review loop** | `bin/eval-prd.py` → `prd.{json,md}` | P1 PRD→task→PR-tracking · P2 review verdict + merge fidelity · P3 no post-merge revert (cross-repo SHAs unverifiable) | 🟢 live | 2026-08-20 |
+| S4 | **PRD/review loop** | `bin/eval-prd.py` → `prd.{json,md}` | P1 PRD→task→PR-tracking · P2 review verdict + merge fidelity · P3 no post-merge revert (cross-repo SHAs unverifiable) · P4 report-body fidelity (final review matches report) · P5 approve-on-merge · P6 report→task resolution (no orphans) · P7 every PR reviewed | 🟢 live | 2026-08-20 |
 | S5 | **Drift / L2** | `bin/eval-drift.py` → `{date}-drift.md` + `drift.json` (trend store) | cross-run: prior fixed findings stay fixed (HOLD/DRIFT, first/last-verified). Not liveness — liveness is ops | 🟢 live | 2026-08-20 |
 | S6 | **Infra-invariant fidelity** *(superseded)* | — | liveness is ops, not eval (see anti-pattern note); invariant fidelity already covered by S1's dual-mode claim | 🔴 declared (retracted) | — |
 | S7 | **Context-engine surface** | `bin/eval-context.py` → `{date}-context.{json,md}` + `context.json` (trend) | C1 footprint/leanness (budgets + 2× growth) · C2 spine-link reachability (GFM anchors) · C3 summary fidelity (5 components, roster, vision links, footprint claim) | 🟢 live | 2026-08-20 |
@@ -64,6 +64,15 @@ Chronological record of when each surface was declared / opened and what it surf
   - **P2 (implementer-ponytail "n/a" verdict)** — task file under-recorded review 3; the actual
     report (session 6b560fbb) said **APPROVE**. Corrected the task file; panel now reads real verdicts.
   - **P3** — cross-repo SHAs (feed_analyser) correctly unverifiable, not a revert. PASS.
+- **S4 depth (P4–P7 added)** — extended the panel with four bounded guards, each corpus-checkable:
+  - **P4 report-body fidelity** — the task's FINAL review verdict must match its review report body
+    (only the last review is checked: the on-disk report reflects the final write; intermediate
+    REQUEST_CHANGES history is legitimately overwritten). Validated by simulated-drift injection.
+  - **P5 approve-on-merge** — a merged PR must carry APPROVE as its last verdict (a merged
+    REQUEST_CHANGES/REVISE is a failure state). All 8 merged tasks APPROVE.
+  - **P6 report→task resolution** — every review report dir maps to a real task (no orphan reports).
+  - **P7 review-PR coverage** — every post-PR-era task with a PR has at least one review line
+    (no silent un-reviewed PR). First run: **PASS — 7/7 checks, 0 gaps**.
 - **S5 opened (live)** — `bin/eval-drift.py` drift/L2 panel: the re-risk layer over the earlier
   fixes. Seven gold rows (S1 dual-mode · S1 session-retention · S3 orphan-indexed · S4 legacy-
   markers · S4 verdict-repair · S8 roster-closed · S9 key-advisory) each re-checked on the current

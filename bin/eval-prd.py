@@ -80,7 +80,8 @@ def task_pr_sections():
         block = m.group(1)
         # collect ALL PR entries; take the last one's verdict/merge
         prs = re.findall(r"PR:\s*#(\d+)", block)
-        sessions = re.findall(r"Review:\s*session\s+(\S+)\s*·\s*verdict\s+(APPROVE|REQUEST_CHANGES|n\/a|REVISE)", block, re.I)
+        reviews = _reviews_with_dirs(block)
+        sessions = [(r["session"], r["verdict"]) for r in reviews]
         merges = re.findall(r"Merge:\s*([0-9a-f]{7,})", block)
         urls = re.findall(r"URL:\s*(\S+)", block)
         out[slug] = {
@@ -89,10 +90,31 @@ def task_pr_sections():
             "pr_num": prs[-1] if prs else None,
             "review_session": sessions[-1][0] if sessions else None,
             "verdict": sessions[-1][1] if sessions else None,
+            "verdicts": [s[1] for s in sessions],
             "merge_sha": merges[-1] if merges else None,
             "url": urls[-1] if urls else None,
             "n_prs": len(prs),
+            "reviews": reviews,
         }
+    return out
+
+
+def _reviews_with_dirs(block):
+    """Parse each review line with its verdict + report dir.
+    A review line is: '- Review: session <id> · verdict <v> — <text> · report docs/code-reviews/<dir>/'.
+    Returns [(session, verdict, report_dir)] in order. Some blocks omit the trailing report
+    (a faithfulness gap / partial re-review)."""
+    out = []
+    # each Review line ends at 'report docs/code-reviews/<dir>/' or at the next '- Revised'
+    for m in re.finditer(r"Review:\s*session\s+(\S+)\s*·\s*verdict\s+(APPROVE|REQUEST_CHANGES|REVISE|n/a)", block, re.I):
+        session, verdict = m.group(1), m.group(2).upper()
+        # everything after this match until the next '- Review:' / '- Revised:' / '- Merge:'
+        tail = block[m.end():]
+        nxt = re.search(r"\n\s*-\s*(?:Review|Revised|Merge):", tail, re.I)
+        seg = tail[:nxt.start()] if nxt else tail
+        d = re.search(r"report\s+docs/code-reviews/(\S+)/", seg)
+        out.append({"session": session, "verdict": verdict,
+                    "report_dir": d.group(1) if d else None})
     return out
 
 
@@ -174,6 +196,86 @@ def post_merge_revert():
     return rows, gaps
 
 
+def _report_body_verdict(report_dir):
+    """Verbatim first token under the report's '## Verdict' heading."""
+    if not report_dir:
+        return None
+    p = os.path.join(WS, "docs", "code-reviews", report_dir, "report.md")
+    if not os.path.isfile(p):
+        return None
+    text = read(p)
+    m = re.search(r"##\s*Verdict\s*\n+\s*\*{0,2}(APPROVE|REQUEST_CHANGES|REVISE|n/a)", text, re.I)
+    return m.group(1).upper() if m else None
+
+
+def report_body_fidelity():
+    """P4: the LAST review's recorded verdict must match the review report body.
+    Cross-checks only the FINAL review (the on-disk report reflects the last write;
+    intermediate REQUEST_CHANGES history is legitimately overwritten by the re-review
+    that reached APPROVE). Catches the bug class where the task's final PR-tracking
+    line under/over-records vs the actual report."""
+    rows, gaps = [], []
+    for slug, t in task_pr_sections().items():
+        revs = t.get("reviews") or []
+        if not revs:
+            continue
+        rv = revs[-1]  # only the FINAL review reflects the on-disk report
+        body = _report_body_verdict(rv.get("report_dir"))
+        rows.append({"task": slug, "session": rv["session"][:16],
+                     "recorded": rv["verdict"], "report_body": body})
+        if rv.get("verdict") != "N/A":
+            if body is None:
+                gaps.append(f"{slug} ({rv['session'][:16]}): final review records {rv['verdict']} but report has no matchable Verdict")
+            elif rv["verdict"] != body:
+                gaps.append(f"{slug} ({rv['session'][:16]}): recorded {rv['verdict']} but report body says {body}")
+    return rows, gaps
+
+
+def approve_on_merge():
+    """P5: any task with a merged PR must carry APPROVE as its LAST recorded verdict.
+    A merged REQUEST_CHANGES/REVISE is a failure state (merge happened against review)."""
+    rows, gaps = [], []
+    for slug, t in task_pr_sections().items():
+        if not t["merge_sha"] or t["pre_pr_era"]:
+            continue
+        last = (t.get("verdicts") or [None])[-1]
+        rows.append({"task": slug, "merged": bool(t["merge_sha"]), "last_verdict": last})
+        if last is None or last.upper() != "APPROVE":
+            gaps.append(f"{slug}: merged (sha {t['merge_sha'][:8]}) but last verdict is {last or 'missing'}")
+    return rows, gaps
+
+
+def report_to_task_resolution():
+    """P6: every review report dir maps to a real task file (no orphan reports)."""
+    rows, gaps = [], []
+    tasks = set(slug_of(f) for f in os.listdir(os.path.join(WS, "docs", "tasks")) if f.endswith(".md"))
+    for d in sorted(os.listdir(os.path.join(WS, "docs", "code-reviews"))):
+        if not os.path.isdir(os.path.join(WS, "docs", "code-reviews", d)):
+            continue
+        # dirs are DATE-slug; a trailing suffix may exist (e.g. '-1') — match prefix
+        stem = re.sub(r"^\d{4}-\d{2}-\d{2}-", "", d)
+        base = re.sub(r"-[0-9]+$", "", stem)
+        rows.append({"report": d, "task": base})
+        if not os.path.isfile(os.path.join(WS, "docs", "code-reviews", d, "report.md")):
+            gaps.append(f"{d}: no report.md in dir")
+        elif base not in tasks:
+            gaps.append(f"{d}: report maps to no task file {base}.md")
+    return rows, gaps
+
+
+def review_pr_coverage():
+    """P7: every task with a PR (post-PR-era) must have at least one recorded review verdict.
+    A PR raised with no review entry is a silent, un-reviewed object."""
+    rows, gaps = [], []
+    for slug, t in task_pr_sections().items():
+        if t["pre_pr_era"]:
+            continue
+        rows.append({"task": slug, "has_pr": t["has_pr"], "n_reviews": len(t.get("reviews") or [])})
+        if t["has_pr"] and not t.get("reviews"):
+            gaps.append(f"{slug}: has PR #{t['pr_num']} but no recorded review line")
+    return rows, gaps
+
+
 # ── Langfuse ────────────────────────────────────────────────────────────────
 def langfuse_creds():
     try:
@@ -231,14 +333,24 @@ def main():
     p1_rows, p1_gaps = prd_lifecycle()
     p2_rows, p2_gaps = review_fidelity()
     p3_rows, p3_gaps = post_merge_revert()
+    p4_rows, p4_gaps = report_body_fidelity()
+    p5_rows, p5_gaps = approve_on_merge()
+    p6_rows, p6_gaps = report_to_task_resolution()
+    p7_rows, p7_gaps = review_pr_coverage()
 
     checks = {
         "P1-prd-lifecycle": {"total": len(p1_rows), "gaps": p1_gaps, "pass": not p1_gaps},
         "P2-review-fidelity": {"total": len(p2_rows), "gaps": p2_gaps, "pass": not p2_gaps},
         "P3-no-post-merge-revert": {"total": len(p3_rows), "gaps": p3_gaps, "pass": not p3_gaps},
+        "P4-report-body-fidelity": {"total": len(p4_rows), "gaps": p4_gaps, "pass": not p4_gaps},
+        "P5-approve-on-merge": {"total": len(p5_rows), "gaps": p5_gaps, "pass": not p5_gaps},
+        "P6-report-to-task": {"total": len(p6_rows), "gaps": p6_gaps, "pass": not p6_gaps},
+        "P7-review-pr-coverage": {"total": len(p7_rows), "gaps": p7_gaps, "pass": not p7_gaps},
     }
     gaps = (["P1: " + g for g in p1_gaps] + ["P2: " + g for g in p2_gaps]
-            + ["P3: " + g for g in p3_gaps])
+            + ["P3: " + g for g in p3_gaps] + ["P4: " + g for g in p4_gaps]
+            + ["P5: " + g for g in p5_gaps] + ["P6: " + g for g in p6_gaps]
+            + ["P7: " + g for g in p7_gaps])
     failures = [c for c, v in checks.items() if not v["pass"]]
 
     out = {"generated": DATE, "checks": checks, "gaps": gaps,
