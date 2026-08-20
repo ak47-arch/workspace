@@ -27,7 +27,7 @@ Read top-down as an **evolution timeline**: each surface accrues a dated row whe
 |---|---|---|---|---|---|
 | S1 | **Decision-record loop** | `bin/eval-decisions.py` → `decisions.{json,md}` | schema + session-link + claim-vs-repo holds; SKIP if nothing checkable | 🟢 live | 2026-08-20 |
 | S2 | **Task loop** | `bin/eval-pipeline.py` → `pipeline.{json,md}` | reached target state + revision/blocking signals | 🟢 live (gaps-only today) | 2026-08-14 |
-| S3 | **Knowledge loop** | (register later) | index rows ↔ own sessions; context-engine consistency | 🔴 declared | — |
+| S3 | **Knowledge loop** | `bin/eval-knowledge.py` → `knowledge.{json,md}` | K1 index links resolve (GFM anchors) · K2 session evidence · K3 every decision indexed | 🟢 live | 2026-08-20 |
 | S4 | **PRD/review loop** | (register later) | APPROVE → no post-merge revert (independent gold only) | 🔴 declared | — |
 | S5 | **Drift / L2** | (register later) | cross-run: did the earlier decision hold | 🔴 declared | — |
 | S6 | **Infra-invariant fidelity** *(superseded)* | — | liveness is ops, not eval (see anti-pattern note); invariant fidelity already covered by S1's dual-mode claim | 🔴 declared (retracted) | — |
@@ -53,6 +53,10 @@ Chronological record of when each surface was declared / opened and what it surf
   only reports **schema gaps** (not yet a PASS/FAIL panel — depth-first work pending).
 
 ### 2026-08-20 (breadth push — this register)
+- **S3 opened (live)** — `bin/eval-knowledge.py` knowledge-loop panel (the context engine's own
+  wiring): K1 index-link integrity (GFM-anchor aware) · K2 decision→session evidence · K3 every
+  decision indexed. First run: K1 false-positives (checker bug, fixed); **K3 real gap** — one
+  orphaned decision (ponytail-skills-fixed-mount) never indexed → added to index; **PASS**.
 - **S3 S4 S5** formalized (declared) from the taxonomy.
 - **S6–S9 added** — new breadth beyond the original five, each choosing a concrete factory invariant.
 - **S6 retracted** — liveness/uptime is ops monitoring, not eval (an eval row must assert an
