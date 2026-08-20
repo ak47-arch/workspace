@@ -16,7 +16,13 @@ A fleet-level panel. One row per artifact, each evidence-anchored to:
 
 The spine (decision 01): `session/trace → artifact → gold check → panel row → Langfuse score`.
 
+> **Breadth-first note**: we are expanding surfaces before deepening any single one. The full
+> register + evolution log lives at [`docs/evaluations/surfaces.md`](surfaces.md) — new surfaces are
+> *declared* there, then opened (a live panel exists) surface-by-surface.
+
 ## Surface taxonomy
+
+The register (`surfaces.md`) is the authoritative bread-width map. The five blueprint surfaces are:
 
 | # | Surface | Tool / report | Verdict meaning |
 |---|---|---|---|

@@ -19,7 +19,7 @@
 - [x] Agentic operations (Level B: start/stop/restart/health/logs) — Operations section in wrapper SKILL.md (verified against live stack)
 - [x] Integrate Langfuse into all first-party applications (survey + phased plan in task file: `llm/` first, then `survival-infrastructure/`, phase 2 apps; execution gated on project preflights)
 - [x] PRD → `docs/prd-queue/2026-08-09-langfuse-agentic-operations.md`
-- [x] **Evals integrated as a factory department (evaluation component, 2026-08-20)** — fifth factory component (decision 02): roster evaluator agent (`.pi/agents/evaluator.md`), run-contract skill (`.agents/skills/eval-ops/SKILL.md`), artifact map (`docs/reference/evaluator-agent.md`), home `docs/evaluations/README.md`. Seed surfaces (decision-record loop + task loop) tooled by `bin/eval-decisions.py` + `bin/eval-pipeline.py`; grounded-judge + drift registered later per decision 01 extension map.
+- [x] **Evals breadth-first: surface register + evolution log (2026-08-20)** — `docs/evaluations/surfaces.md` declares the full surface set (S1–S10: decision/task/knowledge/PRD-review/drift + stack-liveness + context-engine + roster-completeness + repo-hygiene + deferred app family) and documents the evolution log; authoritative register linked from README. **Depth-first per-surface passes come later**; stack-liveness (S6) is the next cheap live panel candidate.
 
 ## Requirement change (2026-08-19)
 
