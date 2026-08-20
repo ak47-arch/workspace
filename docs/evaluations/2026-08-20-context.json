@@ -1,0 +1,88 @@
+{
+  "generated": "2026-08-20",
+  "verdict": "PASS",
+  "failures": [],
+  "advisories": [],
+  "footprint": [
+    {
+      "item": "AGENTS.md",
+      "role": "always-injected (auto-loaded)",
+      "est_tokens": 579,
+      "budget": 1000,
+      "pass": true,
+      "grew_2x": false
+    },
+    {
+      "item": "docs/factory-context.md",
+      "role": "first discovery doc (on demand)",
+      "est_tokens": 3031,
+      "budget": 4000,
+      "pass": true,
+      "grew_2x": false
+    },
+    {
+      "item": "docs/knowledge/index.md",
+      "role": "deep layer entry (last resort)",
+      "est_tokens": 5377,
+      "budget": 8000,
+      "pass": true,
+      "grew_2x": false
+    },
+    {
+      "item": "AGENTS.md vs initial-footprint claim",
+      "role": "claim (~2500) sanity",
+      "est_tokens": 579,
+      "budget": 1250,
+      "pass": true,
+      "grew_2x": false
+    }
+  ],
+  "reachability": [
+    {
+      "doc": "docs/factory-context.md",
+      "links": 20,
+      "broken": 0,
+      "pass": true
+    },
+    {
+      "doc": "docs/evaluations/README.md",
+      "links": 1,
+      "broken": 0,
+      "pass": true
+    },
+    {
+      "doc": "docs/evaluations/surfaces.md",
+      "links": 0,
+      "broken": 0,
+      "pass": true
+    },
+    {
+      "doc": "openwiki/index.md",
+      "links": 5,
+      "broken": 0,
+      "pass": true
+    }
+  ],
+  "fidelity": [
+    {
+      "claim": "five components",
+      "observed": "5",
+      "pass": true
+    },
+    {
+      "claim": "roster table \u2194 agent files",
+      "observed": "4 rows, all files exist",
+      "pass": true
+    },
+    {
+      "claim": "projects-table vision links resolve",
+      "observed": "0 missing",
+      "pass": true
+    },
+    {
+      "claim": "AGENTS.md within initial-footprint claim (~2,500 tok)",
+      "observed": "579 est tok",
+      "pass": true
+    }
+  ]
+}

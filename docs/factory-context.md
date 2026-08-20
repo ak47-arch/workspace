@@ -138,8 +138,8 @@ Each first-party project has its own `openwiki/` for project-specific documentat
 
 | Project | Status | Vision | Docs |
 |---------|--------|--------|------|
-| `llm/` | Inference server. ✅ Running | [VISION](../llm/docs/vision/VISION.md) ✅ | [openwiki](openwiki/projects/llm-server-client.md) |
-| `survival-infrastructure/` | Personal intelligence pipeline. 🟡 Broken preflight | [VISION](../survival-infrastructure/docs/technical/VISION.md) ✅ · [TECHNICAL](../survival-infrastructure/docs/technical/TECHNICAL_VISION.md) ✅ | [openwiki](openwiki/projects/survival-infrastructure.md) |
+| `llm/` | Inference server. ✅ Running | [VISION](../llm/docs/vision/VISION.md) ✅ | [openwiki](../openwiki/projects/llm-server-client.md) |
+| `survival-infrastructure/` | Personal intelligence pipeline. 🟡 Broken preflight | [VISION](../survival-infrastructure/docs/technical/VISION.md) ✅ · [TECHNICAL](../survival-infrastructure/docs/technical/TECHNICAL_VISION.md) ✅ | [openwiki](../openwiki/projects/survival-infrastructure.md) |
 | `feed_analyser/` | Capture instrument: thin Chrome extension + minimal local server (legacy archived) | [capture VISION](../feed_analyser/capture/docs/vision/VISION.md) ✅ | [legacy archive openwiki](https://github.com/ak47-arch/feed_analyser/tree/main/archive/openwiki) |
 | `headroom-pi/` | Compression proxy for pi. 🟡 Needs eval | [VISION](../headroom-pi/docs/vision/VISION.md) ✅ | project's own `openwiki/` |
 | `workspace-portability/` | Backup/restore/bootstrap. ✅ Phase 1 done | [VISION](../workspace-portability/docs/vision/VISION.md) ✅ | project's own `openwiki/` |

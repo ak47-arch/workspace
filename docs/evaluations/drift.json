@@ -71,6 +71,26 @@
       "status": "HOLD",
       "ok": true,
       "evidence": "no new key class leaked (only pre-existing local langfuse keys)"
+    },
+    {
+      "id": "s7-spine-links",
+      "surface": "S7",
+      "desc": "factory-context spine links resolve (openwiki ../ fix)",
+      "first": "2026-08-20",
+      "last": "2026-08-20",
+      "status": "HOLD",
+      "ok": true,
+      "evidence": "all 20 factory-context links resolve"
+    },
+    {
+      "id": "s7-footprint",
+      "surface": "S7",
+      "desc": "AGENTS.md + factory-context stay lean (budgets)",
+      "first": "2026-08-20",
+      "last": "2026-08-20",
+      "status": "HOLD",
+      "ok": true,
+      "evidence": "AGENTS.md ~579 tok, factory-context ~3031 tok (lean)"
     }
   ],
   "drifts": []
