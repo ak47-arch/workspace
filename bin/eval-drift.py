@@ -137,6 +137,35 @@ def s9_key_advisory():
         if not new_classes else "NEW keys: " + "; ".join(new_classes)
 
 
+def s7_spine_links():
+    """The discovery spine's pointer network resolves — every relative link in
+    factory-context.md points at a real file (the openwiki ../ fix)."""
+    path = os.path.join(WS, "docs", "factory-context.md")
+    text = read(path)
+    base = os.path.dirname(path)
+    broken = []
+    total = 0
+    for m in re.finditer(r"\[[^\]]*\]\(([^)]+)\)", text):
+        target = m.group(1).strip()
+        if target.startswith(("http://", "https://", "mailto:")):
+            continue
+        total += 1
+        p = target.split("#", 1)[0]
+        if p and not os.path.exists(os.path.normpath(os.path.join(base, p))):
+            broken.append(target)
+    return not broken, "all {} factory-context links resolve".format(total) if not broken \
+        else "broken spine links: " + "; ".join(broken)
+
+
+def s7_footprint():
+    """Leanness holds — AGENTS.md + factory-context.md stay within budgets."""
+    agents = len(read(os.path.join(WS, "AGENTS.md"))) // 4
+    fc = len(read(os.path.join(WS, "docs", "factory-context.md"))) // 4
+    ok = agents <= 1200 and fc <= 4500
+    return ok, "AGENTS.md ~{} tok, factory-context ~{} tok (lean)".format(agents, fc) if ok \
+        else "AGENTS.md ~{} tok or factory-context ~{} tok over budget".format(agents, fc)
+
+
 GOLD = [
     {"id": "s1-dual-mode", "surface": "S1", "desc": "dual-mode drift pinned (compose + .env)",
      "first": "2026-08-20", "check": s1_dual_mode_fix},
@@ -152,6 +181,10 @@ GOLD = [
      "first": "2026-08-20", "check": s8_roster_closed},
     {"id": "s9-key-advisory", "surface": "S9", "desc": "no new key class leaked (only local langfuse)",
      "first": "2026-08-20", "check": s9_key_advisory},
+    {"id": "s7-spine-links", "surface": "S7", "desc": "factory-context spine links resolve (openwiki ../ fix)",
+     "first": "2026-08-20", "check": s7_spine_links},
+    {"id": "s7-footprint", "surface": "S7", "desc": "AGENTS.md + factory-context stay lean (budgets)",
+     "first": "2026-08-20", "check": s7_footprint},
 ]
 
 

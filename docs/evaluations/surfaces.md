@@ -31,7 +31,7 @@ Read top-down as an **evolution timeline**: each surface accrues a dated row whe
 | S4 | **PRD/review loop** | `bin/eval-prd.py` → `prd.{json,md}` | P1 PRD→task→PR-tracking · P2 review verdict + merge fidelity · P3 no post-merge revert (cross-repo SHAs unverifiable) | 🟢 live | 2026-08-20 |
 | S5 | **Drift / L2** | `bin/eval-drift.py` → `{date}-drift.md` + `drift.json` (trend store) | cross-run: prior fixed findings stay fixed (HOLD/DRIFT, first/last-verified). Not liveness — liveness is ops | 🟢 live | 2026-08-20 |
 | S6 | **Infra-invariant fidelity** *(superseded)* | — | liveness is ops, not eval (see anti-pattern note); invariant fidelity already covered by S1's dual-mode claim | 🔴 declared (retracted) | — |
-| S7 | **Context-engine surface** | (new) | footprint/leanness + retrieval reachability + summary fidelity of the factory's own context | 🔴 declared | — |
+| S7 | **Context-engine surface** | `bin/eval-context.py` → `{date}-context.{json,md}` + `context.json` (trend) | C1 footprint/leanness (budgets + 2× growth) · C2 spine-link reachability (GFM anchors) · C3 summary fidelity (5 components, roster, vision links, footprint claim) | 🟢 live | 2026-08-20 |
 | S8 | **Roster completeness** | `bin/eval-hygiene.py` → `hygiene.{json,md}` | every worker has persona + run-contract + artifact-map | 🟢 live | 2026-08-20 |
 | S9 | **Repo-hygiene** | `bin/eval-hygiene.py` → `hygiene.{json,md}` | master merge-only; `opensource/` gitignored; no secrets in tracked files | 🟢 live | 2026-08-20 |
 | S10 | **App family** | (register per app) | tracepoint/extraction/inference quality — the signal the context engine eats at production volume | 🟡 deferred | — |
@@ -83,6 +83,14 @@ Chronological record of when each surface was declared / opened and what it surf
     transcript; **reclassified as accepted-risk advisory** (local-only instance,
     2026-08-20) — rotate only if ever network-exposed. Other checks PASS.
 - **S10** registered as the deferred app gate (the moment app preflights clear, these open).
+- **S7 opened (live)** — the decision-03 headline surface: `bin/eval-context.py` grades the factory's
+  own context engine (progressive-disclosure spine AGENTS.md → factory-context.md → discovery layer
+  → knowledge base). C1 footprint/leanness (AGENTS.md 579 tok, factory-context 3,031 tok — within
+  budgets; persistent `context.json` flags >2× growth) · C2 retrieval reachability (spine-doc link
+  integrity, GFM-anchor aware) · C3 summary fidelity (five components claim, roster table ↔ agent
+  files, vision links, ~2,500-tok initial-footprint claim). **First run FAIL**: 2 broken openwiki
+  links in factory-context.md (missing `../` prefix) → **fixed** → re-run **PASS**. Both fixes
+  registered as drift gold rows (s7-spine-links, s7-footprint).
 - Decision 03 recorded: eval signal feeds the **context engine** — so S7 (engine-surface) is named
   **the** headline surface, matching the mission.
 
