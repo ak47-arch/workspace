@@ -106,6 +106,13 @@ Chronological record of when each surface was declared / opened and what it surf
   — the 8 SKIPs are zero-evidence legacy completions (no PRD/impl/rev anywhere; honestly
   unverifiable, not failed). All 8 merged tasks have APPROVE + complete; the 4 pre-PR-era tasks
   with archived PRDs PASS on T1+T2; post-PR-era tasks get the full chain.
+- **S1 depth-first pass #2 (SKIP-shrink 58 → 21)** — added the legacy app/CI/gdrive tranche
+  (workspace-portability device-auth + parallel-clone, feed_analyser agent-service/FTS5/capture,
+  CI workflow seams, gdrive PRD-backlog, repo-privacy via `gh api`, review read-only git, manual
+  fallback, loop-end invariant). PASS 62 → **99**, SKIP 58 → **21**, FAIL 0. Honesty: two
+  mis-targeted claims caught (task-similarity policy lives in the product-layer skill;
+  incremental-write is a behavioral convention with no repo artifact → honestly SKIP). The 21
+  remaining SKIPs are all behavioral/deferred/ambiguous decisions — non-checkable, never forced.
 
 ---
 
