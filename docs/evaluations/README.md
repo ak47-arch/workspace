@@ -49,6 +49,7 @@ L2 drift are later tiers, registered only as the corpus + annotation queue grow.
 |---|---|---|
 | 2026-08-14 | task loop | `2026-08-14-pipeline.{json,md}` |
 | 2026-08-20 | decision loop | **PASS 21 / FAIL 2 / SKIP 96** (119 decisions) → `2026-08-20-decisions.{json,md}` |
+| 2026-08-20 | hygiene (S8+S9) | **S8 roster FAIL** (prd-reviewer lacks run-contract + artifact map) · **S9 hygiene FAIL** (real keys in tracked session) → `2026-08-20-hygiene.{json,md}` |
 
 > **The 2 failures on master are the seed's real findings**, not noise: the two gaps the eval loop
 > surfaced (a missing `session.jsonl` retention entry + the `docker-compose` dual-mode pin drift).
@@ -58,6 +59,6 @@ L2 drift are later tiers, registered only as the corpus + annotation queue grow.
 
 ## Authoring / maintenance
 
-- **Run**: `python3 bin/eval-decisions.py` (decision loop) or `python3 bin/eval-pipeline.py` (task loop).
+- **Run**: `python3 bin/eval-decisions.py` (decision loop), `python3 bin/eval-pipeline.py` (task loop), or `python3 bin/eval-hygiene.py` (S8 roster + S9 repo-hygiene).
 - **Persona**: read-only `evaluator` (`docs/factory-context.md` roster; `.pi/agents/evaluator.md`;
   run contract `.agents/skills/eval-ops/SKILL.md`; artifact map `docs/reference/evaluator-agent.md`).

@@ -30,10 +30,10 @@ Read top-down as an **evolution timeline**: each surface accrues a dated row whe
 | S3 | **Knowledge loop** | (register later) | index rows ↔ own sessions; context-engine consistency | 🔴 declared | — |
 | S4 | **PRD/review loop** | (register later) | APPROVE → no post-merge revert (independent gold only) | 🔴 declared | — |
 | S5 | **Drift / L2** | (register later) | cross-run: did the earlier decision hold | 🔴 declared | — |
-| S6 | **Stack-liveness (infra)** | (new) | 6 container services up; tracing live; **dual-mode invariant** held | 🔴 declared | — |
+| S6 | **Infra-invariant fidelity** *(superseded)* | — | liveness is ops, not eval (see anti-pattern note); invariant fidelity already covered by S1's dual-mode claim | 🔴 declared (retracted) | — |
 | S7 | **Context-engine surface** | (new) | footprint/leanness + retrieval reachability + summary fidelity of the factory's own context | 🔴 declared | — |
-| S8 | **Roster completeness** | (new) | every worker has persona + run-contract + artifact-map (closed closed loop) | 🔴 declared | — |
-| S9 | **Repo-hygiene** | (new) | master merge-only; `opensource/` gitignored; PRs reviewed; no secrets | 🔴 declared | — |
+| S8 | **Roster completeness** | `bin/eval-hygiene.py` → `hygiene.{json,md}` | every worker has persona + run-contract + artifact-map | 🟢 live | 2026-08-20 |
+| S9 | **Repo-hygiene** | `bin/eval-hygiene.py` → `hygiene.{json,md}` | master merge-only; `opensource/` gitignored; no secrets in tracked files | 🟢 live | 2026-08-20 |
 | S10 | **App family** | (register per app) | tracepoint/extraction/inference quality — the signal the context engine eats at production volume | 🟡 deferred | — |
 | &#8239; | … | | | | | |
 
@@ -55,6 +55,14 @@ Chronological record of when each surface was declared / opened and what it surf
 ### 2026-08-20 (breadth push — this register)
 - **S3 S4 S5** formalized (declared) from the taxonomy.
 - **S6–S9 added** — new breadth beyond the original five, each choosing a concrete factory invariant.
+- **S6 retracted** — liveness/uptime is ops monitoring, not eval (an eval row must assert an
+  invariant against a decision; dual-mode fidelity is already S1's claim).
+- **S8 + S9 opened (live)** — `bin/eval-hygiene.py` deterministic panel:
+  - S8 roster-completeness → **FAIL**: prd-reviewer has a persona but no run-contract skill and no
+    artifact map (the other three roster agents have complete triads).
+  - S9 repo-hygiene → **FAIL**: real Langfuse keys (`sk-lf-…`/`pk-lf-…`) committed in a tracked
+    session transcript (v3→v4 upgrade session) — evidence redacted in the report; remediation
+    (rotate/scrub) is a follow-on.
 - **S10** registered as the deferred app gate (the moment app preflights clear, these open).
 - Decision 03 recorded: eval signal feeds the **context engine** — so S7 (engine-surface) is named
   **the** headline surface, matching the mission.
