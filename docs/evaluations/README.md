@@ -22,18 +22,22 @@ The spine (decision 01): `session/trace → artifact → gold check → panel ro
 
 ## Surface taxonomy
 
-The register (`surfaces.md`) is the authoritative bread-width map. The five blueprint surfaces are:
+The register (`surfaces.md`) is the authoritative breadth map. **Live today** (all deterministic,
+all emitting to the context engine via Langfuse):
 
-| # | Surface | Tool / report | Verdict meaning |
+| # | Surface | Tool / report | Status |
 |---|---|---|---|
-| 1 | Decision-record loop | `bin/eval-decisions.py` → `decisions.{json,md}` | schema + session-link + claim-vs-repo (deterministic); SKIP if nothing checkable |
-| 2 | Task loop | `bin/eval-pipeline.py` → `pipeline.{json,md}` | reached state + revision / blocking signals |
-| 3 | Knowledge loop | (register later) | index rows + own sessions |
-| 4 | PRD/review loop | (register later) | APPROVE → no post-merge revert (independent gold only) |
-| … | drift (L2) | (register later) | cross-run: did the earlier decision hold |
+| S1 | Decision-record loop | `bin/eval-decisions.py` → `decisions.{json,md}` | 🟢 live — **PASS 99 / FAIL 0 / SKIP 21** (120 decisions) |
+| S2 | Task loop | `bin/eval-pipeline.py` → `pipeline.{json,md}` | 🟢 live — **PASS 18 / FAIL 0 / SKIP 8** (26 tasks, state-machine) |
+| S3 | Knowledge loop | `bin/eval-knowledge.py` → `knowledge.{json,md}` | 🟢 live — PASS |
+| S4 | PRD/review loop | `bin/eval-prd.py` → `prd.{json,md}` | 🟢 live — PASS |
+| S5 | Drift / L2 | `bin/eval-drift.py` → `{date}-drift.md` + `drift.json` | 🟢 live — PASS (9 gold rows) |
+| S7 | Context-engine surface | `bin/eval-context.py` → `{date}-context.{json,md}` | 🟢 live — PASS |
+| S8+S9 | Roster + repo-hygiene | `bin/eval-hygiene.py` → `hygiene.{json,md}` | 🟢 live — PASS |
+| S10 | App family | (register per app) | 🟡 deferred — apps not running yet |
 
-Deterministic-first (decision 01): a non-checkable row is **SKIP**, not FAIL. Grounded LLM-judge and
-L2 drift are later tiers, registered only as the corpus + annotation queue grow.
+Deterministic-first (decision 01): a non-checkable row is **SKIP**, not FAIL. Grounded LLM-judge
+and L2 drift are later tiers, registered only as the corpus + annotation queue grow.
 
 ## Scoring caveat (verified 2026-08-20)
 
