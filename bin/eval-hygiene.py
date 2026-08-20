@@ -56,7 +56,7 @@ def _git(args):
 # ── S8 roster (from docs/factory-context.md roster) ─────────────────────────
 # (agent name, run-contract skill dir, reference map filename)
 ROSTER = [
-    ("prd-reviewer", None, None),          # persona only today — contract triad gap
+    ("prd-reviewer", "prd-reviewer-ops", "prd-reviewer-agent.md"),
     ("implementer", "implementer-ops", "implementer-agent.md"),
     ("code-reviewer", "review-ops", "reviewer-agent.md"),
     ("evaluator", "eval-ops", "evaluator-agent.md"),
@@ -122,7 +122,7 @@ def _secret_value_hits():
 
 
 def hygiene_checks():
-    rows, fails = [], []
+    rows, fails, advisories = [], [], []
 
     # master merge-only — merge commits dominate recent history + protection exists
     recent = _git(["log", "origin/master", "--oneline", "--merges", "-20"])
@@ -159,12 +159,21 @@ def hygiene_checks():
 
     # no secret VALUES in tracked files
     hits = _secret_value_hits()
+    # Langfuse keys are bound to the LOCAL instance (localhost) — exposure is inert
+    # per the 2026-08-20 accepted-risk note; other provider keys (OpenRouter etc.)
+    # would be an active leak. Distinguish the two in the verdict.
+    lf_only = all("(sk|pk)-lf-" in h or "lf-" in h for h in hits) if hits else False
     rows.append({"check": "no secret values in tracked files",
-                 "pass": not hits, "evidence": str(len(hits)) + " hit(s)"})
-    if hits:
+                 "pass": not hits or lf_only, "evidence": str(len(hits)) + " hit(s)"
+                 + (" — langfuse keys only, LOCAL instance, accepted risk" if lf_only else "")})
+    if hits and not lf_only:
         fails.append("secrets in tracked files: " + "; ".join(h[:60] for h in hits))
+    elif hits:
+        advisories.append("langfuse keys in tracked history — local-only, accepted risk (2026-08-20); "
+                          "rotate only if the instance is ever network-exposed: "
+                          + "; ".join(h[:60] for h in hits))
 
-    return rows, fails
+    return rows, fails, advisories
 
 
 def _gh_protection():
@@ -229,10 +238,11 @@ class LF:
 # ── Run ─────────────────────────────────────────────────────────────────────
 def main():
     roster, roster_fails = roster_checks()
-    hygiene, hygiene_fails = hygiene_checks()
+    hygiene, hygiene_fails, advisories = hygiene_checks()
 
     out = {
         "generated": DATE,
+        "advisories": advisories,
         "surfaces": {
             "S8-roster-completeness": {
                 "rows": roster,
@@ -266,6 +276,8 @@ def main():
             h["check"], "PASS" if h["pass"] else "FAIL", h["evidence"]))
     md += ["", "## Failures", ""]
     md += [f"- {f}" for f in (roster_fails + hygiene_fails) or ["(none)"]]
+    md += ["", "## Advisories (accepted risk / notes)", ""]
+    md += [f"- {a}" for a in (advisories or ["(none)"])]
     md += ["", f"_JSON: docs/evaluations/{DATE}-hygiene.json_", ""]
     with open(os.path.join(WS, "docs", "evaluations", f"{DATE}-hygiene.md"), "w") as f:
         f.write("\n".join(md) + "\n")

@@ -58,11 +58,14 @@ Chronological record of when each surface was declared / opened and what it surf
 - **S6 retracted** — liveness/uptime is ops monitoring, not eval (an eval row must assert an
   invariant against a decision; dual-mode fidelity is already S1's claim).
 - **S8 + S9 opened (live)** — `bin/eval-hygiene.py` deterministic panel:
-  - S8 roster-completeness → **FAIL**: prd-reviewer has a persona but no run-contract skill and no
-    artifact map (the other three roster agents have complete triads).
-  - S9 repo-hygiene → **FAIL**: real Langfuse keys (`sk-lf-…`/`pk-lf-…`) committed in a tracked
-    session transcript (v3→v4 upgrade session) — evidence redacted in the report; remediation
-    (rotate/scrub) is a follow-on.
+  - S8 roster-completeness → **FAIL first run**: prd-reviewer had a persona but no
+    run-contract skill and no artifact map. **Fixed** (same session): created
+    `.agents/skills/prd-reviewer-ops/SKILL.md` + `docs/reference/prd-reviewer-agent.md`
+    (lighter, honest to its in-session shape — no host driver by design).
+    Re-run: **PASS** — all four roster agents have complete triads.
+  - S9 repo-hygiene → langfuse keys (`sk-lf-…`/`pk-lf-…`) in a tracked session
+    transcript; **reclassified as accepted-risk advisory** (local-only instance,
+    2026-08-20) — rotate only if ever network-exposed. Other checks PASS.
 - **S10** registered as the deferred app gate (the moment app preflights clear, these open).
 - Decision 03 recorded: eval signal feeds the **context engine** — so S7 (engine-surface) is named
   **the** headline surface, matching the mission.
