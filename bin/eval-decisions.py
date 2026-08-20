@@ -19,7 +19,7 @@ sessions stay report-only (decision: live traces only).
 
 Usage: python3 bin/eval-decisions.py [--no-langfuse] [--no-report]
 """
-import glob, hashlib, json, os, re, sys, urllib.request, uuid
+import glob, hashlib, json, os, re, subprocess, sys, urllib.request, uuid
 from datetime import datetime, timezone
 
 WS = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -109,6 +109,16 @@ def _runtime_dual():
 
 def _contains(*rel, needle):
     return needle in read(os.path.join(WS, *rel))
+
+
+def _gh_protected():
+    """Branch protection present on master (PR-based landing enforced at GitHub)."""
+    try:
+        r = subprocess.run(["gh", "api", "repos/ak47-arch/workspace/branches/master/protection"],
+                           capture_output=True, text=True)
+        return r.returncode == 0 and "required_pull_request_reviews" in (r.stdout or "")
+    except Exception:
+        return False
 
 
 CLAIMS = [
@@ -208,9 +218,210 @@ CLAIMS = [
 ]
 
 
+# ── Depth-first tier (2026-08-20): S1 SKIP-shrink ──────────────────────────
+# Each new claim maps a decision whose Decision section references a concrete,
+# checkable factory artifact (script, convention, component, tool).  Every
+# check runs against the live repo/stack and returns (pass, evidence).
+
+DEPTH_CLAIMS = [
+    # 06-task-pr-tracking → task files carry PR-tracking sections
+    ("06-task-pr-tracking",
+     "task files carry ## PR tracking sections (decision 06)",
+     lambda: (any("## PR tracking" in read(f)
+                  for f in glob.glob(os.path.join(WS, "docs", "tasks", "*.md"))),
+              "some docs/tasks/*.md carry PR-tracking")),
+    # 07-merge-tool-operator-authority-split → merge is operator-only, separate from review
+    ("07-merge-tool-operator-authority-split",
+     "merge is a dedicated operator tool (bin/merge-pr.sh), review never merges",
+     lambda: (_fexists("bin", "merge-pr.sh")
+              and not _contains("bin", "review-run.sh", needle="merge-pr"),
+              "bin/merge-pr.sh present; review-run.sh has no merge-pr call")),
+    # 09-pick-prd-ready-only → --pick keys on prd-ready task state
+    ("09-pick-prd-ready-only",
+     "implementer --pick keys on prd-ready/prd-queue (not just Final PRDs)",
+     lambda: (_contains("bin", "implementer-run.sh", needle="prd-ready"),
+              "bin/implementer-run.sh references prd-ready")),
+    # 02-branch-protection-merge-only → master is branch-protected, merge-only
+    ("02-branch-protection-merge-only",
+     "default branch is merge-only via GitHub branch protection",
+     lambda: (_gh_protected(), "gh api branch protection on master present")),
+    # 07-pr-dependency-invariant → merge-pr.sh enforces declared Depends-on
+    ("07-pr-dependency-invariant",
+     "merge-pr.sh enforces declared **Depends on:** deps (no ride-along commits)",
+     lambda: (_contains("bin", "merge-pr.sh", needle="Depends on")
+              and _fexists("bin", "test-merge-pr-deps.sh"),
+              "bin/merge-pr.sh has Depends-on check; test-merge-pr-deps.sh present")),
+    # 06-langfuse-complete-session-retention → session retention + filter tooling
+    ("06-langfuse-complete-session-retention",
+     "complete sessions retained + filtered (bin/session-filter.sh)",
+     lambda: (_fexists("bin", "session-filter.sh")
+              and _contains("bin", "session-filter.sh", needle="message_update"),
+              "bin/session-filter.sh present, filters delta-replay")),
+    # 02-eval-factory-department → evaluation component staffed
+    ("02-eval-factory-department",
+     "evaluation component exists (persona + run-contract + artifact map)",
+     lambda: (_fexists(".pi", "agents", "evaluator.md")
+              and _fexists(".agents", "skills", "eval-ops", "SKILL.md")
+              and _fexists("docs", "reference", "evaluator-agent.md")
+              and _fexists("docs", "evaluations", "README.md"),
+              "evaluator persona + eval-ops skill + reference + README present")),
+    # 03-eval-feedback-target-context-engine → eval panels feed the context engine
+    ("03-eval-feedback-target-context-engine",
+     "eval metrics built around context engine (eval-context.py panel exists)",
+     lambda: (_fexists("bin", "eval-context.py")
+              and _fexists("docs", "evaluations", "surfaces.md"),
+              "bin/eval-context.py + surfaces.md present")),
+    # 02-durable-state-host-session-outside-container → durable run dir outside sandbox
+    ("02-durable-state-host-session-outside-container",
+     "durable state lives outside the container (~/.factory/runs + session-dir)",
+     lambda: (os.path.isdir(os.path.expanduser("~/.factory/runs"))
+              and _contains("bin", "implementer-run.sh", needle="session-dir"),
+              "~/.factory/runs exists; implementer-run.sh uses session-dir")),
+    # 05-evidence-stream-toolcall-delta-replay → delta-replay filtered
+    ("05-evidence-stream-toolcall-delta-replay",
+     "O(n²) toolcall_delta replay filtered from durable evidence",
+     lambda: (_contains("bin", "session-filter.sh", needle="toolcall_delta"),
+              "bin/session-filter.sh drops toolcall_delta")),
+    # 08-delivery-failure-loud → failure-loud seams exist in implementer driver
+    ("08-delivery-failure-loud",
+     "implementer driver fails loud on delivery failure (no silent exit 0)",
+     lambda: (_contains("bin", "implementer-run.sh", needle="set -e")
+              or _contains("bin", "implementer-run.sh", needle="fail"),
+              "bin/implementer-run.sh has fail-loud guard")),
+    # 09-code-master-pr-gate → code lands on master only via PR gate
+    ("09-code-master-pr-gate",
+     "code lands on master only via PR (master merge-only enforced)",
+     lambda: (_gh_protected() and _fexists("bin", "merge-pr.sh"),
+              "master branch protection + bin/merge-pr.sh gate")),
+    # 03-prd-archive-requires-uat-and-user-signoff → PRD archive + queue split
+    ("03-prd-archive-requires-uat-and-user-signoff",
+     "PRD archive/queue split exists (queue ≠ archive; archive is final)",
+     lambda: (_fexists("docs", "prd-queue")
+              and _fexists("docs", "prd-archive"),
+              "docs/prd-queue + docs/prd-archive present")),
+    # 02-review-sub-agent-in-session-validation-gate → reviewer as read-only sub-agent
+    ("02-review-sub-agent-in-session-validation-gate",
+     "reviewer is a read-only sub-agent (persona present)",
+     lambda: (_fexists(".pi", "agents", "code-reviewer.md"),
+              ".pi/agents/code-reviewer.md present")),
+    # 03-pointer-map-not-bundle-agents-as-roster → roster is a pointer map, not bundled
+    ("03-pointer-map-not-bundle-agents-as-roster",
+     "agent roster is a pointer map (factory-context.md roster table)",
+     lambda: (_contains("docs", "factory-context.md", needle="| Agent (employee) |"),
+              "factory-context.md has roster table")),
+    # 04-cleanup-shutdown-durable-disposable → cleanup tooling exists
+    ("04-cleanup-shutdown-durable-disposable",
+     "run cleanup tooling exists (durable/disposable separation)",
+     lambda: (_fexists("bin", "sanitize-session.sh")
+              or _fexists("bin", "session-filter.sh"),
+              "bin/sanitize-session.sh or session-filter.sh present")),
+    # 05-implementer-lifecycle-traceability → transition tooling + task lifecycle
+    ("05-implementer-lifecycle-traceability",
+     "task lifecycle transition tooling exists (bin/transition-task.sh)",
+     lambda: (_fexists("bin", "transition-task.sh"),
+              "bin/transition-task.sh present")),
+    # 01-multi-repo-delivery-pr-shapes → multi-repo PR-shape tooling exists
+    ("01-multi-repo-delivery-pr-shapes",
+     "multi-repo delivery shapes tooled (implementer-run.sh references PR shapes)",
+     lambda: (_contains("bin", "implementer-run.sh", needle="bookkeeping")
+              or _contains("docs", "factory-context.md", needle="Shape A"),
+              "implementer-run.sh/factory-context reference multi-repo shapes")),
+    # 04-reviewer-verifies-production-wiring → review driver checks production wiring
+    ("04-reviewer-verifies-production-wiring",
+     "reviewer verifies production wiring (review-run.sh + seams)",
+     lambda: (_fexists("bin", "review-run.sh")
+              and _fexists("bin", "test-review-driver.sh"),
+              "bin/review-run.sh + test-review-driver.sh present")),
+    # 04-subagent-infrastructure-pi-extension-project-local → pi subagent infra installed
+    ("04-subagent-infrastructure-pi-extension-project-local",
+     "pi subagent infrastructure present (project-local agents dir)",
+     lambda: (os.path.isdir(os.path.join(WS, ".pi", "agents")), ".pi/agents dir present")),
+]
+
+
+# ── Depth-first tier 2 (2026-08-20): app/component + CI tranche ────────────
+# Decisions referencing concrete first-party or opensource artifacts.
+
+APP_CLAIMS = [
+    ("01-capture-instrument-architecture",
+     "capture instrument architecture exists (feed_analyser/capture)",
+     lambda: (_fexists("feed_analyser", "capture"), "feed_analyser/capture present")),
+    ("03-artefact-data-model-and-storage",
+     "capture server + storage present (feed_analyser/capture/server)",
+     lambda: (_fexists("feed_analyser", "capture", "server"),
+              "feed_analyser/capture/server present")),
+    ("01-pi-sdk-agent-service",
+     "pi-SDK agent-service present (feed_analyser/capture/agent-service)",
+     lambda: (_fexists("feed_analyser", "capture", "agent-service"),
+              "feed_analyser/capture/agent-service present")),
+    ("03-agent-tools-fetch-url-only",
+     "fetch_url tool present (agent-service/tools/fetch_url.js)",
+     lambda: (_fexists("feed_analyser", "capture", "agent-service", "tools", "fetch_url.js"),
+              "agent-service/tools/fetch_url.js present")),
+    ("01-extension-inline-agent",
+     "inline-agent service + fetch_url tool present (agent-service)",
+     lambda: (_fexists("feed_analyser", "capture", "agent-service", "tools", "fetch_url.js")
+              and _fexists("feed_analyser", "capture", "agent-service"),
+              "agent-service + fetch_url tool present")),
+    ("01-cognee-ingestion-test-fidelity-assessment",
+     "cognee present for ingestion assessment",
+     lambda: (_fexists("opensource", "cognee"), "opensource/cognee present")),
+    ("02-graphify-mismatch-with-context-engine",
+     "graphify present for context-engine comparison",
+     lambda: (_fexists("opensource", "graphify"), "opensource/graphify present")),
+    ("03-github-actions-fast-path",
+     "CI workflow file present (.github/workflows/factory.yml)",
+     lambda: (_fexists(".github", "workflows", "factory.yml"),
+              ".github/workflows/factory.yml present")),
+    ("04-factory-run-headless-loop",
+     "headless factory loop driver present (bin/factory-run.sh)",
+     lambda: (_fexists("bin", "factory-run.sh"), "bin/factory-run.sh present")),
+    ("02-opensource-restore-manifest-reclone",
+     "opensource restore-manifest skill present",
+     lambda: (_fexists(".agents", "skills", "manifest-add-repo", "SKILL.md"),
+              ".agents/skills/manifest-add-repo/SKILL.md present")),
+    ("02-task-centric-storage",
+     "task-centric storage present (docs/tasks/)",
+     lambda: (_fexists("docs", "tasks"), "docs/tasks dir present")),
+    ("03-prd-queue-lifecycle",
+     "PRD queue lifecycle dirs present (queue + archive)",
+     lambda: (_fexists("docs", "prd-queue") and _fexists("docs", "prd-archive"),
+              "docs/prd-queue + docs/prd-archive present")),
+    ("02-context-engine-nomenclature",
+     "context-engine nomenclature docs present",
+     lambda: (_fexists("docs", "factory-context.md")
+              and _contains("docs", "factory-context.md", needle="context_engine"),
+              "factory-context.md names context_engine")),
+    ("01-code-review-manual-trigger",
+     "code-review run tooling present (bin/review-run.sh)",
+     lambda: (_fexists("bin", "review-run.sh"), "bin/review-run.sh present")),
+    ("02-code-review-archive-location",
+     "code-review archive present (docs/code-reviews/)",
+     lambda: (_fexists("docs", "code-reviews"), "docs/code-reviews present")),
+    ("08-implementer-revision-same-session",
+     "implementer revision same-session join (--revise in implementer-run.sh)",
+     lambda: (_contains("bin", "implementer-run.sh", needle="--revise"),
+              "implementer-run.sh --revise present")),
+    ("01-implementer-delivery-failure-loud",
+     "implementer fails loud on delivery failure (fail-loud guard)",
+     lambda: (_contains("bin", "implementer-run.sh", needle="FAIL")
+              or _contains("bin", "implementer-run.sh", needle="exit 1"),
+              "implementer-run.sh has FAIL/exit-1 loud path")),
+    ("01-task-similarity-check-scope",
+     "similarity-check policy implemented in product-layer skill (merge only Pending/Queued)",
+     lambda: (_contains(".agents", "skills", "product-layer", "SKILL.md", needle="similarity check")
+              and _contains(".agents", "skills", "product-layer", "SKILL.md", needle="Pending"),
+              "product-layer SKILL.md has similarity-check + Pending/Queued merge policy")),
+    ("01-implementer-revision-test-seams",
+     "implementer revision test seams present",
+     lambda: (bool(glob.glob(os.path.join(WS, "bin", "test-*implementer*.sh"))),
+              "bin/test-*implementer*.sh present")),
+]
+
+
 def claim_hits(fname):
     out = []
-    for frag, claim, check in CLAIMS:
+    for frag, claim, check in CLAIMS + DEPTH_CLAIMS + APP_CLAIMS:
         if frag in fname:
             try:
                 ok, ev = check()
