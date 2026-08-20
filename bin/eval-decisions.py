@@ -39,7 +39,12 @@ def read(p):
 
 
 def field(text, label):
-    """**Label**: value  (also tolerates `- **Label**:`, `- Label:`, and `### Label`)."""
+    """**Label**: value  (also tolerates `- **Label**:`, `- Label:`, and `### Label`).
+
+    Fenced code blocks are stripped first so format-template examples
+    (e.g. `**Date**: <yyyy-mm-dd>`) never satisfy the real field check.
+    """
+    text = re.sub(r"```[^`]*```", "", text, flags=re.S)
     m = re.search(rf"^[-*]?\s*\*\*{re.escape(label)}\*\*\s*:\s*(.+)$", text, re.M)
     if m:
         return m.group(1).strip()

@@ -1,10 +1,10 @@
 {
   "generated": "2026-08-19",
-  "total": 117,
+  "total": 118,
   "verdicts": {
-    "PASS": 21,
-    "FAIL": 2,
-    "SKIP": 94
+    "PASS": 22,
+    "FAIL": 0,
+    "SKIP": 96
   },
   "decisions": [
     {
@@ -14,18 +14,18 @@
       "task": "",
       "project": "software-factory",
       "status": "accepted",
-      "date": "<yyyy-mm-dd>",
+      "date": "2026-07-24 01:10",
       "schema": {
         "status": true,
-        "date": false
+        "date": true
       },
       "session_link": true,
       "claims": [],
-      "verdict": "FAIL",
+      "verdict": "SKIP",
       "trace": {
         "matched": true,
         "trace_id": "pi-mrxp02tn-inia6fyu-7fhf",
-        "score_posted": true
+        "score_posted": null
       }
     },
     {
@@ -245,6 +245,27 @@
       }
     },
     {
+      "decision": "02-graphify-mismatch-with-context-engine.md",
+      "session": "019f9a5c-c31c-7bb6-a440-9b6e88c059b3",
+      "title": "Graphify does not fit the progressive disclosure context engine",
+      "task": "cognee-integration-evaluation",
+      "project": "software-factory",
+      "status": "accepted",
+      "date": "2026-08-19 23:20",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-ms0nn5rn-jm34e4bi-fg47",
+        "score_posted": null
+      }
+    },
+    {
       "decision": "01-opensource-repo-manifest-registration-skill.md",
       "session": "019fa31b-694b-7f94-ad00-bbc57a0c88df",
       "title": "Opensource Repo Manifest Registration Skill Design",
@@ -379,7 +400,7 @@
         "status": true,
         "date": true
       },
-      "session_link": false,
+      "session_link": true,
       "claims": [
         {
           "claim": "herdr repo is present for session repopulation",
@@ -387,7 +408,7 @@
           "evidence": "opensource/herdr present"
         }
       ],
-      "verdict": "FAIL",
+      "verdict": "PASS",
       "trace": {
         "matched": false,
         "trace_id": null,
@@ -726,7 +747,7 @@
         {
           "claim": "v4 write mode stays `dual` (pi tracing must not break on restart)",
           "pass": true,
-          "evidence": "runtime dual=True; compose/.env carries literal=False"
+          "evidence": "runtime dual=True; compose/.env carries literal=True"
         }
       ],
       "verdict": "PASS",
@@ -2597,8 +2618,5 @@
       }
     }
   ],
-  "gaps": [
-    "decision 01-factory-architecture-decisions.md: no/odd Date ('<yyyy-mm-dd>')",
-    "decision 01-herdr-pi-session-repopulation.md: session 019fb3a9-bf84-79db-b194-c580b76e4228/session.jsonl missing"
-  ]
+  "gaps": []
 }
