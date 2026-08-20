@@ -106,6 +106,14 @@ evals run on live per-run traces or on retained session `.jsonl` imports. **Reso
 deterministic checks on live traces, extending surface-by-surface; see
 `docs/knowledge/sessions/01a01a70-b2b6-7c00-96ca-7292e6e067e2/decisions/01-langfuse-factory-eval-spine-decision-loop.md`.
 
+**Resolution 2026-08-20**: evals are **integrated as a dedicated factory department** — a fifth factory
+component (decision
+`docs/knowledge/sessions/01a01a70-b2b6-7c00-96ca-7292e6e067e2/decisions/02-eval-factory-department.md`): roster
+`evaluator` agent (`.pi/agents/evaluator.md`, run contract `.agents/skills/eval-ops/SKILL.md`, artifact map
+`docs/reference/evaluator-agent.md`), report home + index `docs/evaluations/README.md`. Seed surfaces
+(decision-record + task loops) tooled by `bin/eval-decisions.py` / `bin/eval-pipeline.py`; grounded-judge
+and L2 drift register later per decision 01's extension map. App eval stays a deferred follow-on.
+
 ## Testing decisions
 
 - Smoke: `docker-compose up -d` → all 6 containers healthy → `curl /api/public/health` = 200.

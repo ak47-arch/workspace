@@ -5,7 +5,7 @@ This is where everything is. If you need anything just follow the trail.
 ## Software Factory
 
 This workspace is developed and maintained under a **software factory** paradigm.
-Four components, one rule: the user only interacts with the product/architecture
+Five components, one rule: the user only interacts with the product/architecture
 layer — everything else is automation.
 
 **context_engine** — Infrastructure spine. Every other component reads/writes it.
@@ -49,6 +49,15 @@ touched repo + a bookkeeping PR to the workspace root** (multi-repo delivery,
   and a ponytail over-engineering pass) and returns a structured APPROVE /
   REQUEST_CHANGES report posted to the PR — it never merges or completes a task.
 
+**evaluation** — Continuous quality verification. Cross-cutting, read-only: runs
+eval panels over the factory's own loops (decision records, task lifecycle,
+knowledge-base entries, PRD/review verdicts — decision 01) using the eval spine
+(session/trace → artifact → gold check → Langfuse panel). Emits
+`docs/evaluations/<date>-*.{json,md}` reports + Langfuse scores, never mutates
+a target repo. Staffed by the **evaluator agent** (`.pi/agents/evaluator.md`
+persona, run contract `.agents/skills/eval-ops/SKILL.md`). Artifact map:
+`docs/reference/evaluator-agent.md`. Report home + index: `docs/evaluations/`.
+
 **Execution substrate**: local-first via herdr (dedicated worktree branch +
 pane, sandbox container as containment, host driver owns git; GitHub stays the
 repo/PR/evidence layer) — decision 03. GitHub Actions remains a trigger/
@@ -87,6 +96,7 @@ never buried in grep results.
 | **prd-reviewer** | PRD gating (before implementation) | Read-only readiness verifier — gates a plan doc with deterministic + non-deterministic checks, returns a blocking/advisory report | `.pi/agents/prd-reviewer.md` · invoked with `agentScope` project/both |
 | **implementer** | Implementation (build → PR) | Headless worker (the "hands") — implements a `Final` PRD inside the sandbox worktree, writes report + decisions to the outbox; host raises the PR | `.pi/agents/implementer.md` · run via `bin/implementer-run.sh` (full loop = driver + container image `sandbox:latest`) |
 | **code-reviewer** | Post-implementation review (PR → report) | Read-only worker — checks a raised PR against its PRD (deterministic + judgment checks, runs the PRD's verification commands, ponytail over-engineering pass), writes an APPROVE/REQUEST_CHANGES report to the outbox; host posts it to the PR, labels, and transitions the task | `.pi/agents/code-reviewer.md` · `.agents/skills/review-ops/SKILL.md` · run via `bin/review-run.sh` (driver + image `sandbox:latest`; never merges/never completes) |
+| **evaluator** | Continuous eval (production quality) | Read-only worker — runs eval panels over the factory's own loops (decision/task/knowledge/PRD-review) via the eval spine, writes PASS/SKIP/FAIL + evidence to a fixed-schema eval report (`docs/evaluations/<date>-*.{json,md}`), writes Langfuse scores; never mutates a target repo | `.pi/agents/evaluator.md` · `.agents/skills/eval-ops/SKILL.md` · run on demand via the eval brief (tooling: `bin/eval-decisions.py`, `bin/eval-pipeline.py`) |
 
 ## Progressive Disclosure
 
@@ -106,6 +116,7 @@ Discovery layer
   openwiki/           Per-project code docs (what/how)
   docs/vision/        Stakeholder vision, end goals (why a project exists)
   docs/prd-queue/     Forward-looking specs for active tasks
+  docs/evaluations/   Eval reports + index (what the factory verified and how)
   .agents/skills/     Operational playbooks
     │
     ▼ (last resort)
