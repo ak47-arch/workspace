@@ -1,6 +1,6 @@
 ---
 name: eval-ops
-description: Run contract for the autonomous evaluator agent. Defines the exact eval protocol — read the brief, orient on the eval surface, run the deterministic gold checks (bin/eval-decisions.py, bin/eval-pipeline.py), verify claim checks against the live repo/stack, assemble the fixed-schema outbox report, and write Langfuse scores via the synchronous scores endpoint. Add a robustness check here (a skill edit), never in the host driver.
+description: Run contract for the autonomous evaluator agent. Defines the exact eval protocol — read the brief, orient on the eval surface, run the deterministic gold checks (bin/eval-decisions.py, bin/eval-pipeline.py, bin/eval-knowledge.py, bin/eval-prd.py, bin/eval-drift.py, bin/eval-context.py, bin/eval-hygiene.py), verify claim checks against the live repo/stack, assemble the fixed-schema outbox report, and write Langfuse scores via the synchronous scores endpoint. Add a robustness check here (a skill edit), never in the host driver.
 ---
 
 # Eval Ops — Evaluator Worker Run Contract
@@ -17,8 +17,8 @@ rules. The brief is authoritative for this run.
 
 ## 1. Orient
 
-- The surface: which loop you are evaluating (decision / task / knowledge / prd-review). See the
-  taxonomy in decision 01.
+- The surface: which loop you are evaluating (decision / task / knowledge / prd-review / drift / context / hygiene). See the
+  taxonomy in decision 01 + the register in `docs/evaluations/surfaces.md`.
 - The corpus: the artifacts for that surface under `docs/` (and their retained `.jsonl` under
   `docs/knowledge/sessions/`).
 - The gold checks defined for the surface (deterministic PASS/SKIP with concrete evidence).
@@ -28,7 +28,12 @@ rules. The brief is authoritative for this run.
 Use the surface's panel script:
 
 - Decision-record loop: `python3 bin/eval-decisions.py`
-- Task loop: `python3 bin/eval-pipeline.py`
+- Task loop (state-machine): `python3 bin/eval-pipeline.py`
+- Knowledge loop: `python3 bin/eval-knowledge.py`
+- PRD/review loop: `python3 bin/eval-prd.py`
+- Drift / L2: `python3 bin/eval-drift.py`
+- Context-engine (S7): `python3 bin/eval-context.py`
+- Roster + repo-hygiene (S8+S9): `python3 bin/eval-hygiene.py`
 
 If the surface has no script yet, run the checks directly (schema, session-link, claim-vs-repo).
 Record the script exit + the produced `docs/evaluations/<date>-<surface>.{json,md}`.
