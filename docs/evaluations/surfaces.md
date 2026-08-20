@@ -29,7 +29,7 @@ Read top-down as an **evolution timeline**: each surface accrues a dated row whe
 | S2 | **Task loop** | `bin/eval-pipeline.py` → `pipeline.{json,md}` | T1 state-legal · T2 complete→archived (UAT gate) · T3 complete+PR→impl/rev evidence · T4 merged→APPROVE · T5 merged→complete · T6 queue-gate; zero-evidence completions = SKIP | 🟢 live | 2026-08-20 |
 | S3 | **Knowledge loop** | `bin/eval-knowledge.py` → `knowledge.{json,md}` | K1 index links resolve (GFM anchors) · K2 session evidence · K3 every decision indexed | 🟢 live | 2026-08-20 |
 | S4 | **PRD/review loop** | `bin/eval-prd.py` → `prd.{json,md}` | P1 PRD→task→PR-tracking · P2 review verdict + merge fidelity · P3 no post-merge revert (cross-repo SHAs unverifiable) · P4 report-body fidelity (final review matches report) · P5 approve-on-merge · P6 report→task resolution (no orphans) · P7 every PR reviewed | 🟢 live | 2026-08-20 |
-| S5 | **Drift / L2** | `bin/eval-drift.py` → `{date}-drift.md` + `drift.json` (trend store) | cross-run: prior fixed findings stay fixed (HOLD/DRIFT, first/last-verified). Not liveness — liveness is ops | 🟢 live | 2026-08-20 |
+| S5 | **Drift / L2** | `bin/eval-drift.py` → `{date}-drift.md` + `drift.json` (trend store) | cross-run: prior fixed findings stay fixed (HOLD/DRIFT, first/last-verified). Not liveness — liveness is ops | 🟢 live — 13 gold rows HOLD | 2026-08-20 |
 | S6 | **Infra-invariant fidelity** *(superseded)* | — | liveness is ops, not eval (see anti-pattern note); invariant fidelity already covered by S1's dual-mode claim | 🔴 declared (retracted) | — |
 | S7 | **Context-engine surface** | `bin/eval-context.py` → `{date}-context.{json,md}` + `context.json` (trend) | C1 footprint/leanness (budgets + 2× growth) · C2 spine-link reachability (GFM anchors) · C3 summary fidelity (5 components, roster, vision links, footprint claim) | 🟢 live | 2026-08-20 |
 | S8 | **Roster completeness** | `bin/eval-hygiene.py` → `hygiene.{json,md}` | every worker has persona + run-contract + artifact-map | 🟢 live | 2026-08-20 |
@@ -79,6 +79,14 @@ Chronological record of when each surface was declared / opened and what it surf
   state; `drift.json` accumulates first/last-verified so the trend "did earlier fixes stay good"
   survives re-runs. First run: **PASS — all 7 HOLD (0 drift)**. L2 is NOT liveness (S6 retracted):
   each row asserts a *fix invariant* against repo/stack state, not uptime.
+- **S5 depth (gold-rows → 13)** — registered the S2 state-machine invariants + S4 P4 as drift rows
+  so the post-pass green is itself re-verified run-over-run:
+  - `s2-uat-gate-closed` — no complete task's PRD still queued (T2)
+  - `s2-merge-approve` — merged task's last review is APPROVE (T4)
+  - `s2-merged-complete` — merged task is complete (T5)
+  - `s4-report-body-fidelity` — final review verdict equals report body (P4)
+  All 13 HOLD. Detection validated by simulated injection (corrupt verdict → s2-merge-approve
+  DRIFT; corrupt report body → s4-report-body DRIFT; restore → clear).
 - **S6–S9 added** — new breadth beyond the original five, each choosing a concrete factory invariant.
 - **S6 retracted** — liveness/uptime is ops monitoring, not eval (an eval row must assert an
   invariant against a decision; dual-mode fidelity is already S1's claim).
