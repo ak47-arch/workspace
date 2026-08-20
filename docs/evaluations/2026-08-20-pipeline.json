@@ -7,6 +7,7 @@
       "pr": null,
       "repo": null,
       "url": null,
+      "pre_pr_era": false,
       "raised_by": null,
       "raised_first_ts": null,
       "raised_last_ts": null,
@@ -19,7 +20,20 @@
       "stories_pass": 0,
       "stories_fail": 0,
       "blocking_findings": 0,
-      "advisory_findings": 0
+      "advisory_findings": 0,
+      "s2_verdict": "PASS",
+      "checks": [
+        {
+          "check": "T1 state-legal",
+          "pass": true,
+          "evidence": "status 'in-prd'"
+        },
+        {
+          "check": "T6 queue-gate",
+          "pass": true,
+          "evidence": "queued + status 'in-prd'"
+        }
+      ]
     },
     {
       "task": "chronological-tracking",
@@ -27,6 +41,7 @@
       "pr": null,
       "repo": null,
       "url": null,
+      "pre_pr_era": false,
       "raised_by": null,
       "raised_first_ts": null,
       "raised_last_ts": null,
@@ -39,14 +54,28 @@
       "stories_pass": 0,
       "stories_fail": 0,
       "blocking_findings": 0,
-      "advisory_findings": 0
+      "advisory_findings": 0,
+      "s2_verdict": "SKIP",
+      "checks": [
+        {
+          "check": "T1 state-legal",
+          "pass": true,
+          "evidence": "status 'complete'"
+        },
+        {
+          "check": "T0 zero-evidence completion",
+          "pass": null,
+          "evidence": "complete but no PRD/impl/rev anywhere (unverifiable)"
+        }
+      ]
     },
     {
       "task": "code-review-agent",
       "status": "complete",
       "pr": "#1",
-      "repo": "ak47-arch/workspace",
+      "repo": "(ak47-arch/workspace)",
       "url": "https://github.com/ak47-arch/workspace/pull/1",
+      "pre_pr_era": false,
       "raised_by": "d7a5fbb9-c030-4800-8f3d-fb217d36d1cd",
       "raised_first_ts": "2026-08-13T20:49:26.854Z",
       "raised_last_ts": "2026-08-13T21:13:09.804Z",
@@ -59,7 +88,35 @@
       "stories_pass": 23,
       "stories_fail": 0,
       "blocking_findings": 0,
-      "advisory_findings": 4
+      "advisory_findings": 4,
+      "s2_verdict": "PASS",
+      "checks": [
+        {
+          "check": "T1 state-legal",
+          "pass": true,
+          "evidence": "status 'complete'"
+        },
+        {
+          "check": "T2 complete-archived",
+          "pass": true,
+          "evidence": "PRD archived"
+        },
+        {
+          "check": "T3 complete-evidence",
+          "pass": true,
+          "evidence": "impl=Y rev=Y"
+        },
+        {
+          "check": "T4 merged-approved",
+          "pass": true,
+          "evidence": "last review APPROVE"
+        },
+        {
+          "check": "T5 merged-complete",
+          "pass": true,
+          "evidence": "merged + status 'complete'"
+        }
+      ]
     },
     {
       "task": "cognee-integration-evaluation",
@@ -67,6 +124,7 @@
       "pr": null,
       "repo": null,
       "url": null,
+      "pre_pr_era": false,
       "raised_by": null,
       "raised_first_ts": null,
       "raised_last_ts": null,
@@ -79,7 +137,20 @@
       "stories_pass": 0,
       "stories_fail": 0,
       "blocking_findings": 0,
-      "advisory_findings": 0
+      "advisory_findings": 0,
+      "s2_verdict": "SKIP",
+      "checks": [
+        {
+          "check": "T1 state-legal",
+          "pass": true,
+          "evidence": "status 'completed'"
+        },
+        {
+          "check": "T0 zero-evidence completion",
+          "pass": null,
+          "evidence": "complete but no PRD/impl/rev anywhere (unverifiable)"
+        }
+      ]
     },
     {
       "task": "combine-factory-context-factory-txt",
@@ -87,6 +158,7 @@
       "pr": null,
       "repo": null,
       "url": null,
+      "pre_pr_era": false,
       "raised_by": null,
       "raised_first_ts": null,
       "raised_last_ts": null,
@@ -99,7 +171,20 @@
       "stories_pass": 0,
       "stories_fail": 0,
       "blocking_findings": 0,
-      "advisory_findings": 0
+      "advisory_findings": 0,
+      "s2_verdict": "SKIP",
+      "checks": [
+        {
+          "check": "T1 state-legal",
+          "pass": true,
+          "evidence": "status 'complete'"
+        },
+        {
+          "check": "T0 zero-evidence completion",
+          "pass": null,
+          "evidence": "complete but no PRD/impl/rev anywhere (unverifiable)"
+        }
+      ]
     },
     {
       "task": "end-to-end-traceability",
@@ -107,6 +192,7 @@
       "pr": null,
       "repo": null,
       "url": null,
+      "pre_pr_era": false,
       "raised_by": null,
       "raised_first_ts": null,
       "raised_last_ts": null,
@@ -119,7 +205,20 @@
       "stories_pass": 0,
       "stories_fail": 0,
       "blocking_findings": 0,
-      "advisory_findings": 0
+      "advisory_findings": 0,
+      "s2_verdict": "SKIP",
+      "checks": [
+        {
+          "check": "T1 state-legal",
+          "pass": true,
+          "evidence": "status 'complete'"
+        },
+        {
+          "check": "T0 zero-evidence completion",
+          "pass": null,
+          "evidence": "complete but no PRD/impl/rev anywhere (unverifiable)"
+        }
+      ]
     },
     {
       "task": "extend-pm-assembly-line",
@@ -127,6 +226,7 @@
       "pr": null,
       "repo": null,
       "url": null,
+      "pre_pr_era": false,
       "raised_by": null,
       "raised_first_ts": null,
       "raised_last_ts": null,
@@ -139,7 +239,20 @@
       "stories_pass": 0,
       "stories_fail": 0,
       "blocking_findings": 0,
-      "advisory_findings": 0
+      "advisory_findings": 0,
+      "s2_verdict": "SKIP",
+      "checks": [
+        {
+          "check": "T1 state-legal",
+          "pass": true,
+          "evidence": "status 'complete'"
+        },
+        {
+          "check": "T0 zero-evidence completion",
+          "pass": null,
+          "evidence": "complete but no PRD/impl/rev anywhere (unverifiable)"
+        }
+      ]
     },
     {
       "task": "extend-software-factory-wsff",
@@ -147,6 +260,7 @@
       "pr": null,
       "repo": null,
       "url": null,
+      "pre_pr_era": true,
       "raised_by": null,
       "raised_first_ts": null,
       "raised_last_ts": null,
@@ -159,14 +273,28 @@
       "stories_pass": 0,
       "stories_fail": 0,
       "blocking_findings": 0,
-      "advisory_findings": 0
+      "advisory_findings": 0,
+      "s2_verdict": "PASS",
+      "checks": [
+        {
+          "check": "T1 state-legal",
+          "pass": true,
+          "evidence": "status 'complete'"
+        },
+        {
+          "check": "T2 complete-archived",
+          "pass": true,
+          "evidence": "PRD archived"
+        }
+      ]
     },
     {
       "task": "extension-inline-agent",
       "status": "complete",
       "pr": "#1",
-      "repo": "ak47-arch/feed_analyser",
+      "repo": "(ak47-arch/feed_analyser)",
       "url": "https://github.com/ak47-arch/feed_analyser/pull/1",
+      "pre_pr_era": false,
       "raised_by": "60c0c537-b9c7-4c4c-8b8a-0be438950151",
       "raised_first_ts": "2026-08-11T22:00:25.847Z",
       "raised_last_ts": "2026-08-11T22:32:18.905Z",
@@ -179,7 +307,35 @@
       "stories_pass": 19,
       "stories_fail": 0,
       "blocking_findings": 0,
-      "advisory_findings": 4
+      "advisory_findings": 4,
+      "s2_verdict": "PASS",
+      "checks": [
+        {
+          "check": "T1 state-legal",
+          "pass": true,
+          "evidence": "status 'complete'"
+        },
+        {
+          "check": "T2 complete-archived",
+          "pass": true,
+          "evidence": "PRD archived"
+        },
+        {
+          "check": "T3 complete-evidence",
+          "pass": true,
+          "evidence": "impl=Y rev=Y"
+        },
+        {
+          "check": "T4 merged-approved",
+          "pass": true,
+          "evidence": "last review APPROVE"
+        },
+        {
+          "check": "T5 merged-complete",
+          "pass": true,
+          "evidence": "merged + status 'complete'"
+        }
+      ]
     },
     {
       "task": "feed-analyser-survival-infra-private-repos",
@@ -187,6 +343,7 @@
       "pr": null,
       "repo": null,
       "url": null,
+      "pre_pr_era": false,
       "raised_by": null,
       "raised_first_ts": null,
       "raised_last_ts": null,
@@ -199,7 +356,20 @@
       "stories_pass": 0,
       "stories_fail": 0,
       "blocking_findings": 0,
-      "advisory_findings": 0
+      "advisory_findings": 0,
+      "s2_verdict": "SKIP",
+      "checks": [
+        {
+          "check": "T1 state-legal",
+          "pass": true,
+          "evidence": "status 'complete'"
+        },
+        {
+          "check": "T0 zero-evidence completion",
+          "pass": null,
+          "evidence": "complete but no PRD/impl/rev anywhere (unverifiable)"
+        }
+      ]
     },
     {
       "task": "github-browser-auth-flow",
@@ -207,6 +377,7 @@
       "pr": null,
       "repo": null,
       "url": null,
+      "pre_pr_era": true,
       "raised_by": null,
       "raised_first_ts": null,
       "raised_last_ts": null,
@@ -219,14 +390,28 @@
       "stories_pass": 0,
       "stories_fail": 0,
       "blocking_findings": 0,
-      "advisory_findings": 0
+      "advisory_findings": 0,
+      "s2_verdict": "PASS",
+      "checks": [
+        {
+          "check": "T1 state-legal",
+          "pass": true,
+          "evidence": "status 'complete'"
+        },
+        {
+          "check": "T2 complete-archived",
+          "pass": true,
+          "evidence": "PRD archived"
+        }
+      ]
     },
     {
       "task": "headless-agent-containerisation",
       "status": "complete",
       "pr": "#6",
-      "repo": "ak47-arch/workspace",
+      "repo": "(ak47-arch/workspace)",
       "url": "https://github.com/ak47-arch/workspace/pull/6",
+      "pre_pr_era": false,
       "raised_by": "771b4017-a17d-4464-9896-476407652701",
       "raised_first_ts": "2026-08-16T22:05:25.929Z",
       "raised_last_ts": "2026-08-16T22:16:07.042Z",
@@ -239,7 +424,35 @@
       "stories_pass": 17,
       "stories_fail": 0,
       "blocking_findings": 0,
-      "advisory_findings": 2
+      "advisory_findings": 2,
+      "s2_verdict": "PASS",
+      "checks": [
+        {
+          "check": "T1 state-legal",
+          "pass": true,
+          "evidence": "status 'complete'"
+        },
+        {
+          "check": "T2 complete-archived",
+          "pass": true,
+          "evidence": "PRD archived"
+        },
+        {
+          "check": "T3 complete-evidence",
+          "pass": true,
+          "evidence": "impl=Y rev=Y"
+        },
+        {
+          "check": "T4 merged-approved",
+          "pass": true,
+          "evidence": "last review APPROVE"
+        },
+        {
+          "check": "T5 merged-complete",
+          "pass": true,
+          "evidence": "merged + status 'complete'"
+        }
+      ]
     },
     {
       "task": "implementer-agent",
@@ -247,6 +460,7 @@
       "pr": null,
       "repo": null,
       "url": null,
+      "pre_pr_era": true,
       "raised_by": null,
       "raised_first_ts": null,
       "raised_last_ts": null,
@@ -259,14 +473,28 @@
       "stories_pass": 0,
       "stories_fail": 0,
       "blocking_findings": 0,
-      "advisory_findings": 0
+      "advisory_findings": 0,
+      "s2_verdict": "PASS",
+      "checks": [
+        {
+          "check": "T1 state-legal",
+          "pass": true,
+          "evidence": "status 'complete'"
+        },
+        {
+          "check": "T2 complete-archived",
+          "pass": true,
+          "evidence": "PRD archived"
+        }
+      ]
     },
     {
       "task": "implementer-delivery-failure-loud",
       "status": "complete",
-      "pr": "#10",
-      "repo": "ak47-arch/workspace",
-      "url": "https://github.com/ak47-arch/workspace/pull/10",
+      "pr": "#11",
+      "repo": "(ak47-arch/workspace)",
+      "url": "https://github.com/ak47-arch/workspace/pull/11",
+      "pre_pr_era": false,
       "raised_by": "8370f85b-3627-49fd-ad16-0df58e6c7cd4",
       "raised_first_ts": "2026-08-17T18:45:42.428Z",
       "raised_last_ts": "2026-08-17T19:08:30.380Z",
@@ -279,14 +507,43 @@
       "stories_pass": 0,
       "stories_fail": 0,
       "blocking_findings": 0,
-      "advisory_findings": 3
+      "advisory_findings": 3,
+      "s2_verdict": "PASS",
+      "checks": [
+        {
+          "check": "T1 state-legal",
+          "pass": true,
+          "evidence": "status 'complete'"
+        },
+        {
+          "check": "T2 complete-archived",
+          "pass": true,
+          "evidence": "PRD archived"
+        },
+        {
+          "check": "T3 complete-evidence",
+          "pass": true,
+          "evidence": "impl=Y rev=Y"
+        },
+        {
+          "check": "T4 merged-approved",
+          "pass": true,
+          "evidence": "last review APPROVE"
+        },
+        {
+          "check": "T5 merged-complete",
+          "pass": true,
+          "evidence": "merged + status 'complete'"
+        }
+      ]
     },
     {
       "task": "implementer-ponytail",
       "status": "complete",
       "pr": "#2",
-      "repo": "ak47-arch/workspace",
+      "repo": "(ak47-arch/workspace)",
       "url": "https://github.com/ak47-arch/workspace/pull/2",
+      "pre_pr_era": false,
       "raised_by": "8483b243-ad9a-4e00-be82-0cdf26a8801d",
       "raised_first_ts": "2026-08-14T15:54:33.786Z",
       "raised_last_ts": "2026-08-14T16:10:25.264Z",
@@ -299,14 +556,43 @@
       "stories_pass": 13,
       "stories_fail": 4,
       "blocking_findings": 1,
-      "advisory_findings": 2
+      "advisory_findings": 2,
+      "s2_verdict": "PASS",
+      "checks": [
+        {
+          "check": "T1 state-legal",
+          "pass": true,
+          "evidence": "status 'complete'"
+        },
+        {
+          "check": "T2 complete-archived",
+          "pass": true,
+          "evidence": "PRD archived"
+        },
+        {
+          "check": "T3 complete-evidence",
+          "pass": true,
+          "evidence": "impl=Y rev=Y"
+        },
+        {
+          "check": "T4 merged-approved",
+          "pass": true,
+          "evidence": "last review APPROVE"
+        },
+        {
+          "check": "T5 merged-complete",
+          "pass": true,
+          "evidence": "merged + status 'complete'"
+        }
+      ]
     },
     {
       "task": "implementer-revision-mode",
       "status": "complete",
       "pr": "#3",
-      "repo": "ak47-arch/workspace",
+      "repo": "(ak47-arch/workspace)",
       "url": "https://github.com/ak47-arch/workspace/pull/3",
+      "pre_pr_era": false,
       "raised_by": "cb6a90c1-f8d0-4da5-b413-1f82a0f32376",
       "raised_first_ts": "2026-08-14T17:08:40.899Z",
       "raised_last_ts": "2026-08-14T17:41:35.707Z",
@@ -319,7 +605,35 @@
       "stories_pass": 17,
       "stories_fail": 0,
       "blocking_findings": 0,
-      "advisory_findings": 4
+      "advisory_findings": 4,
+      "s2_verdict": "PASS",
+      "checks": [
+        {
+          "check": "T1 state-legal",
+          "pass": true,
+          "evidence": "status 'complete'"
+        },
+        {
+          "check": "T2 complete-archived",
+          "pass": true,
+          "evidence": "PRD archived"
+        },
+        {
+          "check": "T3 complete-evidence",
+          "pass": true,
+          "evidence": "impl=Y rev=Y"
+        },
+        {
+          "check": "T4 merged-approved",
+          "pass": true,
+          "evidence": "last review APPROVE"
+        },
+        {
+          "check": "T5 merged-complete",
+          "pass": true,
+          "evidence": "merged + status 'complete'"
+        }
+      ]
     },
     {
       "task": "langfuse-agentic-operations",
@@ -327,6 +641,7 @@
       "pr": null,
       "repo": null,
       "url": null,
+      "pre_pr_era": false,
       "raised_by": null,
       "raised_first_ts": null,
       "raised_last_ts": null,
@@ -339,7 +654,20 @@
       "stories_pass": 0,
       "stories_fail": 0,
       "blocking_findings": 0,
-      "advisory_findings": 0
+      "advisory_findings": 0,
+      "s2_verdict": "PASS",
+      "checks": [
+        {
+          "check": "T1 state-legal",
+          "pass": true,
+          "evidence": "status 'in-prd'"
+        },
+        {
+          "check": "T6 queue-gate",
+          "pass": true,
+          "evidence": "queued + status 'in-prd'"
+        }
+      ]
     },
     {
       "task": "mission-control-deprecation",
@@ -347,6 +675,7 @@
       "pr": null,
       "repo": null,
       "url": null,
+      "pre_pr_era": false,
       "raised_by": null,
       "raised_first_ts": null,
       "raised_last_ts": null,
@@ -359,14 +688,28 @@
       "stories_pass": 0,
       "stories_fail": 0,
       "blocking_findings": 0,
-      "advisory_findings": 0
+      "advisory_findings": 0,
+      "s2_verdict": "SKIP",
+      "checks": [
+        {
+          "check": "T1 state-legal",
+          "pass": true,
+          "evidence": "status 'complete'"
+        },
+        {
+          "check": "T0 zero-evidence completion",
+          "pass": null,
+          "evidence": "complete but no PRD/impl/rev anywhere (unverifiable)"
+        }
+      ]
     },
     {
       "task": "multi-repo-delivery-bookkeeping-prs",
       "status": "complete",
       "pr": "#12",
-      "repo": "ak47-arch/workspace",
+      "repo": "(ak47-arch/workspace)",
       "url": "https://github.com/ak47-arch/workspace/pull/12",
+      "pre_pr_era": false,
       "raised_by": "4d89a859-9d05-4b28-9efd-e56aad8837e7",
       "raised_first_ts": "2026-08-18T20:04:49.777Z",
       "raised_last_ts": "2026-08-18T21:23:35.035Z",
@@ -379,7 +722,35 @@
       "stories_pass": 23,
       "stories_fail": 0,
       "blocking_findings": 0,
-      "advisory_findings": 6
+      "advisory_findings": 6,
+      "s2_verdict": "PASS",
+      "checks": [
+        {
+          "check": "T1 state-legal",
+          "pass": true,
+          "evidence": "status 'complete'"
+        },
+        {
+          "check": "T2 complete-archived",
+          "pass": true,
+          "evidence": "PRD archived"
+        },
+        {
+          "check": "T3 complete-evidence",
+          "pass": true,
+          "evidence": "impl=Y rev=Y"
+        },
+        {
+          "check": "T4 merged-approved",
+          "pass": true,
+          "evidence": "last review APPROVE"
+        },
+        {
+          "check": "T5 merged-complete",
+          "pass": true,
+          "evidence": "merged + status 'complete'"
+        }
+      ]
     },
     {
       "task": "ponytail-skills-fixed-mount",
@@ -387,6 +758,7 @@
       "pr": null,
       "repo": null,
       "url": null,
+      "pre_pr_era": true,
       "raised_by": null,
       "raised_first_ts": null,
       "raised_last_ts": null,
@@ -399,7 +771,20 @@
       "stories_pass": 0,
       "stories_fail": 0,
       "blocking_findings": 0,
-      "advisory_findings": 1
+      "advisory_findings": 1,
+      "s2_verdict": "PASS",
+      "checks": [
+        {
+          "check": "T1 state-legal",
+          "pass": true,
+          "evidence": "status 'complete'"
+        },
+        {
+          "check": "T2 complete-archived",
+          "pass": true,
+          "evidence": "PRD archived"
+        }
+      ]
     },
     {
       "task": "sandbox-credential-mounting",
@@ -407,6 +792,7 @@
       "pr": null,
       "repo": null,
       "url": null,
+      "pre_pr_era": true,
       "raised_by": null,
       "raised_first_ts": null,
       "raised_last_ts": null,
@@ -419,7 +805,20 @@
       "stories_pass": 0,
       "stories_fail": 0,
       "blocking_findings": 0,
-      "advisory_findings": 0
+      "advisory_findings": 0,
+      "s2_verdict": "PASS",
+      "checks": [
+        {
+          "check": "T1 state-legal",
+          "pass": true,
+          "evidence": "status 'complete'"
+        },
+        {
+          "check": "T2 complete-archived",
+          "pass": true,
+          "evidence": "PRD archived"
+        }
+      ]
     },
     {
       "task": "task-file-dashboard",
@@ -427,6 +826,7 @@
       "pr": null,
       "repo": null,
       "url": null,
+      "pre_pr_era": true,
       "raised_by": null,
       "raised_first_ts": null,
       "raised_last_ts": null,
@@ -439,14 +839,28 @@
       "stories_pass": 0,
       "stories_fail": 0,
       "blocking_findings": 0,
-      "advisory_findings": 0
+      "advisory_findings": 0,
+      "s2_verdict": "PASS",
+      "checks": [
+        {
+          "check": "T1 state-legal",
+          "pass": true,
+          "evidence": "status 'complete'"
+        },
+        {
+          "check": "T2 complete-archived",
+          "pass": true,
+          "evidence": "PRD archived"
+        }
+      ]
     },
     {
       "task": "task-pickup-similarity-merge",
       "status": "complete",
       "pr": "#5",
-      "repo": "ak47-arch/workspace",
+      "repo": "(ak47-arch/workspace)",
       "url": "https://github.com/ak47-arch/workspace/pull/5",
+      "pre_pr_era": false,
       "raised_by": "b77c5e2b-a870-40c7-bcad-effcbc45332a",
       "raised_first_ts": "2026-08-16T20:25:25.540Z",
       "raised_last_ts": "2026-08-16T20:30:12.320Z",
@@ -459,7 +873,35 @@
       "stories_pass": 19,
       "stories_fail": 0,
       "blocking_findings": 0,
-      "advisory_findings": 3
+      "advisory_findings": 3,
+      "s2_verdict": "PASS",
+      "checks": [
+        {
+          "check": "T1 state-legal",
+          "pass": true,
+          "evidence": "status 'complete'"
+        },
+        {
+          "check": "T2 complete-archived",
+          "pass": true,
+          "evidence": "PRD archived"
+        },
+        {
+          "check": "T3 complete-evidence",
+          "pass": true,
+          "evidence": "impl=Y rev=Y"
+        },
+        {
+          "check": "T4 merged-approved",
+          "pass": true,
+          "evidence": "last review APPROVE"
+        },
+        {
+          "check": "T5 merged-complete",
+          "pass": true,
+          "evidence": "merged + status 'complete'"
+        }
+      ]
     },
     {
       "task": "task-selection-abstraction-layer",
@@ -467,6 +909,7 @@
       "pr": null,
       "repo": null,
       "url": null,
+      "pre_pr_era": false,
       "raised_by": null,
       "raised_first_ts": null,
       "raised_last_ts": null,
@@ -479,7 +922,15 @@
       "stories_pass": 0,
       "stories_fail": 0,
       "blocking_findings": 0,
-      "advisory_findings": 0
+      "advisory_findings": 0,
+      "s2_verdict": "PASS",
+      "checks": [
+        {
+          "check": "T1 state-legal",
+          "pass": true,
+          "evidence": "status 'in-prd'"
+        }
+      ]
     },
     {
       "task": "vision-task-traceability",
@@ -487,6 +938,7 @@
       "pr": null,
       "repo": null,
       "url": null,
+      "pre_pr_era": false,
       "raised_by": null,
       "raised_first_ts": null,
       "raised_last_ts": null,
@@ -499,7 +951,20 @@
       "stories_pass": 0,
       "stories_fail": 0,
       "blocking_findings": 0,
-      "advisory_findings": 0
+      "advisory_findings": 0,
+      "s2_verdict": "SKIP",
+      "checks": [
+        {
+          "check": "T1 state-legal",
+          "pass": true,
+          "evidence": "status 'complete'"
+        },
+        {
+          "check": "T0 zero-evidence completion",
+          "pass": null,
+          "evidence": "complete but no PRD/impl/rev anywhere (unverifiable)"
+        }
+      ]
     },
     {
       "task": "x-capture-instrument",
@@ -507,6 +972,7 @@
       "pr": null,
       "repo": null,
       "url": null,
+      "pre_pr_era": true,
       "raised_by": null,
       "raised_first_ts": null,
       "raised_last_ts": null,
@@ -519,61 +985,27 @@
       "stories_pass": 0,
       "stories_fail": 0,
       "blocking_findings": 0,
-      "advisory_findings": 0
+      "advisory_findings": 0,
+      "s2_verdict": "PASS",
+      "checks": [
+        {
+          "check": "T1 state-legal",
+          "pass": true,
+          "evidence": "status 'complete'"
+        },
+        {
+          "check": "T2 complete-archived",
+          "pass": true,
+          "evidence": "PRD archived"
+        }
+      ]
     }
   ],
-  "schema_gaps": [
-    "task branch-protection-merge-only: no PR tracking section (dec 06)",
-    "task branch-protection-merge-only: no implementation report archived",
-    "task branch-protection-merge-only: no code-review report (pre-reviewer era?)",
-    "task chronological-tracking: no PR tracking section (dec 06)",
-    "task chronological-tracking: no implementation report archived",
-    "task chronological-tracking: no code-review report (pre-reviewer era?)",
-    "task cognee-integration-evaluation: no PR tracking section (dec 06)",
-    "task cognee-integration-evaluation: no implementation report archived",
-    "task cognee-integration-evaluation: no code-review report (pre-reviewer era?)",
-    "task combine-factory-context-factory-txt: no PR tracking section (dec 06)",
-    "task combine-factory-context-factory-txt: no implementation report archived",
-    "task combine-factory-context-factory-txt: no code-review report (pre-reviewer era?)",
-    "task end-to-end-traceability: no PR tracking section (dec 06)",
-    "task end-to-end-traceability: no implementation report archived",
-    "task end-to-end-traceability: no code-review report (pre-reviewer era?)",
-    "task extend-pm-assembly-line: no PR tracking section (dec 06)",
-    "task extend-pm-assembly-line: no implementation report archived",
-    "task extend-pm-assembly-line: no code-review report (pre-reviewer era?)",
-    "task extend-software-factory-wsff: no PR tracking section (dec 06)",
-    "task extend-software-factory-wsff: no implementation report archived",
-    "task extend-software-factory-wsff: no code-review report (pre-reviewer era?)",
-    "task feed-analyser-survival-infra-private-repos: no PR tracking section (dec 06)",
-    "task feed-analyser-survival-infra-private-repos: no implementation report archived",
-    "task feed-analyser-survival-infra-private-repos: no code-review report (pre-reviewer era?)",
-    "task github-browser-auth-flow: no PR tracking section (dec 06)",
-    "task github-browser-auth-flow: no implementation report archived",
-    "task github-browser-auth-flow: no code-review report (pre-reviewer era?)",
-    "task implementer-agent: no PR tracking section (dec 06)",
-    "task implementer-agent: no implementation report archived",
-    "task implementer-agent: no code-review report (pre-reviewer era?)",
-    "task langfuse-agentic-operations: no PR tracking section (dec 06)",
-    "task langfuse-agentic-operations: no implementation report archived",
-    "task langfuse-agentic-operations: no code-review report (pre-reviewer era?)",
-    "task mission-control-deprecation: no PR tracking section (dec 06)",
-    "task mission-control-deprecation: no implementation report archived",
-    "task mission-control-deprecation: no code-review report (pre-reviewer era?)",
-    "task ponytail-skills-fixed-mount: no PR tracking section (dec 06)",
-    "task sandbox-credential-mounting: no PR tracking section (dec 06)",
-    "task sandbox-credential-mounting: no implementation report archived",
-    "task sandbox-credential-mounting: no code-review report (pre-reviewer era?)",
-    "task task-file-dashboard: no PR tracking section (dec 06)",
-    "task task-file-dashboard: no implementation report archived",
-    "task task-file-dashboard: no code-review report (pre-reviewer era?)",
-    "task task-selection-abstraction-layer: no PR tracking section (dec 06)",
-    "task task-selection-abstraction-layer: no implementation report archived",
-    "task task-selection-abstraction-layer: no code-review report (pre-reviewer era?)",
-    "task vision-task-traceability: no PR tracking section (dec 06)",
-    "task vision-task-traceability: no implementation report archived",
-    "task vision-task-traceability: no code-review report (pre-reviewer era?)",
-    "task x-capture-instrument: no PR tracking section (dec 06)",
-    "task x-capture-instrument: no implementation report archived",
-    "task x-capture-instrument: no code-review report (pre-reviewer era?)"
-  ]
+  "schema_gaps": [],
+  "verdicts": {
+    "PASS": 18,
+    "FAIL": 0,
+    "SKIP": 8
+  },
+  "overall": "PASS"
 }
