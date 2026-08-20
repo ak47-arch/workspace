@@ -1,0 +1,41 @@
+{
+  "generated": "2026-08-20",
+  "checks": {
+    "P1-prd-lifecycle": {
+      "total": 15,
+      "gaps": [
+        "github-browser-auth-flow: task file exists but no PR-tracking section",
+        "x-capture-instrument: task file exists but no PR-tracking section",
+        "extend-software-factory-wsff: task file exists but no PR-tracking section",
+        "task-file-dashboard: task file exists but no PR-tracking section",
+        "implementer-agent: task file exists but no PR-tracking section",
+        "ponytail-skills-fixed-mount: task file exists but no PR-tracking section",
+        "sandbox-credential-mounting: task file exists but no PR-tracking section"
+      ],
+      "pass": false
+    },
+    "P2-review-fidelity": {
+      "total": 8,
+      "gaps": [
+        "implementer-ponytail: no/odd verdict (last review n/a)"
+      ],
+      "pass": false
+    },
+    "P3-no-post-merge-revert": {
+      "total": 8,
+      "gaps": [],
+      "pass": true
+    }
+  },
+  "gaps": [
+    "P1: github-browser-auth-flow: task file exists but no PR-tracking section",
+    "P1: x-capture-instrument: task file exists but no PR-tracking section",
+    "P1: extend-software-factory-wsff: task file exists but no PR-tracking section",
+    "P1: task-file-dashboard: task file exists but no PR-tracking section",
+    "P1: implementer-agent: task file exists but no PR-tracking section",
+    "P1: ponytail-skills-fixed-mount: task file exists but no PR-tracking section",
+    "P1: sandbox-credential-mounting: task file exists but no PR-tracking section",
+    "P2: implementer-ponytail: no/odd verdict (last review n/a)"
+  ],
+  "verdict": "FAIL"
+}

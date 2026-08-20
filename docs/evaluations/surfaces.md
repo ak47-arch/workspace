@@ -28,7 +28,7 @@ Read top-down as an **evolution timeline**: each surface accrues a dated row whe
 | S1 | **Decision-record loop** | `bin/eval-decisions.py` → `decisions.{json,md}` | schema + session-link + claim-vs-repo holds; SKIP if nothing checkable | 🟢 live | 2026-08-20 |
 | S2 | **Task loop** | `bin/eval-pipeline.py` → `pipeline.{json,md}` | reached target state + revision/blocking signals | 🟢 live (gaps-only today) | 2026-08-14 |
 | S3 | **Knowledge loop** | `bin/eval-knowledge.py` → `knowledge.{json,md}` | K1 index links resolve (GFM anchors) · K2 session evidence · K3 every decision indexed | 🟢 live | 2026-08-20 |
-| S4 | **PRD/review loop** | (register later) | APPROVE → no post-merge revert (independent gold only) | 🔴 declared | — |
+| S4 | **PRD/review loop** | `bin/eval-prd.py` → `prd.{json,md}` | P1 PRD→task→PR-tracking · P2 review verdict + merge fidelity · P3 no post-merge revert (cross-repo SHAs unverifiable) | 🟢 live | 2026-08-20 |
 | S5 | **Drift / L2** | (register later) | cross-run: did the earlier decision hold | 🔴 declared | — |
 | S6 | **Infra-invariant fidelity** *(superseded)* | — | liveness is ops, not eval (see anti-pattern note); invariant fidelity already covered by S1's dual-mode claim | 🔴 declared (retracted) | — |
 | S7 | **Context-engine surface** | (new) | footprint/leanness + retrieval reachability + summary fidelity of the factory's own context | 🔴 declared | — |
@@ -57,6 +57,10 @@ Chronological record of when each surface was declared / opened and what it surf
   wiring): K1 index-link integrity (GFM-anchor aware) · K2 decision→session evidence · K3 every
   decision indexed. First run: K1 false-positives (checker bug, fixed); **K3 real gap** — one
   orphaned decision (ponytail-skills-fixed-mount) never indexed → added to index; **PASS**.
+- **S4 opened (live)** — `bin/eval-prd.py` PRD/review-loop panel: P1 PRD→task→PR-tracking, P2 review
+  verdict + merge fidelity, P3 no post-merge revert. Findings: 7 legacy tasks lack PR-tracking
+  (pre-decision-06 convention — historical, not regression); implementer-ponytail merged with last
+  review `n/a`; P3 PASS (cross-repo SHAs correctly unverifiable).
 - **S3 S4 S5** formalized (declared) from the taxonomy.
 - **S6–S9 added** — new breadth beyond the original five, each choosing a concrete factory invariant.
 - **S6 retracted** — liveness/uptime is ops monitoring, not eval (an eval row must assert an
