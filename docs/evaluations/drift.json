@@ -90,7 +90,47 @@
       "last": "2026-08-20",
       "status": "HOLD",
       "ok": true,
-      "evidence": "AGENTS.md ~579 tok, factory-context ~3031 tok (lean)"
+      "evidence": "AGENTS.md ~579 tok, factory-context ~3133 tok (lean)"
+    },
+    {
+      "id": "s2-uat-gate-closed",
+      "surface": "S2",
+      "desc": "no complete task's PRD still queued (UAT gate)",
+      "first": "2026-08-20",
+      "last": "2026-08-20",
+      "status": "HOLD",
+      "ok": true,
+      "evidence": "no complete task's PRD still queued"
+    },
+    {
+      "id": "s2-merge-approve",
+      "surface": "S2",
+      "desc": "merged task's last review is APPROVE (T4)",
+      "first": "2026-08-20",
+      "last": "2026-08-20",
+      "status": "HOLD",
+      "ok": true,
+      "evidence": "all merged tasks last-review APPROVE"
+    },
+    {
+      "id": "s2-merged-complete",
+      "surface": "S2",
+      "desc": "merged task is complete (T5)",
+      "first": "2026-08-20",
+      "last": "2026-08-20",
+      "status": "HOLD",
+      "ok": true,
+      "evidence": "all merged tasks complete"
+    },
+    {
+      "id": "s4-report-body-fidelity",
+      "surface": "S4",
+      "desc": "final review verdict == report body (P4)",
+      "first": "2026-08-20",
+      "last": "2026-08-20",
+      "status": "HOLD",
+      "ok": true,
+      "evidence": "final review verdict equals report body"
     }
   ],
   "drifts": []

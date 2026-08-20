@@ -31,7 +31,7 @@ all emitting to the context engine via Langfuse):
 | S2 | Task loop | `bin/eval-pipeline.py` → `pipeline.{json,md}` | 🟢 live — **PASS 18 / FAIL 0 / SKIP 8** (26 tasks, state-machine) |
 | S3 | Knowledge loop | `bin/eval-knowledge.py` → `knowledge.{json,md}` | 🟢 live — PASS |
 | S4 | PRD/review loop | `bin/eval-prd.py` → `prd.{json,md}` | 🟢 live — PASS |
-| S5 | Drift / L2 | `bin/eval-drift.py` → `{date}-drift.md` + `drift.json` | 🟢 live — PASS (9 gold rows) |
+| S5 | Drift / L2 | `bin/eval-drift.py` → `{date}-drift.md` + `drift.json` | 🟢 live — PASS (13 gold rows HOLD) |
 | S7 | Context-engine surface | `bin/eval-context.py` → `{date}-context.{json,md}` | 🟢 live — PASS |
 | S8+S9 | Roster + repo-hygiene | `bin/eval-hygiene.py` → `hygiene.{json,md}` | 🟢 live — PASS |
 | S10 | App family | (register per app) | 🟡 deferred — apps not running yet |

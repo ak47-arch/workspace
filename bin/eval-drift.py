@@ -17,6 +17,7 @@ Score caveat: v4 scores must write via synchronous POST /api/public/scores —
 the batch /api/public/ingestion score-create path silently drops scores in
 v4 dual mode.
 """
+import glob
 import json
 import os
 import re
@@ -166,6 +167,99 @@ def s7_footprint():
         else "AGENTS.md ~{} tok or factory-context ~{} tok over budget".format(agents, fc)
 
 
+def _slugify(p):
+    b = os.path.basename(p)
+    m = re.match(r"^\d{4}-\d{2}-\d{2}-(.+)\.md$", b)
+    return m.group(1) if m else b.replace(".md", "")
+
+
+def _task_status(slug):
+    m = re.search(r"\*\*Status\*\*:\s*(.+)$",
+                  read(os.path.join(WS, "docs", "tasks", slug + ".md")) or "", re.M)
+    return (m.group(1).strip().lower() if m else "")
+
+
+def _s2_pr_tracking(slug):
+    txt = read(os.path.join(WS, "docs", "tasks", slug + ".md"))
+    m = re.search(r"## PR tracking(.*?)(?=\n## |\Z)", txt, re.S)
+    if not m:
+        return {"has_pr": False, "pre_pr_era": False, "merge_sha": None, "reviews": []}
+    block = m.group(1)
+    prs = re.findall(r"^- PR: #(\d+) (\S+)$", block, re.M)
+    merges = re.findall(r"^- Merge: ([0-9a-f]{7,})", block, re.M)
+    reviews = re.findall(r"^- Review: session ([\w-]+) · verdict (APPROVE|REQUEST_CHANGES|n/a|REVISE)", block, re.M)
+    return {"has_pr": bool(prs), "pre_pr_era": "pre-PR-era" in block,
+            "merge_sha": merges[-1] if merges else None, "reviews": reviews}
+
+
+def s2_uat_gate_closed():
+    """S2 T2 invariant — no COMPLETE task's PRD is still queued (UAT gate closed)."""
+    queued = {_slugify(p) for p in glob.glob(os.path.join(WS, "docs/prd-queue", "*.md"))}
+    archived = {_slugify(p) for p in glob.glob(os.path.join(WS, "docs/prd-archive", "*.md"))}
+    bad = [s for s in queued if _task_status(s) in ("complete", "completed") and s not in archived]
+    return not bad, "no complete task's PRD still queued" if not bad \
+        else "UAT gate open: " + ", ".join(bad)
+
+
+def s2_merge_approve():
+    """S2 T4 + S4 P5 invariant — every MERGED task's last review is APPROVE."""
+    bad = []
+    for f in glob.glob(os.path.join(WS, "docs/tasks", "*.md")):
+        slug = _slugify(f)
+        tr = _s2_pr_tracking(slug)
+        if not tr["merge_sha"] or tr["pre_pr_era"]:
+            continue
+        last = tr["reviews"][-1][1].upper() if tr["reviews"] else None
+        if last != "APPROVE":
+            bad.append(f"{slug} (last review {last or 'none'})")
+    return not bad, "all merged tasks last-review APPROVE" if not bad \
+        else "merged w/o APPROVE: " + "; ".join(bad)
+
+
+def s2_merged_complete():
+    """S2 T5 invariant — a merged task is complete (no merged-but-still-open)."""
+    bad = []
+    for f in glob.glob(os.path.join(WS, "docs/tasks", "*.md")):
+        slug = _slugify(f)
+        tr = _s2_pr_tracking(slug)
+        if not tr["merge_sha"] or tr["pre_pr_era"]:
+            continue
+        if _task_status(slug) not in ("complete", "completed"):
+            bad.append(f"{slug} (status {_task_status(slug) or '?'})")
+    return not bad, "all merged tasks complete" if not bad else "merged not complete: " + "; ".join(bad)
+
+
+def s4_report_body_fidelity():
+    """S4 P4 invariant — a task's ROOT review verdict matches its review report body.
+    Only the final review is cross-checked (the on-disk report reflects the last write)."""
+    bad = []
+    for f in glob.glob(os.path.join(WS, "docs/tasks", "*.md")):
+        slug = _slugify(f)
+        txt = read(f)
+        m = re.search(r"## PR tracking(.*?)(?=\n## |\Z)", txt, re.S)
+        if not m:
+            continue
+        # last review line's report dir points at a real report whose body matches
+        dirs = re.findall(r"report\s+docs/code-reviews/(\S+)/", m.group(1))
+        if not dirs:
+            continue
+        rd = dirs[-1]
+        rp = os.path.join(WS, "docs", "code-reviews", rd, "report.md")
+        body = None
+        if os.path.isfile(rp):
+            bm = re.search(r"##\s*Verdict\s*\n+\s*\*{0,2}(APPROVE|REQUEST_CHANGES|REVISE|n/a)",
+                           read(rp), re.I)
+            body = bm.group(1).upper() if bm else None
+        # last review verdict as recorded in task
+        vs = re.findall(r"· verdict\s+(APPROVE|REQUEST_CHANGES|REVISE|n/a)", m.group(1), re.I)
+        rec = vs[-1].upper() if vs else None
+        if rec and rec != "N/A" and (body is None or rec != body):
+            bad.append(f"{slug} (recorded {rec}, body {body or '?'})")
+    return not bad, "final review verdict equals report body" if not bad \
+        else "report-body mismatch: " + "; ".join(bad)
+
+
+
 GOLD = [
     {"id": "s1-dual-mode", "surface": "S1", "desc": "dual-mode drift pinned (compose + .env)",
      "first": "2026-08-20", "check": s1_dual_mode_fix},
@@ -185,6 +279,15 @@ GOLD = [
      "first": "2026-08-20", "check": s7_spine_links},
     {"id": "s7-footprint", "surface": "S7", "desc": "AGENTS.md + factory-context stay lean (budgets)",
      "first": "2026-08-20", "check": s7_footprint},
+    # S2 state-machine invariants + S4 P4 depth guards (registered after the S4/S2 passes)
+    {"id": "s2-uat-gate-closed", "surface": "S2", "desc": "no complete task's PRD still queued (UAT gate)",
+     "first": "2026-08-20", "check": s2_uat_gate_closed},
+    {"id": "s2-merge-approve", "surface": "S2", "desc": "merged task's last review is APPROVE (T4)",
+     "first": "2026-08-20", "check": s2_merge_approve},
+    {"id": "s2-merged-complete", "surface": "S2", "desc": "merged task is complete (T5)",
+     "first": "2026-08-20", "check": s2_merged_complete},
+    {"id": "s4-report-body-fidelity", "surface": "S4", "desc": "final review verdict == report body (P4)",
+     "first": "2026-08-20", "check": s4_report_body_fidelity},
 ]
 
 
