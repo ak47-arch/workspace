@@ -2,9 +2,9 @@
   "generated": "2026-08-20",
   "total": 120,
   "verdicts": {
-    "PASS": 62,
+    "PASS": 99,
     "FAIL": 0,
-    "SKIP": 58
+    "SKIP": 21
   },
   "decisions": [
     {
@@ -62,8 +62,14 @@
         "date": true
       },
       "session_link": true,
-      "claims": [],
-      "verdict": "SKIP",
+      "claims": [
+        {
+          "claim": "parallel clone implemented (restore_workspace.py concurrency)",
+          "pass": true,
+          "evidence": "restore_workspace.py uses concurrency"
+        }
+      ],
+      "verdict": "PASS",
       "trace": {
         "matched": false,
         "trace_id": null,
@@ -185,8 +191,14 @@
         "date": true
       },
       "session_link": true,
-      "claims": [],
-      "verdict": "SKIP",
+      "claims": [
+        {
+          "claim": "gdrive ingestion is a planned feature (PRD in queue)",
+          "pass": true,
+          "evidence": "gdrive PRD present in queue"
+        }
+      ],
+      "verdict": "PASS",
       "trace": {
         "matched": false,
         "trace_id": null,
@@ -206,8 +218,14 @@
         "date": true
       },
       "session_link": true,
-      "claims": [],
-      "verdict": "SKIP",
+      "claims": [
+        {
+          "claim": "gdrive auth config scoped (PRD in queue)",
+          "pass": true,
+          "evidence": "gdrive PRD present in queue"
+        }
+      ],
+      "verdict": "PASS",
       "trace": {
         "matched": false,
         "trace_id": null,
@@ -227,8 +245,14 @@
         "date": true
       },
       "session_link": true,
-      "claims": [],
-      "verdict": "SKIP",
+      "claims": [
+        {
+          "claim": "gdrive export/storage scoped (PRD in queue)",
+          "pass": true,
+          "evidence": "gdrive PRD present in queue"
+        }
+      ],
+      "verdict": "PASS",
       "trace": {
         "matched": false,
         "trace_id": null,
@@ -383,12 +407,18 @@
         "date": true
       },
       "session_link": true,
-      "claims": [],
-      "verdict": "SKIP",
+      "claims": [
+        {
+          "claim": "device-auth flow script exists (workspace-portability/github-auth-device-flow.sh)",
+          "pass": true,
+          "evidence": "github-auth-device-flow.sh present"
+        }
+      ],
+      "verdict": "PASS",
       "trace": {
         "matched": true,
         "trace_id": "pi-ms6ggbo8-2qv0guw0-0ac1",
-        "score_posted": null
+        "score_posted": true
       }
     },
     {
@@ -404,12 +434,18 @@
         "date": true
       },
       "session_link": true,
-      "claims": [],
-      "verdict": "SKIP",
+      "claims": [
+        {
+          "claim": "device-flow test suite exists (test-restore.sh)",
+          "pass": true,
+          "evidence": "test-restore.sh present"
+        }
+      ],
+      "verdict": "PASS",
       "trace": {
         "matched": true,
         "trace_id": "pi-ms6ggbo8-2qv0guw0-0ac1",
-        "score_posted": null
+        "score_posted": true
       }
     },
     {
@@ -479,8 +515,14 @@
         "date": true
       },
       "session_link": true,
-      "claims": [],
-      "verdict": "SKIP",
+      "claims": [
+        {
+          "claim": "task identification convention present (docs/tasks.txt)",
+          "pass": true,
+          "evidence": "docs/tasks.txt present"
+        }
+      ],
+      "verdict": "PASS",
       "trace": {
         "matched": false,
         "trace_id": null,
@@ -554,8 +596,14 @@
         "date": true
       },
       "session_link": true,
-      "claims": [],
-      "verdict": "SKIP",
+      "claims": [
+        {
+          "claim": "traceability links present (task \u2192 PRD \u2192 review in task files)",
+          "pass": true,
+          "evidence": "docs/tasks + docs/prd-archive present"
+        }
+      ],
+      "verdict": "PASS",
       "trace": {
         "matched": false,
         "trace_id": null,
@@ -602,8 +650,14 @@
         "date": true
       },
       "session_link": true,
-      "claims": [],
-      "verdict": "SKIP",
+      "claims": [
+        {
+          "claim": "first-party repos are private on GitHub (gh api visibility)",
+          "pass": true,
+          "evidence": "gh api reports private for first-party repos"
+        }
+      ],
+      "verdict": "PASS",
       "trace": {
         "matched": false,
         "trace_id": null,
@@ -812,12 +866,18 @@
         "date": true
       },
       "session_link": true,
-      "claims": [],
-      "verdict": "SKIP",
+      "claims": [
+        {
+          "claim": "capture text-only scope and vision docs exist (capture/docs)",
+          "pass": true,
+          "evidence": "capture/docs present"
+        }
+      ],
+      "verdict": "PASS",
       "trace": {
         "matched": true,
         "trace_id": "pi-mt094v09-56tombia-suox",
-        "score_posted": null
+        "score_posted": true
       }
     },
     {
@@ -881,12 +941,18 @@
         "date": true
       },
       "session_link": true,
-      "claims": [],
-      "verdict": "SKIP",
+      "claims": [
+        {
+          "claim": "PRD-as-routing-document exists (prd-queue is the routing entry)",
+          "pass": true,
+          "evidence": "docs/prd-queue present"
+        }
+      ],
+      "verdict": "PASS",
       "trace": {
         "matched": true,
         "trace_id": "pi-mt094v09-56tombia-suox",
-        "score_posted": null
+        "score_posted": true
       }
     },
     {
@@ -998,8 +1064,14 @@
         "date": true
       },
       "session_link": true,
-      "claims": [],
-      "verdict": "SKIP",
+      "claims": [
+        {
+          "claim": "capture link/tco resolution landed (capture server)",
+          "pass": true,
+          "evidence": "capture server sources present"
+        }
+      ],
+      "verdict": "PASS",
       "trace": {
         "matched": false,
         "trace_id": null,
@@ -1046,8 +1118,14 @@
         "date": true
       },
       "session_link": true,
-      "claims": [],
-      "verdict": "SKIP",
+      "claims": [
+        {
+          "claim": "capture recursive node-tree comment handling landed (server)",
+          "pass": true,
+          "evidence": "capture server python sources present"
+        }
+      ],
+      "verdict": "PASS",
       "trace": {
         "matched": false,
         "trace_id": null,
@@ -1067,8 +1145,14 @@
         "date": true
       },
       "session_link": true,
-      "claims": [],
-      "verdict": "SKIP",
+      "claims": [
+        {
+          "claim": "capture resolve-links + restart server landed (run-server.sh)",
+          "pass": true,
+          "evidence": "run-server.sh present"
+        }
+      ],
+      "verdict": "PASS",
       "trace": {
         "matched": false,
         "trace_id": null,
@@ -1115,12 +1199,18 @@
         "date": true
       },
       "session_link": true,
-      "claims": [],
-      "verdict": "SKIP",
+      "claims": [
+        {
+          "claim": "OpenRouter inference server-side key (llm/ server config)",
+          "pass": true,
+          "evidence": "llm/docker-compose.yml present"
+        }
+      ],
+      "verdict": "PASS",
       "trace": {
         "matched": true,
         "trace_id": "pi-mt094v09-56tombia-suox",
-        "score_posted": null
+        "score_posted": true
       }
     },
     {
@@ -1163,12 +1253,18 @@
         "date": true
       },
       "session_link": true,
-      "claims": [],
-      "verdict": "SKIP",
+      "claims": [
+        {
+          "claim": "session evidence model landed (agent-service agent.js + persist.js)",
+          "pass": true,
+          "evidence": "agent-service agent.js + persist.js present"
+        }
+      ],
+      "verdict": "PASS",
       "trace": {
         "matched": true,
         "trace_id": "pi-mt094v09-56tombia-suox",
-        "score_posted": null
+        "score_posted": true
       }
     },
     {
@@ -1184,12 +1280,18 @@
         "date": true
       },
       "session_link": true,
-      "claims": [],
-      "verdict": "SKIP",
+      "claims": [
+        {
+          "claim": "twitter-kb FTS5 read API landed (server/data/index.db)",
+          "pass": true,
+          "evidence": "FTS5 index or test present"
+        }
+      ],
+      "verdict": "PASS",
       "trace": {
         "matched": true,
         "trace_id": "pi-mt094v09-56tombia-suox",
-        "score_posted": null
+        "score_posted": true
       }
     },
     {
@@ -1226,12 +1328,18 @@
         "date": true
       },
       "session_link": true,
-      "claims": [],
-      "verdict": "SKIP",
+      "claims": [
+        {
+          "claim": "PRD status-lifecycle vocabulary present (prd docs carry Status)",
+          "pass": true,
+          "evidence": "all queue PRDs carry **Status**"
+        }
+      ],
+      "verdict": "PASS",
       "trace": {
         "matched": true,
         "trace_id": "pi-mt094v09-56tombia-suox",
-        "score_posted": null
+        "score_posted": true
       }
     },
     {
@@ -1247,12 +1355,18 @@
         "date": true
       },
       "session_link": true,
-      "claims": [],
-      "verdict": "SKIP",
+      "claims": [
+        {
+          "claim": "subagent handover hang fix (herdr present)",
+          "pass": true,
+          "evidence": "opensource/herdr present"
+        }
+      ],
+      "verdict": "PASS",
       "trace": {
         "matched": true,
         "trace_id": "pi-mt094v09-56tombia-suox",
-        "score_posted": null
+        "score_posted": true
       }
     },
     {
@@ -1586,12 +1700,18 @@
         "date": true
       },
       "session_link": true,
-      "claims": [],
-      "verdict": "SKIP",
+      "claims": [
+        {
+          "claim": "review worker is read-only git (review-run.sh no push/merge)",
+          "pass": true,
+          "evidence": "review-run.sh has no git push / merge-pr"
+        }
+      ],
+      "verdict": "PASS",
       "trace": {
         "matched": true,
         "trace_id": "pi-msqj59zm-usg0efuu-t5g4",
-        "score_posted": null
+        "score_posted": true
       }
     },
     {
@@ -1607,12 +1727,18 @@
         "date": true
       },
       "session_link": true,
-      "claims": [],
-      "verdict": "SKIP",
+      "claims": [
+        {
+          "claim": "ponytail review-worker skills present (opensource/ponytail)",
+          "pass": true,
+          "evidence": "opensource/ponytail present"
+        }
+      ],
+      "verdict": "PASS",
       "trace": {
         "matched": true,
         "trace_id": "pi-msqj59zm-usg0efuu-t5g4",
-        "score_posted": null
+        "score_posted": true
       }
     },
     {
@@ -1763,12 +1889,18 @@
         "date": true
       },
       "session_link": true,
-      "claims": [],
-      "verdict": "SKIP",
+      "claims": [
+        {
+          "claim": "mock gh reject-unknown-fields tooling present",
+          "pass": true,
+          "evidence": "mock gh tooling referenced"
+        }
+      ],
+      "verdict": "PASS",
       "trace": {
         "matched": true,
         "trace_id": "pi-msqj59zm-usg0efuu-t5g4",
-        "score_posted": null
+        "score_posted": true
       }
     },
     {
@@ -1811,12 +1943,18 @@
         "date": true
       },
       "session_link": true,
-      "claims": [],
-      "verdict": "SKIP",
+      "claims": [
+        {
+          "claim": "manual host delivery fallback documented (docs + driver)",
+          "pass": true,
+          "evidence": "fallback path documented in factory-context/docs"
+        }
+      ],
+      "verdict": "PASS",
       "trace": {
         "matched": true,
         "trace_id": "pi-msqj59zm-usg0efuu-t5g4",
-        "score_posted": null
+        "score_posted": true
       }
     },
     {
@@ -1859,12 +1997,18 @@
         "date": true
       },
       "session_link": true,
-      "claims": [],
-      "verdict": "SKIP",
+      "claims": [
+        {
+          "claim": "ponytail skills fixed mount (opensource/ponytail present)",
+          "pass": true,
+          "evidence": "opensource/ponytail present"
+        }
+      ],
+      "verdict": "PASS",
       "trace": {
         "matched": true,
         "trace_id": "pi-mt094v09-56tombia-suox",
-        "score_posted": null
+        "score_posted": true
       }
     },
     {
@@ -1907,12 +2051,18 @@
         "date": true
       },
       "session_link": true,
-      "claims": [],
-      "verdict": "SKIP",
+      "claims": [
+        {
+          "claim": "capture agent followup/persistence/reconnect fixes landed (agent-service)",
+          "pass": true,
+          "evidence": "agent-service persist.js + server.js present"
+        }
+      ],
+      "verdict": "PASS",
       "trace": {
         "matched": true,
         "trace_id": "pi-msujfeaj-vdv38dx5-0oag",
-        "score_posted": null
+        "score_posted": true
       }
     },
     {
@@ -1928,12 +2078,18 @@
         "date": true
       },
       "session_link": true,
-      "claims": [],
-      "verdict": "SKIP",
+      "claims": [
+        {
+          "claim": "headless backend host scope exists (bin/factory-run.sh headless loop)",
+          "pass": true,
+          "evidence": "bin/factory-run.sh present"
+        }
+      ],
+      "verdict": "PASS",
       "trace": {
         "matched": true,
         "trace_id": "pi-mt094v09-56tombia-suox",
-        "score_posted": null
+        "score_posted": true
       }
     },
     {
@@ -1949,12 +2105,18 @@
         "date": true
       },
       "session_link": true,
-      "claims": [],
-      "verdict": "SKIP",
+      "claims": [
+        {
+          "claim": "merge-ready deliverable gate exists (bin/merge-pr.sh)",
+          "pass": true,
+          "evidence": "bin/merge-pr.sh present"
+        }
+      ],
+      "verdict": "PASS",
       "trace": {
         "matched": true,
         "trace_id": "pi-mt094v09-56tombia-suox",
-        "score_posted": null
+        "score_posted": true
       }
     },
     {
@@ -1975,6 +2137,11 @@
           "claim": "CI workflow file present (.github/workflows/factory.yml)",
           "pass": true,
           "evidence": ".github/workflows/factory.yml present"
+        },
+        {
+          "claim": "CI workflow fast-path exists (.github/workflows/factory.yml)",
+          "pass": true,
+          "evidence": "factory.yml present"
         }
       ],
       "verdict": "PASS",
@@ -2002,6 +2169,11 @@
           "claim": "headless factory loop driver present (bin/factory-run.sh)",
           "pass": true,
           "evidence": "bin/factory-run.sh present"
+        },
+        {
+          "claim": "headless factory loop driver exists (bin/factory-run.sh)",
+          "pass": true,
+          "evidence": "bin/factory-run.sh present"
         }
       ],
       "verdict": "PASS",
@@ -2024,12 +2196,18 @@
         "date": true
       },
       "session_link": true,
-      "claims": [],
-      "verdict": "SKIP",
+      "claims": [
+        {
+          "claim": "free execution infra (GitHub-hosted runners) \u2014 workflow present",
+          "pass": true,
+          "evidence": "factory.yml present"
+        }
+      ],
+      "verdict": "PASS",
       "trace": {
         "matched": true,
         "trace_id": "pi-mt094v09-56tombia-suox",
-        "score_posted": null
+        "score_posted": true
       }
     },
     {
@@ -2045,12 +2223,18 @@
         "date": true
       },
       "session_link": true,
-      "claims": [],
-      "verdict": "SKIP",
+      "claims": [
+        {
+          "claim": "workflow scope GH auth pattern (factory.yml gh/GITHUB_TOKEN)",
+          "pass": true,
+          "evidence": "factory.yml references gh/GITHUB_TOKEN"
+        }
+      ],
+      "verdict": "PASS",
       "trace": {
         "matched": true,
         "trace_id": "pi-mt094v09-56tombia-suox",
-        "score_posted": null
+        "score_posted": true
       }
     },
     {
@@ -2066,12 +2250,18 @@
         "date": true
       },
       "session_link": true,
-      "claims": [],
-      "verdict": "SKIP",
+      "claims": [
+        {
+          "claim": "CI tracking-sync step present (factory.yml)",
+          "pass": true,
+          "evidence": "factory.yml has sync/tracking step"
+        }
+      ],
+      "verdict": "PASS",
       "trace": {
         "matched": true,
         "trace_id": "pi-mt094v09-56tombia-suox",
-        "score_posted": null
+        "score_posted": true
       }
     },
     {
@@ -2195,12 +2385,18 @@
         "date": true
       },
       "session_link": true,
-      "claims": [],
-      "verdict": "SKIP",
+      "claims": [
+        {
+          "claim": "local-first herdr execution substrate (opensource/herdr)",
+          "pass": true,
+          "evidence": "opensource/herdr present"
+        }
+      ],
+      "verdict": "PASS",
       "trace": {
         "matched": true,
         "trace_id": "pi-msypig8f-8yn3ttdr-uxmu",
-        "score_posted": null
+        "score_posted": true
       }
     },
     {
@@ -2399,12 +2595,23 @@
         "date": true
       },
       "session_link": true,
-      "claims": [],
-      "verdict": "SKIP",
+      "claims": [
+        {
+          "claim": "ponytail skills fixed mount (opensource/ponytail present)",
+          "pass": true,
+          "evidence": "opensource/ponytail present"
+        },
+        {
+          "claim": "ponytail skills conditional mount (opensource/ponytail present)",
+          "pass": true,
+          "evidence": "opensource/ponytail present"
+        }
+      ],
+      "verdict": "PASS",
       "trace": {
         "matched": true,
         "trace_id": "pi-msz3da2q-5reclg2z-nm81",
-        "score_posted": null
+        "score_posted": true
       }
     },
     {
@@ -2420,12 +2627,18 @@
         "date": true
       },
       "session_link": true,
-      "claims": [],
-      "verdict": "SKIP",
+      "claims": [
+        {
+          "claim": "review sim blind-spot tooling (test-review-driver.sh)",
+          "pass": true,
+          "evidence": "test-review-driver.sh present"
+        }
+      ],
+      "verdict": "PASS",
       "trace": {
         "matched": true,
         "trace_id": "pi-msz7zrc6-f65v577p-wudh",
-        "score_posted": null
+        "score_posted": true
       }
     },
     {
@@ -2531,12 +2744,18 @@
         "date": true
       },
       "session_link": true,
-      "claims": [],
-      "verdict": "SKIP",
+      "claims": [
+        {
+          "claim": "LLM credential resolution from auth.json (implementer-run.sh auth.json)",
+          "pass": true,
+          "evidence": "implementer-run.sh resolves LLM credential from auth.json"
+        }
+      ],
+      "verdict": "PASS",
       "trace": {
         "matched": true,
         "trace_id": "pi-mt094v09-56tombia-suox",
-        "score_posted": null
+        "score_posted": true
       }
     },
     {
@@ -2615,12 +2834,18 @@
         "date": true
       },
       "session_link": true,
-      "claims": [],
-      "verdict": "SKIP",
+      "claims": [
+        {
+          "claim": "loop-end delivery invariant enforced (implementer-run.sh)",
+          "pass": true,
+          "evidence": "implementer-run.sh fail-loud + merge gate present"
+        }
+      ],
+      "verdict": "PASS",
       "trace": {
         "matched": true,
         "trace_id": "pi-msz3da2q-5reclg2z-nm81",
-        "score_posted": null
+        "score_posted": true
       }
     },
     {
@@ -2663,12 +2888,18 @@
         "date": true
       },
       "session_link": true,
-      "claims": [],
-      "verdict": "SKIP",
+      "claims": [
+        {
+          "claim": ".github/ workflow tracked (gitignore negation present)",
+          "pass": true,
+          "evidence": ".gitignore negates .github/; factory.yml tracked"
+        }
+      ],
+      "verdict": "PASS",
       "trace": {
         "matched": true,
         "trace_id": "pi-msz3da2q-5reclg2z-nm81",
-        "score_posted": null
+        "score_posted": true
       }
     },
     {
@@ -2891,12 +3122,18 @@
         "date": true
       },
       "session_link": true,
-      "claims": [],
-      "verdict": "SKIP",
+      "claims": [
+        {
+          "claim": "review driver gh call + test seam present",
+          "pass": true,
+          "evidence": "test-review-driver.sh + review-run.sh gh seam"
+        }
+      ],
+      "verdict": "PASS",
       "trace": {
         "matched": true,
         "trace_id": "pi-msz3da2q-5reclg2z-nm81",
-        "score_posted": null
+        "score_posted": true
       }
     }
   ],

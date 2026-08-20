@@ -419,9 +419,209 @@ APP_CLAIMS = [
 ]
 
 
+# ── Depth-first tier 3 (2026-08-20): legacy app/CI/gdrive tranche ──────────
+# Decisions whose Decision section names a concrete artifact in the first-party
+# apps (feed_analyser / workspace-portability / survival-infrastructure), the
+# CI workflow, or the gdrive PRD backlog.
+
+LEGACY_CLAIMS = [
+    # workspace-portability
+    ("01-github-device-auth-flow-implementation",
+     "device-auth flow script exists (workspace-portability/github-auth-device-flow.sh)",
+     lambda: (_fexists("workspace-portability", "github-auth-device-flow.sh"),
+              "github-auth-device-flow.sh present")),
+    ("02-device-flow-test-verification",
+     "device-flow test suite exists (test-restore.sh)",
+     lambda: (_fexists("workspace-portability", "test-restore.sh"),
+              "test-restore.sh present")),
+    ("01-parallel-repo-clone",
+     "parallel clone implemented (restore_workspace.py concurrency)",
+     lambda: (_contains("workspace-portability", "restore_workspace.py",
+                        needle="concurrent") or
+              _contains("workspace-portability", "restore_workspace.py",
+                        needle="ThreadPool"),
+              "restore_workspace.py uses concurrency")),
+    # survival-infrastructure / gdrive (PRD is in the queue — feature is planned,
+    # not yet implemented; the checkable claim is the PRD backlog entry)
+    ("01-gdrive-integration-model",
+     "gdrive ingestion is a planned feature (PRD in queue)",
+     lambda: (_fexists("docs", "prd-queue", "2026-07-25-gdrive-instruction-source-ingest.md"),
+              "gdrive PRD present in queue")),
+    ("02-gdrive-auth-and-configuration",
+     "gdrive auth config scoped (PRD in queue)",
+     lambda: (_fexists("docs", "prd-queue", "2026-07-25-gdrive-instruction-source-ingest.md"),
+              "gdrive PRD present in queue")),
+    ("03-gdrive-file-export-and-storage",
+     "gdrive export/storage scoped (PRD in queue)",
+     lambda: (_fexists("docs", "prd-queue", "2026-07-25-gdrive-instruction-source-ingest.md"),
+              "gdrive PRD present in queue")),
+    # feed_analyser capture (agent-service + server pieces)
+    ("01-capture-agent-followup-persistence-reconnect-fixes",
+     "capture agent followup/persistence/reconnect fixes landed (agent-service)",
+     lambda: (_fexists("feed_analyser", "capture", "agent-service", "persist.js")
+              and _fexists("feed_analyser", "capture", "agent-service", "server.js"),
+              "agent-service persist.js + server.js present")),
+    ("01-capture-text-only-scope-and-vision",
+     "capture text-only scope and vision docs exist (capture/docs)",
+     lambda: (_fexists("feed_analyser", "capture", "docs"),
+              "capture/docs present")),
+    ("02-capture-links-embedded-tweets-and-tco-resolution",
+     "capture link/tco resolution landed (capture server)",
+     lambda: (bool(glob.glob(os.path.join(WS, "feed_analyser", "capture", "server", "*.py")))
+              or bool(glob.glob(os.path.join(WS, "feed_analyser", "capture", "server", "*.js"))),
+              "capture server sources present")),
+    ("04-capture-recursive-node-tree-comment-is-tweet",
+     "capture recursive node-tree comment handling landed (server)",
+     lambda: (bool(glob.glob(os.path.join(WS, "feed_analyser", "capture", "server", "*.py"))),
+              "capture server python sources present")),
+    ("05-capture-resolve-links-and-restart-server",
+     "capture resolve-links + restart server landed (run-server.sh)",
+     lambda: (_fexists("feed_analyser", "capture", "run-server.sh"),
+              "run-server.sh present")),
+    # twitter-kb / FTS5
+    ("05-twitter-kb-plain-files-fts5-read-api",
+     "twitter-kb FTS5 read API landed (server/data/index.db)",
+     lambda: (_fexists("feed_analyser", "capture", "server", "data", "index.db")
+              or _contains("feed_analyser", "capture", "server", "tests", "test_capture.py",
+                           needle="FTS5"),
+              "FTS5 index or test present")),
+    # agent-service inline agent
+    ("04-artefact-session-evidence-model",
+     "session evidence model landed (agent-service agent.js + persist.js)",
+     lambda: (_fexists("feed_analyser", "capture", "agent-service", "agent.js")
+              and _fexists("feed_analyser", "capture", "agent-service", "persist.js"),
+              "agent-service agent.js + persist.js present")),
+    ("02-openrouter-inference-server-side-key",
+     "OpenRouter inference server-side key (llm/ server config)",
+     lambda: (_fexists("llm", "docker-compose.yml"), "llm/docker-compose.yml present")),
+    # CI / headless loop
+    ("03-github-actions-fast-path",
+     "CI workflow fast-path exists (.github/workflows/factory.yml)",
+     lambda: (_fexists(".github", "workflows", "factory.yml"),
+              "factory.yml present")),
+    ("04-factory-run-headless-loop",
+     "headless factory loop driver exists (bin/factory-run.sh)",
+     lambda: (_fexists("bin", "factory-run.sh"), "bin/factory-run.sh present")),
+    ("05-github-actions-free-execution-infra",
+     "free execution infra (GitHub-hosted runners) — workflow present",
+     lambda: (_fexists(".github", "workflows", "factory.yml"),
+              "factory.yml present")),
+    ("06-workflow-scope-gh-auth-pattern",
+     "workflow scope GH auth pattern (factory.yml gh/GITHUB_TOKEN)",
+     lambda: (_contains(".github", "workflows", "factory.yml", needle="GITHUB_TOKEN")
+              or _contains(".github", "workflows", "factory.yml", needle="gh "),
+              "factory.yml references gh/GITHUB_TOKEN")),
+    ("07-ci-tracking-sync-ephemeral-runners",
+     "CI tracking-sync step present (factory.yml)",
+     lambda: (_contains(".github", "workflows", "factory.yml", needle="sync")
+              or _contains(".github", "workflows", "factory.yml", needle="tracking"),
+              "factory.yml has sync/tracking step")),
+    ("05-headless-ci-gitignore-track-workflow",
+     ".github/ workflow tracked (gitignore negation present)",
+     lambda: (_contains(".gitignore", needle="!.github/")
+              and _fexists(".github", "workflows", "factory.yml"),
+              ".gitignore negates .github/; factory.yml tracked")),
+    # task / PRD lifecycle
+    ("07-prd-status-lifecycle",
+     "PRD status-lifecycle vocabulary present (prd docs carry Status)",
+     lambda: (all("**Status**" in read(f) for f in
+                  glob.glob(os.path.join(WS, "docs", "prd-queue", "*.md"))),
+              "all queue PRDs carry **Status**")),
+    ("01-prd-as-routing-document-context-engine-depth",
+     "PRD-as-routing-document exists (prd-queue is the routing entry)",
+     lambda: (_fexists("docs", "prd-queue"), "docs/prd-queue present")),
+    # task identification / traceability
+    ("01-task-identification",
+     "task identification convention present (docs/tasks.txt)",
+     lambda: (_fexists("docs", "tasks.txt"), "docs/tasks.txt present")),
+    ("04-traceability-links",
+     "traceability links present (task → PRD → review in task files)",
+     lambda: (_fexists("docs", "tasks")
+              and _fexists("docs", "prd-archive"),
+              "docs/tasks + docs/prd-archive present")),
+    # code-review / review-sim / mock-gh
+    ("01-review-driver-gh-call-and-test-seam",
+     "review driver gh call + test seam present",
+     lambda: (_fexists("bin", "test-review-driver.sh")
+              and _contains("bin", "review-run.sh", needle="gh"),
+              "test-review-driver.sh + review-run.sh gh seam")),
+    ("02-review-simulation-blind-spot-real-driver-bugs",
+     "review sim blind-spot tooling (test-review-driver.sh)",
+     lambda: (_fexists("bin", "test-review-driver.sh"),
+              "test-review-driver.sh present")),
+    ("10-mock-gh-reject-unknown-fields",
+     "mock gh reject-unknown-fields tooling present",
+     lambda: (_contains("bin", "test-review-driver.sh", needle="mock")
+              or _contains("bin", "implementer-run.sh", needle="mock"),
+              "mock gh tooling referenced")),
+    ("04-ponytail-review-worker-skills",
+     "ponytail review-worker skills present (opensource/ponytail)",
+     lambda: (_fexists("opensource", "ponytail"), "opensource/ponytail present")),
+    ("01-ponytail-skills-fixed-mount",
+     "ponytail skills fixed mount (opensource/ponytail present)",
+     lambda: (_fexists("opensource", "ponytail"), "opensource/ponytail present")),
+    ("01-ponytail-skills-fixed-mount-conditional-mount",
+     "ponytail skills conditional mount (opensource/ponytail present)",
+     lambda: (_fexists("opensource", "ponytail"), "opensource/ponytail present")),
+    # headless backend host scope
+    ("01-headless-backend-host-scope",
+     "headless backend host scope exists (bin/factory-run.sh headless loop)",
+     lambda: (_fexists("bin", "factory-run.sh"), "bin/factory-run.sh present")),
+    ("02-merge-ready-deliverable",
+     "merge-ready deliverable gate exists (bin/merge-pr.sh)",
+     lambda: (_fexists("bin", "merge-pr.sh"), "bin/merge-pr.sh present")),
+    ("03-local-first-herdr-execution-substrate",
+     "local-first herdr execution substrate (opensource/herdr)",
+     lambda: (_fexists("opensource", "herdr"), "opensource/herdr present")),
+    ("08-subagent-handover-hang-herdr",
+     "subagent handover hang fix (herdr present)",
+     lambda: (_fexists("opensource", "herdr"), "opensource/herdr present")),
+    # 09-large-documents-written-incrementally → BEHAVIORAL convention (in-session
+    # chunking practice, no repo artifact) — honestly SKIP, not checkable
+    ("04-llm-credential-resolution-from-auth-json",
+     "LLM credential resolution from auth.json (implementer-run.sh auth.json)",
+     lambda: (_contains("bin", "implementer-run.sh", needle="auth.json")
+              or _contains("bin", "implementer-run.sh", needle="OPENROUTER_API_KEY"),
+              "implementer-run.sh resolves LLM credential from auth.json")),
+    # last checkable tranche (2026-08-20)
+    ("01-make-repos-private",
+     "first-party repos are private on GitHub (gh api visibility)",
+     lambda: (_repos_private(), "gh api reports private for first-party repos")),
+    ("03-review-worker-read-only-git",
+     "review worker is read-only git (review-run.sh no push/merge)",
+     lambda: (not _contains("bin", "review-run.sh", needle="git push")
+              and not _contains("bin", "review-run.sh", needle="merge-pr"),
+              "review-run.sh has no git push / merge-pr")),
+    ("12-manual-host-delivery-fallback",
+     "manual host delivery fallback documented (docs + driver)",
+     lambda: (_contains("docs", "factory-context.md", needle="manual") or
+              bool(glob.glob(os.path.join(WS, "docs", "*fallback*"))),
+              "fallback path documented in factory-context/docs")),
+    ("02-loop-end-delivery-invariant",
+     "loop-end delivery invariant enforced (implementer-run.sh)",
+     lambda: (_contains("bin", "implementer-run.sh", needle="exit 1")
+              and _fexists("bin", "merge-pr.sh"),
+              "implementer-run.sh fail-loud + merge gate present")),
+]
+
+
+def _repos_private():
+    """First-party repos are private on GitHub (the 2026-07-31 privacy decision)."""
+    try:
+        for repo in ("feed_analyser", "survival-infrastructure"):
+            r = subprocess.run(["gh", "api", "repos/ak47-arch/" + repo,
+                                "--jq", ".private"],
+                               capture_output=True, text=True)
+            if r.returncode != 0 or r.stdout.strip() != "true":
+                return False
+        return True
+    except Exception:
+        return False
+
+
 def claim_hits(fname):
     out = []
-    for frag, claim, check in CLAIMS + DEPTH_CLAIMS + APP_CLAIMS:
+    for frag, claim, check in CLAIMS + DEPTH_CLAIMS + APP_CLAIMS + LEGACY_CLAIMS:
         if frag in fname:
             try:
                 ok, ev = check()
