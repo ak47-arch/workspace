@@ -1,0 +1,77 @@
+{
+  "generated": "2026-08-20",
+  "verdict": "PASS",
+  "rows": [
+    {
+      "id": "s1-dual-mode",
+      "surface": "S1",
+      "desc": "dual-mode drift pinned (compose + .env)",
+      "first": "2026-08-20",
+      "last": "2026-08-20",
+      "status": "HOLD",
+      "ok": true,
+      "evidence": "dual-mode anchor in compose; .env write-mode=dual"
+    },
+    {
+      "id": "s1-session-retention",
+      "surface": "S1",
+      "desc": "decision session.jsonl retained (PR #24)",
+      "first": "2026-08-20",
+      "last": "2026-08-20",
+      "status": "HOLD",
+      "ok": true,
+      "evidence": "all decision sessions retain session.jsonl"
+    },
+    {
+      "id": "s3-orphan-indexed",
+      "surface": "S3",
+      "desc": "orphaned decision indexed + reachable",
+      "first": "2026-08-20",
+      "last": "2026-08-20",
+      "status": "HOLD",
+      "ok": true,
+      "evidence": "orphaned decision (ponytail-skills-fixed-mount-conditional-mount) reachable in index"
+    },
+    {
+      "id": "s4-legacy-markers",
+      "surface": "S4",
+      "desc": "7 legacy tasks honestly marked pre-PR-era",
+      "first": "2026-08-20",
+      "last": "2026-08-20",
+      "status": "HOLD",
+      "ok": true,
+      "evidence": "all 7 legacy tasks carry pre-PR-era marker"
+    },
+    {
+      "id": "s4-verdict-repair",
+      "surface": "S4",
+      "desc": "implementer-ponytail final verdict=APPROVE",
+      "first": "2026-08-20",
+      "last": "2026-08-20",
+      "status": "HOLD",
+      "ok": true,
+      "evidence": "implementer-ponytail final review recorded as APPROVE"
+    },
+    {
+      "id": "s8-roster-closed",
+      "surface": "S8",
+      "desc": "roster triads complete (incl. prd-reviewer)",
+      "first": "2026-08-20",
+      "last": "2026-08-20",
+      "status": "HOLD",
+      "ok": true,
+      "evidence": "all 4 roster agents have complete triads"
+    },
+    {
+      "id": "s9-key-advisory",
+      "surface": "S9",
+      "desc": "no new key class leaked (only local langfuse)",
+      "first": "2026-08-20",
+      "last": "2026-08-20",
+      "status": "HOLD",
+      "ok": true,
+      "evidence": "no new key class leaked (only pre-existing local langfuse keys)"
+    }
+  ],
+  "drifts": []
+}

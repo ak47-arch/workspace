@@ -29,7 +29,7 @@ Read top-down as an **evolution timeline**: each surface accrues a dated row whe
 | S2 | **Task loop** | `bin/eval-pipeline.py` → `pipeline.{json,md}` | reached target state + revision/blocking signals | 🟢 live (gaps-only today) | 2026-08-14 |
 | S3 | **Knowledge loop** | `bin/eval-knowledge.py` → `knowledge.{json,md}` | K1 index links resolve (GFM anchors) · K2 session evidence · K3 every decision indexed | 🟢 live | 2026-08-20 |
 | S4 | **PRD/review loop** | `bin/eval-prd.py` → `prd.{json,md}` | P1 PRD→task→PR-tracking · P2 review verdict + merge fidelity · P3 no post-merge revert (cross-repo SHAs unverifiable) | 🟢 live | 2026-08-20 |
-| S5 | **Drift / L2** | (register later) | cross-run: did the earlier decision hold | 🔴 declared | — |
+| S5 | **Drift / L2** | `bin/eval-drift.py` → `{date}-drift.md` + `drift.json` (trend store) | cross-run: prior fixed findings stay fixed (HOLD/DRIFT, first/last-verified). Not liveness — liveness is ops | 🟢 live | 2026-08-20 |
 | S6 | **Infra-invariant fidelity** *(superseded)* | — | liveness is ops, not eval (see anti-pattern note); invariant fidelity already covered by S1's dual-mode claim | 🔴 declared (retracted) | — |
 | S7 | **Context-engine surface** | (new) | footprint/leanness + retrieval reachability + summary fidelity of the factory's own context | 🔴 declared | — |
 | S8 | **Roster completeness** | `bin/eval-hygiene.py` → `hygiene.{json,md}` | every worker has persona + run-contract + artifact-map | 🟢 live | 2026-08-20 |
@@ -64,7 +64,12 @@ Chronological record of when each surface was declared / opened and what it surf
   - **P2 (implementer-ponytail "n/a" verdict)** — task file under-recorded review 3; the actual
     report (session 6b560fbb) said **APPROVE**. Corrected the task file; panel now reads real verdicts.
   - **P3** — cross-repo SHAs (feed_analyser) correctly unverifiable, not a revert. PASS.
-- **S3 S4 S5** formalized (declared) from the taxonomy.
+- **S5 opened (live)** — `bin/eval-drift.py` drift/L2 panel: the re-risk layer over the earlier
+  fixes. Seven gold rows (S1 dual-mode · S1 session-retention · S3 orphan-indexed · S4 legacy-
+  markers · S4 verdict-repair · S8 roster-closed · S9 key-advisory) each re-checked on the current
+  state; `drift.json` accumulates first/last-verified so the trend "did earlier fixes stay good"
+  survives re-runs. First run: **PASS — all 7 HOLD (0 drift)**. L2 is NOT liveness (S6 retracted):
+  each row asserts a *fix invariant* against repo/stack state, not uptime.
 - **S6–S9 added** — new breadth beyond the original five, each choosing a concrete factory invariant.
 - **S6 retracted** — liveness/uptime is ops monitoring, not eval (an eval row must assert an
   invariant against a decision; dual-mode fidelity is already S1's claim).
