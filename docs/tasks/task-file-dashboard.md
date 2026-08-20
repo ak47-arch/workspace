@@ -18,3 +18,6 @@
 ## Decisions
 
 - [01-task-lifecycle-state-machine-and-transition-tooling](../knowledge/sessions/019fb98c-22b4-7a11-8ef5-fc3baa6634c0/decisions/01-task-lifecycle-state-machine-and-transition-tooling.md)
+## PR tracking
+
+- No PR — pre-PR-era completion (decision 06 PR-tracking convention dated 2026-08-14; this task completed before the implementer/reviewer PR pipeline existed).

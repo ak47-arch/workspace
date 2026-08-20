@@ -19,3 +19,6 @@
 - [01-github-browser-auth-flow](../knowledge/sessions/019f937c-9afe-731e-a70d-c88d4eb9d675/decisions/01-github-browser-auth-flow.md)
 - [01-github-device-auth-flow-implementation](../knowledge/sessions/019faf44-901a-73f9-aa74-817eead12980/decisions/01-github-device-auth-flow-implementation.md)
 - [02-device-flow-test-verification](../knowledge/sessions/019faf44-901a-73f9-aa74-817eead12980/decisions/02-device-flow-test-verification.md)
+## PR tracking
+
+- No PR — pre-PR-era completion (decision 06 PR-tracking convention dated 2026-08-14; this task completed before the implementer/reviewer PR pipeline existed).

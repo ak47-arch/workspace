@@ -18,3 +18,6 @@
 ## Decisions
 
 - [01-three-phase-product-layer](../knowledge/sessions/019fb4f8-7a69-7968-b884-f4902565e512/decisions/01-three-phase-product-layer.md)
+## PR tracking
+
+- No PR — pre-PR-era completion (decision 06 PR-tracking convention dated 2026-08-14; this task completed before the implementer/reviewer PR pipeline existed).

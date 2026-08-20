@@ -26,3 +26,7 @@
 - [prd-archive-requires-uat-and-user-signoff](../knowledge/sessions/019fd314-9339-7a30-9b8b-f6d8892b5226/decisions/03-prd-archive-requires-uat-and-user-signoff.md)
 - [capture-recursive-node-tree](../knowledge/sessions/019fd314-9339-7a30-9b8b-f6d8892b5226/decisions/04-capture-recursive-node-tree-comment-is-tweet.md)
 - [capture-resolve-links-restart-server](../knowledge/sessions/019fd314-9339-7a30-9b8b-f6d8892b5226/decisions/05-capture-resolve-links-and-restart-server.md)
+
+## PR tracking
+
+- No PR — pre-PR-era completion (decision 06 PR-tracking convention dated 2026-08-14; this task completed before the implementer/reviewer PR pipeline existed).
