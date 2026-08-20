@@ -1,10 +1,10 @@
 {
   "generated": "2026-08-20",
-  "total": 119,
+  "total": 120,
   "verdicts": {
-    "PASS": 21,
-    "FAIL": 2,
-    "SKIP": 96
+    "PASS": 22,
+    "FAIL": 0,
+    "SKIP": 98
   },
   "decisions": [
     {
@@ -14,18 +14,18 @@
       "task": "",
       "project": "software-factory",
       "status": "accepted",
-      "date": "<yyyy-mm-dd>",
+      "date": "2026-07-24 01:10",
       "schema": {
         "status": true,
-        "date": false
+        "date": true
       },
       "session_link": true,
       "claims": [],
-      "verdict": "FAIL",
+      "verdict": "SKIP",
       "trace": {
         "matched": true,
         "trace_id": "pi-mrxp02tn-inia6fyu-7fhf",
-        "score_posted": true
+        "score_posted": null
       }
     },
     {
@@ -400,7 +400,7 @@
         "status": true,
         "date": true
       },
-      "session_link": false,
+      "session_link": true,
       "claims": [
         {
           "claim": "herdr repo is present for session repopulation",
@@ -408,7 +408,7 @@
           "evidence": "opensource/herdr present"
         }
       ],
-      "verdict": "FAIL",
+      "verdict": "PASS",
       "trace": {
         "matched": false,
         "trace_id": null,
@@ -2156,6 +2156,27 @@
       }
     },
     {
+      "decision": "03-eval-feedback-target-context-engine.md",
+      "session": "01a01a70-b2b6-7c00-96ca-7292e6e067e2",
+      "title": "Evaluation department output feeds the context engine \u2014 not model finetuning",
+      "task": "langfuse-agentic-operations",
+      "project": "langfuse-agentic-operations",
+      "status": "accepted",
+      "date": "2026-08-20 01:10",
+      "schema": {
+        "status": true,
+        "date": true
+      },
+      "session_link": true,
+      "claims": [],
+      "verdict": "SKIP",
+      "trace": {
+        "matched": true,
+        "trace_id": "pi-mt06ywqz-0hydteyc-j0cj",
+        "score_posted": null
+      }
+    },
+    {
       "decision": "01-ponytail-skills-fixed-mount-conditional-mount.md",
       "session": "0ded66e7-a908-4838-ace5-03de80e8fc0d",
       "title": "Skills `/skills` bind mount is conditional on host-skills presence",
@@ -2639,8 +2660,5 @@
       }
     }
   ],
-  "gaps": [
-    "decision 01-factory-architecture-decisions.md: no/odd Date ('<yyyy-mm-dd>')",
-    "decision 01-herdr-pi-session-repopulation.md: session 019fb3a9-bf84-79db-b194-c580b76e4228/session.jsonl missing"
-  ]
+  "gaps": []
 }

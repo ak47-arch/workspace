@@ -1,10 +1,10 @@
 # Decision-Loop Evaluation — 2026-08-20
 
-Decisions: 119 · PASS 21 / FAIL 2 / SKIP 96
+Decisions: 120 · PASS 22 / FAIL 0 / SKIP 98
 
 | decision | session | verdict | claim failures | trace |
 |---|---|---|---|---|
-| 01-factory-architecture-decisions.md | 019f8faf | FAIL | — | pi-mrxp02tn-inia6fyu-7fhf |
+| 01-factory-architecture-decisions.md | 019f8faf | SKIP | — | pi-mrxp02tn-inia6fyu-7fhf |
 | 01-github-browser-auth-flow.md | 019f937c | SKIP | — | — |
 | 01-parallel-repo-clone.md | 019f93aa | SKIP | — | — |
 | 01-capture-instrument-architecture.md | 019f9487 | SKIP | — | — |
@@ -21,7 +21,7 @@ Decisions: 119 · PASS 21 / FAIL 2 / SKIP 96
 | 01-survival-infrastructure-core-product-architecture.md | 019faf18 | PASS | — | pi-ms6eqb47-sqru5lkh-mjdg |
 | 01-github-device-auth-flow-implementation.md | 019faf44 | SKIP | — | pi-ms6ggbo8-2qv0guw0-0ac1 |
 | 02-device-flow-test-verification.md | 019faf44 | SKIP | — | pi-ms6ggbo8-2qv0guw0-0ac1 |
-| 01-herdr-pi-session-repopulation.md | 019fb3a9 | FAIL | — | — |
+| 01-herdr-pi-session-repopulation.md | 019fb3a9 | PASS | — | — |
 | 01-mission-control-deprecation.md | 019fb3b8 | PASS | — | — |
 | 01-task-identification.md | 019fb3ee | SKIP | — | — |
 | 02-task-centric-storage.md | 019fb3ee | SKIP | — | — |
@@ -100,6 +100,7 @@ Decisions: 119 · PASS 21 / FAIL 2 / SKIP 96
 | 07-pr-dependency-invariant.md | 01a01515 | SKIP | — | pi-msypig8f-8yn3ttdr-uxmu |
 | 01-langfuse-factory-eval-spine-decision-loop.md | 01a01a70 | SKIP | — | pi-mt06ywqz-0hydteyc-j0cj |
 | 02-eval-factory-department.md | 01a01a70 | SKIP | — | pi-mt06ywqz-0hydteyc-j0cj |
+| 03-eval-feedback-target-context-engine.md | 01a01a70 | SKIP | — | pi-mt06ywqz-0hydteyc-j0cj |
 | 01-ponytail-skills-fixed-mount-conditional-mount.md | 0ded66e7 | SKIP | — | pi-msz3da2q-5reclg2z-nm81 |
 | 02-review-simulation-blind-spot-real-driver-bugs.md | 19cb853b | SKIP | — | pi-msz7zrc6-f65v577p-wudh |
 | 03-label-seam-gh-pr-edit.md | 19cb853b | SKIP | — | pi-msz7zrc6-f65v577p-wudh |
@@ -126,8 +127,7 @@ Decisions: 119 · PASS 21 / FAIL 2 / SKIP 96
 
 ## Gaps
 
-- decision 01-factory-architecture-decisions.md: no/odd Date ('<yyyy-mm-dd>')
-- decision 01-herdr-pi-session-repopulation.md: session 019fb3a9-bf84-79db-b194-c580b76e4228/session.jsonl missing
+- (none)
 
 _JSON: docs/evaluations/2026-08-20-decisions.json_
 
