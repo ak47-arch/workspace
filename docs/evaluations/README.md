@@ -60,6 +60,6 @@ L2 drift are later tiers, registered only as the corpus + annotation queue grow.
 
 ## Authoring / maintenance
 
-- **Run**: `python3 bin/eval-decisions.py` (decision loop), `python3 bin/eval-pipeline.py` (task loop), `python3 bin/eval-knowledge.py` (S3 knowledge), `python3 bin/eval-prd.py` (S4 PRD/review), or `python3 bin/eval-hygiene.py` (S8 roster + S9 repo-hygiene).
+- **Run**: `python3 bin/eval-decisions.py` (S1 decision loop), `python3 bin/eval-pipeline.py` (S2 task), `python3 bin/eval-knowledge.py` (S3 knowledge), `python3 bin/eval-prd.py` (S4 PRD/review), `python3 bin/eval-drift.py` (S5 drift/L2), or `python3 bin/eval-hygiene.py` (S8+S9).
 - **Persona**: read-only `evaluator` (`docs/factory-context.md` roster; `.pi/agents/evaluator.md`;
   run contract `.agents/skills/eval-ops/SKILL.md`; artifact map `docs/reference/evaluator-agent.md`).
