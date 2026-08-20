@@ -26,7 +26,7 @@ Read top-down as an **evolution timeline**: each surface accrues a dated row whe
 | # | Surface | Tool / report | Verdict meaning | Status | Opened |
 |---|---|---|---|---|---|
 | S1 | **Decision-record loop** | `bin/eval-decisions.py` → `decisions.{json,md}` | schema + session-link + claim-vs-repo holds; SKIP if nothing checkable | 🟢 live | 2026-08-20 |
-| S2 | **Task loop** | `bin/eval-pipeline.py` → `pipeline.{json,md}` | reached target state + revision/blocking signals | 🟢 live (gaps-only today) | 2026-08-14 |
+| S2 | **Task loop** | `bin/eval-pipeline.py` → `pipeline.{json,md}` | T1 state-legal · T2 complete→archived (UAT gate) · T3 complete+PR→impl/rev evidence · T4 merged→APPROVE · T5 merged→complete · T6 queue-gate; zero-evidence completions = SKIP | 🟢 live | 2026-08-20 |
 | S3 | **Knowledge loop** | `bin/eval-knowledge.py` → `knowledge.{json,md}` | K1 index links resolve (GFM anchors) · K2 session evidence · K3 every decision indexed | 🟢 live | 2026-08-20 |
 | S4 | **PRD/review loop** | `bin/eval-prd.py` → `prd.{json,md}` | P1 PRD→task→PR-tracking · P2 review verdict + merge fidelity · P3 no post-merge revert (cross-repo SHAs unverifiable) | 🟢 live | 2026-08-20 |
 | S5 | **Drift / L2** | `bin/eval-drift.py` → `{date}-drift.md` + `drift.json` (trend store) | cross-run: prior fixed findings stay fixed (HOLD/DRIFT, first/last-verified). Not liveness — liveness is ops | 🟢 live | 2026-08-20 |
@@ -99,6 +99,13 @@ Chronological record of when each surface was declared / opened and what it surf
   config, dir); one mis-targeted claim (task-similarity policy lives in the product-layer skill,
   not a bin tool) corrected in-pass. The decision-03 metric "SKIP fraction shrinks as the engine
   feeds more decisions checkably" moved 98/120 → 58/120.
+- **S2 upgraded gaps-only → PASS/FAIL state-machine panel** — `eval-pipeline.py` now grades the
+  lifecycle machine (in-prd → prd-ready → in-progress → in-review → complete) with six checks:
+  T1 state-legal · T2 complete→PRD-archived (UAT gate) · T3 complete+PR→impl/rev evidence ·
+  T4 merged→APPROVE · T5 merged→complete · T6 queue-gate. First run: **18 PASS / 0 FAIL / 8 SKIP**
+  — the 8 SKIPs are zero-evidence legacy completions (no PRD/impl/rev anywhere; honestly
+  unverifiable, not failed). All 8 merged tasks have APPROVE + complete; the 4 pre-PR-era tasks
+  with archived PRDs PASS on T1+T2; post-PR-era tasks get the full chain.
 
 ---
 
