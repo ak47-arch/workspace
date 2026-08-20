@@ -58,9 +58,12 @@ Chronological record of when each surface was declared / opened and what it surf
   decision indexed. First run: K1 false-positives (checker bug, fixed); **K3 real gap** — one
   orphaned decision (ponytail-skills-fixed-mount) never indexed → added to index; **PASS**.
 - **S4 opened (live)** — `bin/eval-prd.py` PRD/review-loop panel: P1 PRD→task→PR-tracking, P2 review
-  verdict + merge fidelity, P3 no post-merge revert. Findings: 7 legacy tasks lack PR-tracking
-  (pre-decision-06 convention — historical, not regression); implementer-ponytail merged with last
-  review `n/a`; P3 PASS (cross-repo SHAs correctly unverifiable).
+  verdict + merge fidelity, P3 no post-merge revert. Initial findings + resolution:
+  - **P1 (7 legacy tasks no PR-tracking)** — pre-date decision 06 (2026-08-14) convention; no PR
+    ever existed. Marked honestly as pre-PR-era in each task; panel treats the marker as valid.
+  - **P2 (implementer-ponytail "n/a" verdict)** — task file under-recorded review 3; the actual
+    report (session 6b560fbb) said **APPROVE**. Corrected the task file; panel now reads real verdicts.
+  - **P3** — cross-repo SHAs (feed_analyser) correctly unverifiable, not a revert. PASS.
 - **S3 S4 S5** formalized (declared) from the taxonomy.
 - **S6–S9 added** — new breadth beyond the original five, each choosing a concrete factory invariant.
 - **S6 retracted** — liveness/uptime is ops monitoring, not eval (an eval row must assert an

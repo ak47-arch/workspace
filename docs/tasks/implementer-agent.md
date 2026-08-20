@@ -22,3 +22,6 @@
 - [sandbox-on-workspace-portability](../knowledge/sessions/019fe7d2-aa31-77e6-8ea0-9df3d6b3c6ed/decisions/03-sandbox-on-workspace-portability.md)
 - [implementer-runtime-config-model-skills-extensions](../knowledge/sessions/019fe7d2-aa31-77e6-8ea0-9df3d6b3c6ed/decisions/04-implementer-runtime-config-model-skills-extensions.md)
 - [implementer-lifecycle-traceability](../knowledge/sessions/019fe7d2-aa31-77e6-8ea0-9df3d6b3c6ed/decisions/05-implementer-lifecycle-traceability.md)
+## PR tracking
+
+- No PR — pre-PR-era completion (decision 06 PR-tracking convention dated 2026-08-14; this task completed before the implementer/reviewer PR pipeline existed).

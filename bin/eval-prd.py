@@ -85,6 +85,7 @@ def task_pr_sections():
         urls = re.findall(r"URL:\s*(\S+)", block)
         out[slug] = {
             "has_pr": bool(prs),
+            "pre_pr_era": bool(re.search(r"pre-PR-era|No PR —", block)),
             "pr_num": prs[-1] if prs else None,
             "review_session": sessions[-1][0] if sessions else None,
             "verdict": sessions[-1][1] if sessions else None,
@@ -134,12 +135,18 @@ def review_fidelity():
         import glob as _glob
         report = _glob.glob(os.path.join(WS, "docs", "code-reviews", "*" + slug, "report.md"))
         has_report = bool(report)
+        # pre-PR-era tasks: honestly marked, no PR pipeline existed — not a gap
+        if t["pre_pr_era"]:
+            rows.append({"task": slug, "pr": None, "verdict": None, "report": False,
+                         "merge_sha": None, "ok": True, "pre_pr_era": True})
+            continue
         ok = bool(t["has_pr"] and verdict and (verdict.upper() in ("APPROVE", "REQUEST_CHANGES")))
         # APPROVE must have a merge sha; REQUEST_CHANGES may still be pending
         if verdict and verdict.upper() == "APPROVE" and not t["merge_sha"]:
             ok = False
         rows.append({"task": slug, "pr": t["pr_num"], "verdict": verdict,
-                     "report": has_report, "merge_sha": t["merge_sha"], "ok": ok})
+                     "report": has_report, "merge_sha": t["merge_sha"], "ok": ok,
+                     "pre_pr_era": False})
         if not ok:
             reason = "no PR" if not t["has_pr"] else (
                 "no/odd verdict (last review {})".format(t["verdict"]) if (
@@ -156,7 +163,10 @@ def post_merge_revert():
         survived = merge_survived(t["merge_sha"]) if t["merge_sha"] else None
         unverifiable = t.get("url") is not None and "feed_analyser" in (t.get("url") or "")
         rows.append({"task": slug, "merge_sha": t["merge_sha"], "survived": survived,
-                     "foreign_repo": unverifiable})
+                     "foreign_repo": unverifiable, "pre_pr_era": t["pre_pr_era"]})
+        # pre-PR-era tasks have no merge sha by definition — not a data-quality gap
+        if t["pre_pr_era"]:
+            continue
         if survived is False and not unverifiable:
             gaps.append(f"{slug}: merged commit {t['merge_sha']} is NOT an ancestor of master (revert?)")
         elif survived is None and not unverifiable:

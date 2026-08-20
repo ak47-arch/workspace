@@ -18,3 +18,7 @@
 ## Decisions
 
 - `docs/knowledge/sessions/01a005a8-7302-74e2-8c1a-c6e8e74358c7/decisions/01-ponytail-skills-fixed-mount.md` — ponytail skills delivered via fixed `/skills` mount (D2 delivery-path repair)
+
+## PR tracking
+
+- No PR — pre-PR-era completion (decision 06 PR-tracking convention dated 2026-08-14; this task completed before the implementer/reviewer PR pipeline existed).
