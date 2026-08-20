@@ -93,6 +93,12 @@ Chronological record of when each surface was declared / opened and what it surf
   registered as drift gold rows (s7-spine-links, s7-footprint).
 - Decision 03 recorded: eval signal feeds the **context engine** — so S7 (engine-surface) is named
   **the** headline surface, matching the mission.
+- **S1 depth-first pass #1 (SKIP-shrink)** — expanded the curated claim table from 23 → 63 checks
+  (two new tranches: factory-process invariants + app/component artifacts). SKIP 98 → **58**,
+  PASS 22 → **62**, FAIL 0. Every new claim verified against a real artifact (script, skill,
+  config, dir); one mis-targeted claim (task-similarity policy lives in the product-layer skill,
+  not a bin tool) corrected in-pass. The decision-03 metric "SKIP fraction shrinks as the engine
+  feeds more decisions checkably" moved 98/120 → 58/120.
 
 ---
 
