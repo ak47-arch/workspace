@@ -209,7 +209,67 @@ def fidelity_checks():
     return rows, fails
 
 
-# ── Langfuse (fleet-level score on the latest trace) ───────────────────────
+# ── C4 intra-doc section footprint (depth) ───────────────────────────────────
+# A doc can stay under its whole-doc budget while a single hot section balloons
+# (retrieval spends most of its context on one section).  Depth: measure each
+# top-level section (## / ###) of factory-context.md and flag any section whose
+# share of the doc exceeds a hard cap.
+MAX_SECTION_SHARE = 0.45  # a single section may not consume >45% of the doc
+
+
+def intra_doc_sections():
+    path = os.path.join(WS, "docs", "factory-context.md")
+    text = read(path)
+    total = est_tokens(text)
+    rows, fails = [], []
+    # split into top-level sections; keep the preamble (before first ##) as one
+    parts = re.split(r"(?=^##\s)", text, flags=re.M)
+    for i, part in enumerate(parts):
+        heading = re.match(r"##\s+(.+)$", part, re.M)
+        name = heading.group(1).strip() if heading else "(preamble)"
+        tok = est_tokens(part)
+        share = tok / max(1, total)
+        rows.append({"section": name, "est_tokens": tok, "share": round(share, 3)})
+        if share > MAX_SECTION_SHARE:
+            fails.append(f"section '{name}' consumes {share:.0%} of factory-context — "
+                         f"exceeds {MAX_SECTION_SHARE:.0%} cap")
+    return rows, fails
+
+
+# ── C5 reverse reachability (depth) ─────────────────────────────────────────
+# C2 checks the spine's out-edges (links resolve to files/anchors that exist).
+# Depth C5 checks the in-edge REGRESSION class: every anchor that *some* link
+# targets must actually be defined as a heading somewhere (otherwise a cross-doc
+# reference silently points at nothing).  A heading defined-but-not-linked-to is
+# NOT a fail (headings are navigated by reading); only a linked-to-but-missing
+# anchor is a real dangling back-ref.
+def reverse_reachability():
+    # collect all anchor targets actually linked in the spine network
+    linked_targets = []
+    for doc in SPINE_DOCS:
+        path = os.path.join(WS, doc)
+        text = read(path)
+        for m in re.finditer(r"\[[^\]]*\]\(([^)]*#[^)]+)\)", text):
+            t = m.group(1).strip()
+            if t.startswith(("http://", "https://")):
+                continue
+            linked_targets.append(t)
+    # build doc -> defined anchors map
+    def_anchors = {doc: doc_anchors(os.path.join(WS, doc)) for doc in SPINE_DOCS}
+    rows, dangling = [], []
+    for doc in SPINE_DOCS:
+        defined = def_anchors.get(doc, {})
+        refs = [t for t in linked_targets if t.rstrip(")").split("#")[0].endswith(doc)]
+        # anchors both linked-to and defined
+        for t in refs:
+            anchor = t.split("#", 1)[1].strip()
+            if anchor not in defined:
+                dangling.append(f"{doc}#{anchor} (linked but missing heading)")
+    for doc in SPINE_DOCS:
+        rows.append({"doc": doc, "defined_anchors": len(def_anchors.get(doc, {})),
+                     "in_refs": len([t for t in linked_targets if t.split("#")[0].endswith("/" + doc)])})
+    return rows, dangling
+
 def langfuse_creds():
     try:
         env = read(os.path.join(WS, ".env.langfuse"))
@@ -271,8 +331,10 @@ def main():
     fp_rows, fp_fails, fp_adv = footprint_checks(prev.get("footprint", {}))
     reach_rows, reach_fails = reachability_checks()
     fid_rows, fid_fails = fidelity_checks()
+    c4_rows, c4_fails = intra_doc_sections()
+    c5_rows, c5_orphans = reverse_reachability()
 
-    fails = fp_fails + reach_fails + fid_fails
+    fails = fp_fails + reach_fails + fid_fails + c4_fails + (c5_orphans or [])
     verdict = "FAIL" if fails else "PASS"
 
     out = {
@@ -283,6 +345,8 @@ def main():
         "footprint": fp_rows,
         "reachability": reach_rows,
         "fidelity": fid_rows,
+        "intra_doc": c4_rows,
+        "reverse_reachability": c5_rows,
     }
     os.makedirs(os.path.join(WS, "docs", "evaluations"), exist_ok=True)
     with open(os.path.join(WS, "docs", "evaluations", f"{DATE}-context.json"), "w") as f:
@@ -313,6 +377,18 @@ def main():
     for r in fid_rows:
         md.append("| {} | {} | {} |".format(
             r["claim"], r["observed"], "PASS" if r["pass"] else "FAIL"))
+    md += ["", "## C4 — Intra-doc section footprint (depth)", "",
+           "| section | est tokens | share | verdict |", "|---|---|---|---|"]
+    for r in c4_rows:
+        md.append("| {} | {} | {:.0%} | {} |".format(
+            r["section"], r["est_tokens"], r["share"],
+            "PASS" if r["share"] <= MAX_SECTION_SHARE else "FAIL"))
+    md += ["", "## C5 — Reverse reachability (depth)", "",
+           "| doc | defined anchors | in-refs | verdict |", "|---|---|---|---|"]
+    for r in c5_rows:
+        md.append("| {} | {} | {} | {} |".format(
+            r["doc"], r["defined_anchors"], r["in_refs"],
+            "PASS" if r["defined_anchors"] else "FAIL"))
     md += ["", "## Failures", ""]
     md += [f"- {f}" for f in fails or ["(none)"]]
     md += ["", "## Advisories", ""]
