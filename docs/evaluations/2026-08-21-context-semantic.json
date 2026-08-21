@@ -1,0 +1,153 @@
+{
+  "generated": "2026-08-21",
+  "verdict": "PASS",
+  "failures": [],
+  "rows": [
+    {
+      "task": "chronological-tracking",
+      "binding": null,
+      "verdict": "SKIP",
+      "evidence": "no PRD binding declared on task file"
+    },
+    {
+      "task": "code-review-agent",
+      "binding": "docs/prd-archive/2026-08-13-code-review-agent.md",
+      "verdict": "REACHABLE",
+      "evidence": "reached 2026-08-13-code-review-agent.md at step 4; ~2745 est cumulative read tokens before gate (advisory)",
+      "session_reads": 129
+    },
+    {
+      "task": "cognee-integration-evaluation",
+      "binding": null,
+      "verdict": "SKIP",
+      "evidence": "no PRD binding declared on task file"
+    },
+    {
+      "task": "combine-factory-context-factory-txt",
+      "binding": null,
+      "verdict": "SKIP",
+      "evidence": "no PRD binding declared on task file"
+    },
+    {
+      "task": "end-to-end-traceability",
+      "binding": null,
+      "verdict": "SKIP",
+      "evidence": "no PRD binding declared on task file"
+    },
+    {
+      "task": "extend-pm-assembly-line",
+      "binding": null,
+      "verdict": "SKIP",
+      "evidence": "no PRD binding declared on task file"
+    },
+    {
+      "task": "extend-software-factory-wsff",
+      "binding": null,
+      "verdict": "SKIP",
+      "evidence": "no PRD binding declared on task file"
+    },
+    {
+      "task": "extension-inline-agent",
+      "binding": "docs/prd-archive/2026-08-08-extension-inline-agent.md",
+      "verdict": "REACHABLE",
+      "evidence": "reached 2026-08-08-extension-inline-agent.md at step 26; ~47623 est cumulative read tokens before gate (advisory)",
+      "session_reads": 184
+    },
+    {
+      "task": "feed-analyser-survival-infra-private-repos",
+      "binding": null,
+      "verdict": "SKIP",
+      "evidence": "no PRD binding declared on task file"
+    },
+    {
+      "task": "github-browser-auth-flow",
+      "binding": null,
+      "verdict": "SKIP",
+      "evidence": "no PRD binding declared on task file"
+    },
+    {
+      "task": "headless-agent-containerisation",
+      "binding": "docs/prd-archive/2026-08-17-headless-agent-containerisation.md",
+      "verdict": "REACHABLE",
+      "evidence": "reached 2026-08-17-headless-agent-containerisation.md at step 18; ~74326 est cumulative read tokens before gate (advisory)",
+      "session_reads": 78
+    },
+    {
+      "task": "implementer-agent",
+      "binding": "docs/prd-archive/2026-08-10-implementer-agent.md",
+      "verdict": "REACHABLE",
+      "evidence": "reached 2026-08-10-implementer-agent.md at step 12; ~21814 est cumulative read tokens before gate (advisory)",
+      "session_reads": 15
+    },
+    {
+      "task": "implementer-delivery-failure-loud",
+      "binding": "docs/prd-archive/2026-08-17-implementer-delivery-failure-loud.md",
+      "verdict": "REACHABLE",
+      "evidence": "reached 2026-08-17-implementer-delivery-failure-loud.md at step 30; ~102808 est cumulative read tokens before gate (advisory)",
+      "session_reads": 156
+    },
+    {
+      "task": "implementer-ponytail",
+      "binding": null,
+      "verdict": "SKIP",
+      "evidence": "no PRD binding declared on task file"
+    },
+    {
+      "task": "implementer-revision-mode",
+      "binding": null,
+      "verdict": "SKIP",
+      "evidence": "no PRD binding declared on task file"
+    },
+    {
+      "task": "mission-control-deprecation",
+      "binding": null,
+      "verdict": "SKIP",
+      "evidence": "no PRD binding declared on task file"
+    },
+    {
+      "task": "multi-repo-delivery-bookkeeping-prs",
+      "binding": "docs/prd-archive/2026-08-18-multi-repo-delivery-bookkeeping-prs.md",
+      "verdict": "REACHABLE",
+      "evidence": "reached 2026-08-18-multi-repo-delivery-bookkeeping-prs.md at step 23; ~83439 est cumulative read tokens before gate (advisory)",
+      "session_reads": 233
+    },
+    {
+      "task": "ponytail-skills-fixed-mount",
+      "binding": null,
+      "verdict": "SKIP",
+      "evidence": "no PRD binding declared on task file"
+    },
+    {
+      "task": "sandbox-credential-mounting",
+      "binding": "docs/prd-archive/2026-08-17-sandbox-credential-mounting.md",
+      "verdict": "REACHABLE",
+      "evidence": "reached 2026-08-17-sandbox-credential-mounting.md at step 31; ~90936 est cumulative read tokens before gate (advisory)",
+      "session_reads": 33
+    },
+    {
+      "task": "task-file-dashboard",
+      "binding": null,
+      "verdict": "SKIP",
+      "evidence": "no PRD binding declared on task file"
+    },
+    {
+      "task": "task-pickup-similarity-merge",
+      "binding": "docs/prd-archive/2026-08-17-task-pickup-similarity-merge.md",
+      "verdict": "REACHABLE",
+      "evidence": "reached 2026-08-17-task-pickup-similarity-merge.md at step 14; ~25602 est cumulative read tokens before gate (advisory)",
+      "session_reads": 47
+    },
+    {
+      "task": "vision-task-traceability",
+      "binding": null,
+      "verdict": "SKIP",
+      "evidence": "no PRD binding declared on task file"
+    },
+    {
+      "task": "x-capture-instrument",
+      "binding": null,
+      "verdict": "SKIP",
+      "evidence": "no PRD binding declared on task file"
+    }
+  ]
+}
