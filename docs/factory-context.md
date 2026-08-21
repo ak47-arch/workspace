@@ -121,6 +121,7 @@ Discovery layer
   openwiki/           Per-project code docs (what/how)
   docs/vision/        Stakeholder vision, end goals (why a project exists)
   docs/prd-queue/     Forward-looking specs for active tasks
+  docs/research/      In-session research signals (candidate PRD backlog)
   docs/evaluations/   Eval reports + index (what the factory verified and how)
   .agents/skills/     Operational playbooks
     │
