@@ -100,12 +100,107 @@ of read calls before the binding — which is robust, historical, and free of co
 
 ---
 
+## Signal 03 — "Probe-contract artifact name inconsistent inside the PRD"
+
+**Raised**: 2026-08-21, re-reading `docs/prd-queue/2026-08-21-context-disclosure-semantic-probe.md`
+while resuming the semantic tier.
+
+**Observation**: the PRD names the same declarative contract artifact two different ways:
+`docs/evaluations/context-probes.json` (lines 79, 126) vs
+`docs/evaluations/context-contracts.json` (line 157). Trivial to fix textually, but it's a
+sign of unresolved shape — the contract's *canonical name and location* were not decided when
+the PRD was written. If left, downstream implementers would chase a phantom path.
+
+**Proposed outcome**: decide the canonical artifact name + location when formalizing the
+contract (phase 1 of the PRD), then fix the PRD to reference it once. Consider a
+`context-contracts.json` at `docs/evaluations/` (declarative matrix), keeping `bin/` free of
+config.
+
+**Open questions**: none — resolution is absorbed by formalizing the contract; the fix is a
+one-edit rename sync.
+
+---
+
+## Signal 05 — "Cross-reference paths are strings, not typed links"
+
+**Raised**: 2026-08-21, during the semantic-tier reframe discussion (navigation-integrity
+probe).
+
+**Observation**: the engine's charter is *"If you need anything just follow the trail"* — but
+a large share of cross-references are **plain-string paths**, not typed links. An agent must
+**reason** to follow them: infer that a backticked string is a path, resolve relative vs
+workspace-root, handle moved files, then chase the string to disk. Each of those is an extra
+reasoning hop for something the engine meant to be deterministic (follow the trail = follow
+the link). Measured on the real corpus:
+
+- **PRD files (19)**: **0 `.md` link targets, 213 backtick string paths** (18/19 files) —
+  including the PRDs' own `Decisions:` front-matter, which strings decision paths that the
+  knowledge layer indexes as links.
+- **Decision files (120)**: **0 link targets, 233 backtick + 114 bare string paths**
+  (118/120 files) — front-matter `Session:`/`Date:`/`Task:` refs are all strings.
+- **Task files (27)**: 67 link targets, but **33 backtick + 107 bare strings** across
+  26/27 files — links exist in `Artifacts:`/`Sessions:` but prose embeds string paths.
+- **Reference files (4)**: 54 backtick strings, 0 links.
+
+So the typed-link trail the engine implies is actually a **mixed landscape**: links are a
+minority convention (task files) and the knowledge + PRD layers are pure string references.
+
+**Why this costs**: every string-path is a *reasoning point* (parse, resolve, disambiguate,
+handle staleness) where a typed link would be a *deterministic hop*. It compounds Signal 01
+(moved files break string paths silently; a link target at least declares an intent) and is
+the same family as Signal 04 (unannotated refs force reading prose). The probe's own
+`binding_for_task` regex matching is a symptom — we had to parse strings because the docs
+store them as strings.
+
+**Proposed outcome**: adopt the task-file link convention as the factory-wide norm —
+cross-references appear as typed `[text](relative/path.md)` links, never bare/backticked
+strings. When the file lives under `docs/`, link from the file's own location (like the
+task files' `../prd-queue/...`). Tooling can convert existing strings (the engine already has
+a sed for the task-file case); a hygiene check can flag new bare strings.
+
+**Falsifiable before/after**: scan the corpus for backtick/bare string paths pointing at
+`.md`/`.json` files — count must go to ~0 for the referenced layers (PRD, decision,
+reference) after migration, with typed links substituted.
+
+**Open questions**: (1) relative-link style for `docs/prd-queue/` from decision files
+(`../prd-queue/...` is wrong from `docs/knowledge/...` — needs the right depth, or absolute
+`docs/...` links, or repo-relative links); (2) do we convert `Session:` front-matter to links
+too, or is the string a deliberate "machine" field?
+
+---
+
+## Signal 04 — "Decision files lack the read-skip summary line"
+
+**Raised**: 2026-08-21, checking the context engine's own stated convention.
+
+**Observation**: `docs/knowledge/index.md` promises every decision file carries a
+`**Summary**:` line so an agent can skip reading the body when the title resolves the
+question. Measured: **113 of 120 decision files lack `**Summary**:`** — only 7 have it.
+
+**Why this matters**: this is the engine's "read-skip" affordance — the cheap "can I stop
+here?" check. Without it, the confused agent (your scenario) cannot decide from title alone
+whether to open the body; it must read the full Context/Alternatives prose to resolve a
+"why", which is exactly the wading cost the engine exists to avoid.
+
+**Proposed outcome**: backfill `**Summary**: one-line from the Context/Rationale` for the 113
+missing files (mechanical, falsifiable: 7→120 coverage), and add a hygiene/forward check that
+a decision file without a summary is flagged (not FAIL — a disclosure affordance).
+
+**Open questions**: (1) where the summary line is legal (front-matter right after metadata,
+per the index convention); (2) whether the summary should be written by a human authoring
+the decision, or generated at eval time from Context/Rationale (deterministic).
+
+---
+
 ## State of this document
 
 | Signal | Status | Ready for PRD? |
 |---|---|---|
 | 01 PRD-lifecycle-status | collected | needs the 3 open questions answered |
 | 02 COST-historical | collected | needs decision on steps vs tokens + budget |
+| 03 probe-contract-name | collected | absorbed by PRD phase-1 (artifact rename sync) |
+| 04 decision-summary-gap | collected | ready for PRD: mechanical backfill, falsifiable |
+| 05 string-paths-not-links | collected | needs decision on link style + front-matter refs |
 | (supp 1) dual-dir cost | folded into 01 | — |
 | (supp 2) reviewer-vs-impl depth | note | needs design input to become signal |
 
