@@ -68,7 +68,6 @@ tasks:
     - Enforce merge-only on all repos: GitHub branch protection on every default branch so no code is ever pushed directly — everything merges via a reviewed PR (software-factory) [branch-protection-merge-only] (blocked: GitHub Pro required — kept open)
 
     ### Queued
-    - Make the disclosure trail machine-followable: typed links, stable PRD home (docs/prd/), decision read-skip summaries (software-factory) [typed-trail-integrity]
     ### Complete
     - (complete) Multi-repo delivery: tasks may touch several repos and raise one implementation PR per repo, with all bookkeeping on a workspace-root PR (collapsed into the root PR when the root is touched); replace the direct-push sync step with PR-based bookkeeping plus a run manifest and fail-fast/fail-loud monitoring (software-factory) [multi-repo-delivery-bookkeeping-prs] (PR #12 code + #13 bookkeeping merged)
     - (complete)create a skill to summarise the content and most important learnings from a session and attach a link to the actual context window of that session so we can save our knowledge and build on it and not lose it at the end of each session close (software_factory)
@@ -88,6 +87,7 @@ tasks:
     - (complete) when a task is picked, check it against existing tasks across projects and offer to pick similar ones together so more get closed at once (software-factory) [task-pickup-similarity-merge]
     - (complete) Add headless herdr host to implementer gent so we can run it seperately in a separate worktree (software-factory) [headless-agent-containerisation]
     - (complete) implementer-run.sh must fail loudly when delivery (push/PR) fails instead of exiting 0 (software-factory) [implementer-delivery-failure-loud]
+    - (complete) Make the disclosure trail machine-followable: typed links, stable PRD home (docs/prd/), decision read-skip summaries (software-factory) [typed-trail-integrity]
 
     ## resume
 
