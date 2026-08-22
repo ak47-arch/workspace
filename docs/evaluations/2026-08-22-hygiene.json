@@ -125,7 +125,7 @@
         {
           "check": "decision **Summary**: present",
           "pass": true,
-          "evidence": "0 \u2014 120/120 decision files carry **Summary**:"
+          "evidence": "0 \u2014 122/122 decision files carry **Summary**:"
         },
         {
           "check": "no stale/mismatched citations + manifest coherence",

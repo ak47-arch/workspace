@@ -147,10 +147,13 @@ fi
 
 # ─── Test 1: resolve_prd with --pick ───────────────────────────────────────
 echo "── resolve_prd (--pick) ──"
-source_driver
+# WORKSPACE is captured at source time from IMPLEMENTER_WORKSPACE, so the fixture
+# must be pinned BEFORE sourcing the driver (else resolve_prd looks in the real
+# repo and exits 2 when no Final+prd-ready PRD lives there).
 FIX="$(setup_fixture)"
 export IMPLEMENTER_WORKSPACE="$FIX"
 WORKSPACE="$FIX"
+source_driver
 MODE_FLAG="--pick"
 TASK=""
 # resolve_prd sets globals in the MAIN shell (not a subshell) so they persist.
