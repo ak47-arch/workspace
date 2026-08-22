@@ -17,13 +17,6 @@ import tempfile
 WS = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
-def load(name, path):
-    spec = importlib.util.spec_from_file_location(name, path)
-    m = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(m)
-    return m
-
-
 def build_fixture(ws):
     prd = os.path.join(ws, "docs", "prd")
     dec = os.path.join(ws, "docs", "knowledge", "sessions",
@@ -58,18 +51,6 @@ def build_fixture(ws):
     with open(os.path.join(reff, "agent.md"), "w") as f:
         f.write("| Artifact | Location |\n|---|---|\n"
                 "| PRD | `docs/prd/<date>-<slug>.md` |\n")
-
-
-def run_checks(ws, tests):
-    """Yield (ok, why, n) for the three S10 checks against ws."""
-    m = load("eh", os.path.join(WS, "bin", "eval-hygiene.py"))
-    for name, fn in tests:
-        yield name, fn(ws)
-
-
-TESTS = [("string-path", lambda ws: ("x",) ),
-         ("summary", lambda ws: ("x",)),
-         ("stale", lambda ws: ("x",))]
 
 
 def main():

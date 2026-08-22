@@ -179,7 +179,7 @@ declare -gA REPO_VERDICT=()
 declare -gA REPO_STATE=()
 declare -gA REPO_WORKTREE=()
 
-# - $MODE_FLAG=--pick: oldest `**Status**: Final` in docs/prd-queue/ whose task
+# - $MODE_FLAG=--pick: oldest `**Status**: Final` in docs/prd/ whose task
 #   is `**Status**: prd-ready` (the lifecycle's queued-entry state — decision 09).
 #   in-progress (concurrent owner) and in-review (merged/blocked/verifying
 #   lineages) tasks are NOT pickable; a stale Final PRD for an in-flight or
@@ -192,7 +192,7 @@ resolve_prd() {
   if [ -n "$MODE_FLAG" ]; then
     local candidate
     local best=""
-    for candidate in "$WORKSPACE"/docs/prd-queue/*.md; do
+    for candidate in "$WORKSPACE"/docs/prd/*.md; do
       [ -f "$candidate" ] || continue
       grep -q '^\*\*Status\*\*: *Final' "$candidate" || continue
       local slug; slug="$(slug_from_prd "$candidate")"
@@ -210,14 +210,14 @@ resolve_prd() {
     done
     prd="$best"
   else
-    prd="$(ls "$WORKSPACE"/docs/prd-queue/*-"$TASK.md" 2>/dev/null | head -1 || true)"
+    prd="$(ls "$WORKSPACE"/docs/prd/*-"$TASK.md" 2>/dev/null | head -1 || true)"
   fi
 
   if [ -z "$prd" ] || [ ! -f "$prd" ]; then
     if [ -n "$MODE_FLAG" ]; then
-      die "No pickable 'Final' + prd-ready PRD in docs/prd-queue/ (all in-flight, merged, or not queued)."
+      die "No pickable 'Final' + prd-ready PRD in docs/prd/ (all in-flight, merged, or not queued)."
     fi
-    die "No PRD found for slug '$TASK' in docs/prd-queue/"
+    die "No PRD found for slug '$TASK' in docs/prd/"
   fi
 
   # Must be Final to be routeable.
@@ -812,7 +812,7 @@ write_brief() {
    host's disk via this mount — you do NOT need to commit anything.
 3. Do NOT run ANY git command (no init/add/commit/stash/push/pull/checkout).
    The host driver performs the single commit, push, and PR at the end.
-4. You CANNOT modify docs/tasks/, docs/tasks.txt, or docs/prd-queue/ — those
+4. You CANNOT modify docs/tasks/, docs/tasks.txt, or docs/prd/ — those
    live in the read-only /workspace mount. Do not attempt to bypass this.
 5. Do NOT write secrets, keys, or GitHub credentials anywhere.
 6. Do NOT run builds that require network secrets you don't have.
@@ -1459,9 +1459,9 @@ resolve_revision() {
   resolve_revision_slug "$PR_TITLE" "$PR_HEAD_REF"
   resolve_impl_session
   resolve_review_report
-  PRD="$(ls "$WORKSPACE"/docs/prd-queue/*-"$PRD_SLUG.md" 2>/dev/null | head -1 || true)"
+  PRD="$(ls "$WORKSPACE"/docs/prd/*-"$PRD_SLUG.md" 2>/dev/null | head -1 || true)"
   if [ -z "$PRD" ] || [ ! -f "$PRD" ]; then
-    die "No PRD found for slug '$PRD_SLUG' in docs/prd-queue/"
+    die "No PRD found for slug '$PRD_SLUG' in docs/prd/"
   fi
   echo "  PRD: $(basename "$PRD")" >&2
 }

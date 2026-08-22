@@ -68,7 +68,7 @@ assert_eq() {
 # Create an isolated temp workspace with the script copied in
 setup_workspace() {
   TMPROOT=$(mktemp -d)
-  mkdir -p "$TMPROOT/bin" "$TMPROOT/docs/tasks" "$TMPROOT/docs/prd-queue" "$TMPROOT/docs/prd-archive"
+  mkdir -p "$TMPROOT/bin" "$TMPROOT/docs/tasks" "$TMPROOT/docs/prd"
   cp "$SCRIPT_PATH" "$TMPROOT/bin/"
 }
 
@@ -364,25 +364,30 @@ test_dry_run_no_changes() {
   teardown_workspace
 }
 
-test_prd_archive() {
-  echo "Test: PRD archived on complete"
+test_prd_manifest() {
+  echo "Test: PRD closed in routing manifest on complete (Direction C)"
   setup_workspace
   write_task_file test-task
   write_tasks_txt
-  touch "$TMPROOT/docs/prd-queue/2026-08-01-test-task.md"
+  # Seed a stable docs/prd/ home with a routing manifest (no prd-queue/archive).
+  local mf="$TMPROOT/docs/prd/manifest.json"
+  printf '{"version": 1, "prds": [{"slug": "test-task", "file": "2026-08-01-test-task.md", "status": "final", "ordering_key": "2026-08-01-test-task"}]}\n' > "$mf"
+  touch "$TMPROOT/docs/prd/2026-08-01-test-task.md"
 
   run_script test-task --to complete
   local code=$?
   assert_exit 0 $code "script exits 0"
-  if [ -f "$TMPROOT/docs/prd-archive/2026-08-01-test-task.md" ]; then
-    pass "PRD moved to archive"
+  # The PRD row's status flips to closed (no physical move).
+  if grep -q '"status": "closed"' "$mf"; then
+    pass "PRD status flipped to closed in routing manifest"
   else
-    fail "PRD not archived"
+    fail "manifest status not closed: $(cat "$mf" | tr '\n' ' ')"
   fi
-  if [ ! -f "$TMPROOT/docs/prd-queue/2026-08-01-test-task.md" ]; then
-    pass "PRD removed from queue"
+  # The PRD file stays in the stable home (never moved to an archive).
+  if [ -f "$TMPROOT/docs/prd/2026-08-01-test-task.md" ]; then
+    pass "PRD file remains in docs/prd/ (no physical move)"
   else
-    fail "PRD still in queue"
+    fail "PRD file moved out of docs/prd/"
   fi
   teardown_workspace
 }
@@ -484,7 +489,7 @@ test_invalid_state
 test_missing_task_file
 test_idempotent_rerun
 test_dry_run_no_changes
-test_prd_archive
+test_prd_manifest
 test_special_chars_in_decision_path
 test_multi_line_bundle
 test_transition_onto_task_branch

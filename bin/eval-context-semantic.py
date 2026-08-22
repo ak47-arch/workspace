@@ -85,22 +85,17 @@ def as_repo_rel(path):
 def binding_for_task(task_path):
     """The needed binding for a task: the PRD file it points to, if any.
 
-    The PRD may have moved from prd-queue/ to prd-archive/ once the task completed
-    (decision: 'PRD moves to archive only after UAT + user go-ahead'), so the
-    resolver searches BOTH dirs.  A binding that resolves nowhere on disk is a REAL
-    dangling link (disclosure defect), not a clean archive state.
+    PRDs live in the stable docs/prd/ home (Direction C) — no queue/archive split.
+    A binding that resolves nowhere on disk is a REAL dangling link (disclosure
+    defect).
 
     Returns (binding_rel, promise_doc) or (None, None).
     """
     txt = read(task_path)
-    m = re.search(r"prd-queue/([a-z0-9-]+\.md)", txt)
+    m = re.search(r"(?:\.\./|docs/)?prd/([a-z0-9-]+\.md)", txt)
     if not m:
         return None, None
-    name = m.group(1)
-    for rel in ("docs/prd-queue/" + name, "docs/prd-archive/" + name):
-        if os.path.isfile(os.path.join(WS, rel)):
-            return rel, os.path.dirname(rel)
-    return "docs/prd-queue/" + name, "docs/prd-queue/"
+    return "docs/prd/" + m.group(1), "docs/prd"
 
 
 def main():

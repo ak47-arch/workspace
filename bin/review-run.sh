@@ -288,9 +288,9 @@ resolve_repo() {
   echo "  Resolved project '$PROJECT' → repo '$TARGET_REPO'" >&2
 
   # The PRD that the PR must be reviewed against.
-  PRD="$(ls "$WORKSPACE"/docs/prd-queue/*-"$PRD_SLUG.md" 2>/dev/null | head -1 || true)"
+  PRD="$(ls "$WORKSPACE"/docs/prd/*-"$PRD_SLUG.md" 2>/dev/null | head -1 || true)"
   if [ -z "$PRD" ] || [ ! -f "$PRD" ]; then
-    die "No PRD found for slug '$PRD_SLUG' in docs/prd-queue/"
+    die "No PRD found for slug '$PRD_SLUG' in docs/prd/"
   fi
   echo "  PRD: $(basename "$PRD")" >&2
 
@@ -386,7 +386,7 @@ write_brief() {
    base...head — but never add/commit/push/checkout/reset/stash.
 3. NEVER run 'gh'. Every GitHub call is driver-side. No GitHub credential
    exists in this container.
-4. Do NOT modify docs/tasks/, docs/tasks.txt, docs/prd-queue/, or the knowledge
+4. Do NOT modify docs/tasks/, docs/tasks.txt, docs/prd/, or the knowledge
    index. Do NOT write secrets anywhere.
 5. Follow the review-ops skill for the check classes + report schema.
 

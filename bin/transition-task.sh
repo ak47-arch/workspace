@@ -32,7 +32,8 @@
 #   1. Updates docs/tasks/<slug>.md (status, sessions, decisions, completion date)
 #      - All links are clickable markdown links with proper relative paths
 #   2. Moves the task line in docs/tasks.txt to the correct status section
-#   3. Archives the PRD from docs/prd-queue/ to docs/prd-archive/ (if complete)
+#   3. Flips the PRD's routing-manifest status to closed in the stable docs/prd/
+#      home (if complete) — no physical move (Direction C)
 #   4. Commits everything
 # ============================================================================
 set -euo pipefail
@@ -119,8 +120,9 @@ SCRIPT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 WORKSPACE="${WORKSPACE_OVERRIDE:-$SCRIPT_DIR}"
 TASK_MD="$WORKSPACE/docs/tasks/$SLUG.md"
 TASKS_TXT="$WORKSPACE/docs/tasks.txt"
-PRD_QUEUE="$WORKSPACE/docs/prd-queue"
-PRD_ARCHIVE="$WORKSPACE/docs/prd-archive"
+# Routing manifest (Direction C): lifecycle is expressed as a status field on
+# the PRD's manifest row; the PRD file itself never moves out of docs/prd/.
+PRD_MANIFEST="$WORKSPACE/docs/prd/manifest.json"
 
 # ─── Validate slug / task file ─────────────────────────────────────────────
 if [ ! -f "$TASK_MD" ]; then
@@ -370,16 +372,36 @@ with open(tasks_txt, 'w') as f:
 print("  tasks.txt updated")
 PYEOF
 
-# ─── Archive PRD (if complete) ─────────────────────────────────────────────
-if [ "$TARGET_STATE" = "complete" ]; then
-  PRD_FILE=$(ls "$PRD_QUEUE/"*-"$SLUG.md" 2>/dev/null | head -1 || true)
-  if [ -n "$PRD_FILE" ] && [ -f "$PRD_FILE" ]; then
-    if [ "$DRY_RUN" = true ]; then
-      echo "  [dry-run] Would archive PRD: $(basename "$PRD_FILE")"
-    else
-      mv "$PRD_FILE" "$PRD_ARCHIVE/"
-      echo "  Archived PRD: $(basename "$PRD_FILE")"
-    fi
+# ─── Close PRD in routing manifest (Direction C) ───────────────────────────
+# A complete task's PRD stays in the stable docs/prd/ home; lifecycle closure is
+# expressed as a status flip on its routing-manifest row (no physical mv).
+if [ "$TARGET_STATE" = "complete" ] && [ -f "$PRD_MANIFEST" ]; then
+  if [ "$DRY_RUN" = true ]; then
+    echo "  [dry-run] Would close PRD in routing manifest: $SLUG"
+  else
+    python3 - "$PRD_MANIFEST" "$SLUG" <<'PYEOF'
+import json, os, sys
+mf, slug = sys.argv[1], sys.argv[2]
+try:
+    with open(mf) as f:
+        data = json.load(f)
+except Exception:
+    data = {"version": 1, "prds": []}
+rows = data.setdefault("prds", [])
+changed = False
+for row in rows:
+    if row.get("slug") == slug:
+        row["status"] = "closed"
+        changed = True
+if not changed:
+    rows.append({"slug": slug, "file": "", "status": "closed",
+                 "ordering_key": slug})
+    changed = True
+if changed:
+    with open(mf, "w") as f:
+        json.dump(data, f, indent=2)
+    print(f"  Closed PRD in routing manifest: {slug}")
+PYEOF
   fi
 fi
 
@@ -413,7 +435,8 @@ if [ -n "$TASK_BRANCH" ] && [ "$current_branch" != "$TASK_BRANCH" ]; then
   git checkout "$TASK_BRANCH"
 fi
 
-git add docs/tasks/"$SLUG.md" docs/tasks.txt docs/prd-queue/ docs/prd-archive/ 2>/dev/null || true
+git add docs/tasks/"$SLUG.md" docs/tasks.txt 2>/dev/null || true
+[ -f "$PRD_MANIFEST" ] && git add "$PRD_MANIFEST" 2>/dev/null || true
 
 if git diff --cached --quiet; then
   echo "  No changes to commit."
@@ -422,7 +445,7 @@ else
 
 - Update task file status, sessions, decisions
 - Move task in tasks.txt to $STATUS_SECTION
-- Archive PRD (if applicable)"
+- Close PRD status in the routing manifest (docs/prd; Direction C)"
   echo "  Committed."
 fi
 
