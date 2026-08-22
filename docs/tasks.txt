@@ -9,13 +9,13 @@ tasks:
     - standardise documentation structure across all apps (all)
     - work on vision, functional and technical documentation across projects making them factory ready (all)
     - plan the modularisation of all apps. it would be better if all projects follow same structure (all)
-    - integrate langfuse with all applications (all) [langfuse-agentic-operations]
     - deprecate the spec driven process for all projects (all)
     - Fix open wiki update pipeline for all apps (all)
 
     ### Queued
     ### Complete
     - (complete) agent containerisation (all) [headless-agent-containerisation]
+    - (complete) integrate langfuse with all applications (all) [langfuse-agentic-operations]
     ## llm
 
     ### Pending
@@ -109,11 +109,11 @@ tasks:
     ## langfuse
 
     ### Pending
-    - integrate official langfuse skill (langfuse) [langfuse-agentic-operations]
-    - set up langfuse use and operation agentically (langfuse) [langfuse-agentic-operations]
 
     ### Complete
     - (complete) set up langfuse (fix the langfuse-tracing.ts extension) (langfuse)
+    - (complete) integrate official langfuse skill (langfuse) [langfuse-agentic-operations]
+    - (complete) set up langfuse use and operation agentically (langfuse) [langfuse-agentic-operations]
 
     ## mission-control (deprecated)
 
