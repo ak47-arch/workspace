@@ -73,8 +73,9 @@ These are agent-facing instruction files that direct coding agents to use the Op
 | File | Purpose |
 |------|---------|
 | `prd-reviewer.md` | Read-only PRD verification sub-agent that gates plan documents for implementation readiness. Runs deterministic + judgment checks and returns a blocking/advisory report. Uses model `deepseek/deepseek-v4-flash-0731`; tools are `read, grep, find, ls, bash` (no write tools at the mechanism level). Invoked with `agentScope: "project"` or `"both"`. See [Software Factory](/openwiki/projects/software-factory.md). |
-| `implementer.md` | The autonomous implementation sub-agent (the "hands" of the implementer pipeline). System prompt embeds the ponytail lazy-senior-dev style (always-on) + factory-worker rules + the implementer-ops run contract. Model `openrouter/deepseek/deepseek-v4-flash-0731`; runs headless in the sandbox container (`pi --mode json --no-session -p`). See the [implementer PRD](https://github.com/ak47-arch/workspace/blob/master/docs/prd-queue/2026-08-10-implementer-agent.md). |
+| `implementer.md` | The autonomous implementation sub-agent (the "hands" of the implementer pipeline). System prompt embeds the ponytail lazy-senior-dev style (always-on) + factory-worker rules + the implementer-ops run contract. Model `openrouter/deepseek/deepseek-v4-flash-0731`; runs headless in the sandbox container (`pi --mode json --no-session -p`). See the [implementer PRD](https://github.com/ak47-arch/workspace/blob/master/docs/prd/2026-08-10-implementer-agent.md). |
 | `code-reviewer.md` | Read-only post-implementation review sub-agent (the sibling of the implementer). Reviews a factory-raised PR against its PRD inside the sandbox, runs deterministic + judgment checks (including the PRD's own verification commands and the ponytail over-engineering pass), and writes a structured APPROVE / REQUEST_CHANGES report to the outbox. Model `openrouter/deepseek/deepseek-v4-flash-0731`; tools are `read, grep, find, ls, bash`. Never mutates the repo and never runs `gh` — the host driver owns all git mutations, gh calls, labels, comment posting, and lifecycle transitions. Runs headless via `bin/review-run.sh`. See [Software Factory](/openwiki/projects/software-factory.md). |
+| `evaluator.md` | Continuous quality verification sub-agent. Runs eval panels over the factory's own loops (decision/task/knowledge/PRD-review/drift/context/hygiene) via the eval spine, writes PASS/SKIP/FAIL + evidence to fixed-schema eval reports (`docs/evaluations/<date>-*.{json,md}`), writes Langfuse scores; never mutates a target repo. Model `openrouter/deepseek/deepseek-v4-flash-0731`; tools are `read, grep, find, ls, bash`. Run contract: `.agents/skills/eval-ops/SKILL.md`. See [Software Factory](/openwiki/projects/software-factory.md). |
 
 ### Skills (`/.pi/skills/`)
 
@@ -236,8 +237,9 @@ Implementation summary for headroom-pi integration, documenting:
 
 ## Git History Notes
 
-Recent commits (2026-07-29 → 2026-08-18) built out the assembly line into a
-headless cloud loop and hardened delivery/evidence:
+Recent commits (2026-07-29 → 2026-08-22) built out the assembly line into a
+headless cloud loop, hardened delivery/evidence, and added the evaluation
+department + typed-trail integrity:
 
 | Commit | Change |
 |--------|--------|
@@ -250,6 +252,9 @@ headless cloud loop and hardened delivery/evidence:
 | `0d01982` | **verdict parse fix**: `review-run.sh` + `factory-run.sh` match `**APPROVE**`/`**REQUEST_CHANGES**` at line start (markdown-bold); REQUEST_CHANGES leaves task `in-progress` for the revise loop |
 | `6f7f973` | factory-run resolves the PR from the implementer's **run log** first — a stale task-file URL caused a silent wrong-PR review |
 | `8e87206` | **decision 09 — master PR gate**: code reaches master only via human-merged PRs; tracking/evidence syncs direct (incident `bdac29e` swept code to master during a cloud run) |
+| `ca363ae` | **typed-trail integrity**: stable `docs/prd/` home + `manifest.json` routing manifest, typed relative links, decision `**Summary**:` backfill (122/122), hygiene checks for string paths + missing summaries |
+| `1933c99`–`a87333b` | **evaluation department** (decision 02/03): evaluator agent + eval-ops skill + 8 live surfaces (S1–S9) over factory loops, Langfuse spine, fixed-schema reports to `docs/evaluations/` |
+| `50dc536` | **typed-trail-integrity complete**: PR #46 (code) + #47 (bookkeeping) merged; one-PR-per-task transitions commit onto task branch |
 
 
 ## Source Files Summary
@@ -260,21 +265,29 @@ headless cloud loop and hardened delivery/evidence:
 | `/CLAUDE.md` | OpenWiki reference for coding agents (same content) |
 | `/.pi/settings.json` | Pi agent settings (enables `langfuse-tracing`) |
 | `/.pi/extensions/` | Pi extensions directory (including `subagent/`) |
-| `/.pi/agents/` | Project-local sub-agent definitions (`prd-reviewer.md`, `implementer.md`, `code-reviewer.md`) |
+| `/.pi/agents/` | Project-local sub-agent definitions (`prd-reviewer.md`, `implementer.md`, `code-reviewer.md`, `evaluator.md`) |
 | `/.pi/skills/` | Pi skills directory |
-| `/.agents/skills/` | Agent skills directory (`implementer-ops`, `implementer-save`, `review-ops` are assembly-line skills) |
+| `/.agents/skills/` | Agent skills directory (`implementer-ops`, `implementer-save`, `review-ops`, `eval-ops`, `prd-reviewer-ops` are assembly-line skills) |
 | `/bin/implementer-run.sh` | Implementer host driver (pick → worktree → container → report → PR) |
+| `/bin/review-run.sh` | Reviewer host driver (resolve PR → read-only review → post verdict) |
+| `/bin/factory-run.sh` | Thin implement → review orchestrator (UAT gate; `--headless` loop to APPROVE; never merges) |
 | `/bin/sanitize-session.sh` | Session credential redaction before commit (save-knowledge + both drivers) |
 | `/bin/sandbox-build.sh`, `/config/implementer.json`, `/config/reviewer.json` | Sandbox image build + driver configs (`ponytail.host_skills_dir` `/skills` mount + auth.json credential fallback) |
 | `/docs/tasks.txt` | High-level task list (by project + status) |
 | `/docs/tasks/<slug>.md` | Per-task reference hubs |
-| `/docs/prd-queue/` | Forward-looking plan documents for active tasks |
-| `/docs/prd-archive/` | Completed plan documents |
+| `/docs/prd/` | Stable PRD home (lifecycle = manifest.status) |
+| `/docs/prd/manifest.json` | Routing manifest: slug → lifecycle status (the `Status` link target) |
+| `/docs/prd-queue/` | Legacy queue directory (no longer used for active PRDs) |
+| `/docs/prd-archive/` | Legacy archive directory (no longer used) |
 | `/docs/factory-context.md` | Software factory model + link index |
 | `/docs/knowledge/index.md` | Curated decision records (by project) |
+| `/docs/evaluations/` | Eval reports + index (what the factory verified and how) |
+| `/docs/evaluations/surfaces.md` | Live surface register + evolution log |
+| `/docs/research/signals.md` | In-session research signal bank (candidate PRD backlog) |
 | `/llm/PLAN_shared_llm_client.md` | LLM client migration plan |
 | `/docs/KNOWN_ISSUES.md` | Factory/post-migration technical debt |
 | `/headroom-pi/HEADROOM-PI-PLAN.md` | Headroom integration plan |
-| `/bin/transition-task.sh` | Lifecycle bookkeeping script |
-| `/bin/test-transition-task.sh` | transition-task test suite |
+| `/bin/transition-task.sh` | Lifecycle bookkeeping script (updates manifest, commits to task branch) |
+| `/bin/test-transition-task.sh` | transition-task test suite (incl. multi-line bundle regression) |
+| `/bin/eval-*.py` | Evaluation spine tools (decisions, pipeline, knowledge, PRD, drift, context, hygiene) |
 | `/package.json` | Workspace package metadata ("workspace-omp-local-tools") |
