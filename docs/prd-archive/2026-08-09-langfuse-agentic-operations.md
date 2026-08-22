@@ -1,7 +1,7 @@
 # PRD: Langfuse Agentic Operations — official skill integration, platform operations, and first-party app tracing
 
 **Date**: 2026-08-09
-**Status**: Draft (amended 2026-08-19 — requirement change, see below)
+**Status**: Final (achieved 2026-08-21 — integration goal met; amended 2026-08-19 — requirement change, see below)
 **Owner**: software-factory workspace
 **Task**: langfuse-agentic-operations
 **Session**: `docs/knowledge/sessions/019fc40a-5458-7310-89c4-53e098060973/session.jsonl`
@@ -182,3 +182,19 @@ and L2 drift register later per decision 01's extension map. App eval stays a de
    `survival-infrastructure/`; then phase-2 apps — each gated on its stack preflight passing.
 7. **PRD sign-off + archive**: user signs off; task transitions to complete; knowledge
    decisions recorded per session.
+
+## Completion record (2026-08-21)
+
+**Status**: achieved — the integration goal is met. The langfuse platform is
+operationally, agentically run (v4.6.0, data restored, `dual` write mode, live
+pi tracing verified), the official-skill wrapper with Level-B ops is in place,
+and the eval layer this PRD's requirement-change unlocked became the
+**evaluation department** (decision 02, 2026-08-20) and the `docs/evaluations/`
+suite — live panels, surface register, drift/L2, and semantic-tier research.
+
+**Deferred follow-ons** (kept outside this PRD's achievement bar):
+- Phase 5 tail (evals teaching beyond scores-101).
+- Phase 6 first-party app integration (`llm/`, `survival-infrastructure/`,
+  phase-2 apps) — gated on each project's preflight passing.
+
+**Superseded by**: `docs/prd-queue/2026-08-21-context-disclosure-semantic-probe.md`.

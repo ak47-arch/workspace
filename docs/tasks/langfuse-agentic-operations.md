@@ -1,6 +1,7 @@
 # Task: langfuse-agentic-operations
 
-**Status**: in-prd
+**Status**: complete
+**Completed**: 2026-08-22 13:49
 **Category**: Large
 **Project**: langfuse
 **Created**: 2026-08-03 01:40
