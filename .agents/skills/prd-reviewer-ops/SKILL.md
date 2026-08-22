@@ -1,3 +1,8 @@
+---
+name: prd-reviewer-ops
+description: Run contract for the PRD-reviewer agent (the factory's readiness gate before implementation). Defines the exact read-only PRD gating protocol — orient on the queued PRD + task file + context engine, run the deterministic (mechanical) and non-deterministic (judgment) check classes, and return the fixed-schema structured verdict (blocking/advisory) without modifying any file or raising a PR. Add a robustness check here (a skill edit), never in the host driver.
+---
+
 # PRD Review Ops — Run Contract
 
 Run contract for the **prd-reviewer** agent (the factory's readiness gate before
