@@ -59,7 +59,7 @@ assert_exit() {
 # Create an isolated temp workspace with the script copied in
 setup_workspace() {
   TMPROOT=$(mktemp -d)
-  mkdir -p "$TMPROOT/bin" "$TMPROOT/docs/tasks" "$TMPROOT/docs/prd-queue" "$TMPROOT/docs/prd-archive"
+  mkdir -p "$TMPROOT/bin" "$TMPROOT/docs/tasks" "$TMPROOT/docs/prd"
   cp "$SCRIPT_PATH" "$TMPROOT/bin/"
 }
 
@@ -355,25 +355,37 @@ test_dry_run_no_changes() {
   teardown_workspace
 }
 
-test_prd_archive() {
-  echo "Test: PRD archived on complete"
+test_prd_manifest() {
+  echo "Test: lifecycle close updates manifest; PRD stays at stable docs/prd/ home"
   setup_workspace
   write_task_file test-task
   write_tasks_txt
-  touch "$TMPROOT/docs/prd-queue/2026-08-01-test-task.md"
+  touch "$TMPROOT/docs/prd/2026-08-01-test-task.md"
+  cat > "$TMPROOT/docs/prd/manifest.json" <<'EOF'
+{
+  "version": 1,
+  "prds": [
+    {"slug": "test-task", "file": "2026-08-01-test-task.md", "status": "open", "ordering_key": "2026-08-01-test-task"}
+  ]
+}
+EOF
 
   run_script test-task --to complete
   local code=$?
   assert_exit 0 $code "script exits 0"
-  if [ -f "$TMPROOT/docs/prd-archive/2026-08-01-test-task.md" ]; then
-    pass "PRD moved to archive"
+  # PRD must NOT move (stable home invariant)
+  if [ -f "$TMPROOT/docs/prd/2026-08-01-test-task.md" ]; then
+    pass "PRD stays at stable docs/prd/ home (no archive move)"
   else
-    fail "PRD not archived"
+    fail "PRD was moved — violates stable-home invariant"
   fi
-  if [ ! -f "$TMPROOT/docs/prd-queue/2026-08-01-test-task.md" ]; then
-    pass "PRD removed from queue"
+  # manifest status must flip to closed
+  local st
+  st=$(python3 -c "import json;print(json.load(open('$TMPROOT/docs/prd/manifest.json'))['prds'][0]['status'])")
+  if [ "$st" = "closed" ]; then
+    pass "manifest prds[test-task].status → closed"
   else
-    fail "PRD still in queue"
+    fail "manifest status expected closed, got $st"
   fi
   teardown_workspace
 }
@@ -442,7 +454,7 @@ test_invalid_state
 test_missing_task_file
 test_idempotent_rerun
 test_dry_run_no_changes
-test_prd_archive
+test_prd_manifest
 test_special_chars_in_decision_path
 test_multi_line_bundle
 

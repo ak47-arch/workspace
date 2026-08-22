@@ -26,7 +26,7 @@
 #   1. Updates docs/tasks/<slug>.md (status, sessions, decisions, completion date)
 #      - All links are clickable markdown links with proper relative paths
 #   2. Moves the task line in docs/tasks.txt to the correct status section
-#   3. Archives the PRD from docs/prd-queue/ to docs/prd-archive/ (if complete)
+#   3. Sets the routing-manifest (docs/prd/manifest.json) → closed (if complete) — no file move
 #   4. Commits everything
 # ============================================================================
 set -euo pipefail
@@ -109,8 +109,8 @@ SCRIPT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 WORKSPACE="$SCRIPT_DIR"
 TASK_MD="$WORKSPACE/docs/tasks/$SLUG.md"
 TASKS_TXT="$WORKSPACE/docs/tasks.txt"
-PRD_QUEUE="$WORKSPACE/docs/prd-queue"
-PRD_ARCHIVE="$WORKSPACE/docs/prd-archive"
+PRD_ROOT="$WORKSPACE/docs/prd"
+PRD_MANIFEST="$PRD_ROOT/manifest.json"
 
 # ─── Validate slug / task file ─────────────────────────────────────────────
 if [ ! -f "$TASK_MD" ]; then
@@ -226,7 +226,7 @@ if [ -n "$DECISIONS" ]; then
 fi
 
 # ─── Also convert any existing backtick-wrapped paths to clickable links ───
-# Converts: "- Plan: \`docs/prd-archive/foo.md\`" -> "- [Plan](../prd-archive/foo.md)"
+# Converts: "- Plan: \`docs/prd/foo.md\`" -> "- [Plan](../prd/foo.md)"
 if grep -q '^[-*] .*: \`docs/' "$TASK_MD"; then
   sed -i 's/^\([-*] \)\([^:]*\): \`docs\/\([^`]*\)\`/\1[\2](..\/\3)/' "$TASK_MD"
   echo "  Converted backtick paths to clickable links in artifacts"
@@ -360,16 +360,30 @@ with open(tasks_txt, 'w') as f:
 print("  tasks.txt updated")
 PYEOF
 
-# ─── Archive PRD (if complete) ─────────────────────────────────────────────
+# ─── Manifest lifecycle update (no physical PRD move) ────────────────────
+# PRDS live on a stable home; lifecycle state is the manifest's prds[].status.
 if [ "$TARGET_STATE" = "complete" ]; then
-  PRD_FILE=$(ls "$PRD_QUEUE/"*-"$SLUG.md" 2>/dev/null | head -1 || true)
-  if [ -n "$PRD_FILE" ] && [ -f "$PRD_FILE" ]; then
-    if [ "$DRY_RUN" = true ]; then
-      echo "  [dry-run] Would archive PRD: $(basename "$PRD_FILE")"
-    else
-      mv "$PRD_FILE" "$PRD_ARCHIVE/"
-      echo "  Archived PRD: $(basename "$PRD_FILE")"
-    fi
+  if [ -f "$PRD_MANIFEST" ]; then
+    echo "  Updating docs/prd/manifest.json: ${SLUG} → closed (no file move)"
+    python3 - "$PRD_MANIFEST" "$SLUG" "$DRY_RUN" <<'PYEOF'
+import json, sys
+manifest_path, slug, dry = sys.argv[1], sys.argv[2], sys.argv[3] == 'true'
+with open(manifest_path, encoding='utf-8') as f:
+    manifest = json.load(f)
+row = next((p for p in manifest.get('prds', []) if p.get('slug') == slug), None)
+if row is None:
+    row = next((p for p in manifest.get('prds', []) if p.get('file', '').endswith('-' + slug + '.md')), None)
+if row is not None:
+    row['status'] = 'closed'
+    if not dry:
+        with open(manifest_path, 'w', encoding='utf-8') as f:
+            json.dump(manifest, f, indent=2)
+    print('  manifest: ' + slug + ' → closed')
+else:
+    print('  warn: no manifest row for ' + slug)
+PYEOF
+  else
+    echo "  Warning: no docs/prd/manifest.json — skipping manifest update"
   fi
 fi
 
@@ -389,7 +403,7 @@ if ! git rev-parse --git-dir > /dev/null 2>&1; then
   exit 0
 fi
 
-git add docs/tasks/"$SLUG.md" docs/tasks.txt docs/prd-queue/ docs/prd-archive/ 2>/dev/null || true
+git add docs/tasks/"$SLUG.md" docs/tasks.txt docs/prd/manifest.json docs/prd/ 2>/dev/null || true
 
 if git diff --cached --quiet; then
   echo "  No changes to commit."

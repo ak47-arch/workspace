@@ -2,9 +2,10 @@
 
 **Status**: accepted
 **Date**: 2026-08-09 22:40
-**Task**: langfuse-agentic-operations
+**Task**: [langfuse-agentic-operations](../../../../tasks/langfuse-agentic-operations.md)
 **Project**: langfuse-agentic-operations
-**Session**: sessions/019fc40a-5458-7310-89c4-53e098060973/session.jsonl
+**Session**: [session.jsonl](../session.jsonl)
+**Summary**: Proceed with repair
 
 ### Context
 

@@ -2,9 +2,10 @@
 
 **Status**: accepted
 **Date**: 2026-08-17 17:27
-**Task**: implementer-delivery-failure-loud
+**Task**: [implementer-delivery-failure-loud](../../../../tasks/implementer-delivery-failure-loud.md)
 **Project**: software-factory
-**Session**: sessions/01a00c50-b714-7811-8086-3bc6e0a8ea64/session.jsonl
+**Session**: [session.jsonl](../session.jsonl)
+**Summary**: The driver's success path stops swallowing delivery failures: capture push_and_pr's exit status; on failure enter the existing fail_run path ("delivery failed: branch pus
 
 ### Context
 

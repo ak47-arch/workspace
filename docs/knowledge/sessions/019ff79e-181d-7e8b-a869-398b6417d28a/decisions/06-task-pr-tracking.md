@@ -2,9 +2,10 @@
 
 **Status**: accepted
 **Date**: 2026-08-14
-**Task**: code-review-agent
+**Task**: [code-review-agent](../../../../tasks/code-review-agent.md)
 **Project**: software-factory
-**Session**: sessions/019ff79e-181d-7e8b-a869-398b6417d28a/session.jsonl
+**Session**: [session.jsonl](../session.jsonl)
+**Summary**: Every task file (docs/tasks/<slug>.md) gains a ## PR tracking section appended/updated at each pipeline stage, populated in retrospect when a stage happens without an aut
 
 ### Context
 

@@ -8,7 +8,7 @@
 
 ## Artifacts
 
-- Plan: `docs/prd-queue/2026-08-18-multi-repo-delivery-bookkeeping-prs.md`
+- Plan: [2026-08-18-multi-repo-delivery-bookkeeping-prs](../prd/2026-08-18-multi-repo-delivery-bookkeeping-prs.md)
 
 ## Sessions
 

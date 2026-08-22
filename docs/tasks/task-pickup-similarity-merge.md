@@ -9,7 +9,7 @@
 
 ## Artifacts
 
-- Plan: `docs/prd-queue/2026-08-17-task-pickup-similarity-merge.md`
+- Plan: [2026-08-17-task-pickup-similarity-merge](../prd/2026-08-17-task-pickup-similarity-merge.md)
 
 ## Sessions
 

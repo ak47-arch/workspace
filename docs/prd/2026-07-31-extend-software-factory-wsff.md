@@ -1,11 +1,10 @@
 **Date**: 2026-07-31 23:57
-**Status**: Final
+**Status**: [Final](./manifest.json)
 **Owner**: software-factory
-**Task**: extend-software-factory-wsff
-**Session**: `docs/knowledge/sessions/019fb4f8-7a69-7968-b884-f4902565e512/session.jsonl`
+**Task**: [extend-software-factory-wsff](../tasks/extend-software-factory-wsff.md)
+**Session**: [session.jsonl](../knowledge/sessions/019fb4f8-7a69-7968-b884-f4902565e512/session.jsonl)
 **Decisions**:
-  - `docs/knowledge/sessions/019fb4f8-7a69-7968-b884-f4902565e512/decisions/01-three-phase-product-layer.md`
-
+  - [01-three-phase-product-layer](../knowledge/sessions/019fb4f8-7a69-7968-b884-f4902565e512/decisions/01-three-phase-product-layer.md)
 ### Problem statement
 
 The product/architecture layer currently has a single phase: grill → PRD → capture decisions. For Medium-to-Large tasks, this means structural decisions (system boundaries, data flow, module layout, type design) are left entirely to the implementation agent. The "Why Software Factories Fail" article presents strong evidence that models degrade codebase quality over time when given only functional requirements — they produce shotgun surgery, lazy type casts, and try-catch-wrapped-everything because there is no penalty for bad design in their training.

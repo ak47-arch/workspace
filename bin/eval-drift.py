@@ -292,6 +292,60 @@ def s7_no_dangling_backref():
         else "; ".join(dangling)
 
 
+def _dec_files():
+    out = []
+    for d, _, fn in os.walk(os.path.join(WS, "docs", "knowledge")):
+        if "/decisions" not in d:
+            continue
+        for x in fn:
+            if x.endswith(".md"):
+                out.append(os.path.join(d, x))
+    return sorted(out)
+
+
+def _metadata(txt):
+    out = []
+    for l in txt.split("\n"):
+        if l.startswith("##") or l.startswith("###") or (l.strip() and not l.startswith("**")):
+            break
+        out.append(l)
+    return "\n".join(out)
+
+
+def s10_string_paths_hold():
+    """S10 (a) — typed links stay typed: decision Session front-matter is a link."""
+    bad = [os.path.relpath(p, WS) for p in _dec_files()
+           if "session.jsonl" in _metadata(read(p)) and "[session.jsonl]" not in _metadata(read(p))]
+    return not bad, "decision Session: fields are typed links" if not bad \
+        else "; ".join(bad[:5])
+
+
+def s10_summaries_hold():
+    """S10 (b) — every decision file keeps its read-skip **Summary**: line."""
+    missing = [os.path.relpath(p, WS) for p in _dec_files()
+               if "**Summary**:" not in read(p).split("### Context")[0]]
+    return not missing, "120/120 decision summaries present" if not missing \
+        else "missing: " + "; ".join(missing[:5])
+
+
+def s10_stale_citations_hold():
+    """S10 (c) — no live citation points at the retired prd-queue/archive homes and
+    the routing manifest stays coherent with the stable docs/prd/ home."""
+    live = [os.path.join(WS, "docs", "knowledge", "index.md")] + _dec_files()
+    stale = [os.path.relpath(f, WS) for f in live
+             if re.search(r'prd-(?:queue|archive)/[\w\-]+\.md', read(f))]
+    mf = os.path.join(WS, "docs", "prd", "manifest.json")
+    try:
+        manifest = json.loads(read(mf)) if os.path.isfile(mf) else None
+    except Exception:
+        manifest = None
+        stale.append("manifest.unparseable")
+    if manifest is None:
+        stale.append("docs/prd/manifest.json missing")
+    return not stale, "no stale prd-queue/archive citations; manifest present" if not stale \
+        else "; ".join(stale[:5])
+
+
 GOLD = [
     {"id": "s1-dual-mode", "surface": "S1", "desc": "dual-mode drift pinned (compose + .env)",
      "first": "2026-08-20", "check": s1_dual_mode_fix},
@@ -327,6 +381,13 @@ GOLD = [
      "first": "2026-08-21", "check": s7_section_balance},
     {"id": "s7-no-dangling-backref", "surface": "S7", "desc": "no dangling back-reference in spine (C5)",
      "first": "2026-08-21", "check": s7_no_dangling_backref},
+    # S10 typed-trail integrity drift-gold (registered with the typed-trail PRD)
+    {"id": "s10-string-paths", "surface": "S10", "desc": "no disclosure string-path crept back (typed trail)",
+     "first": "2026-08-22", "check": s10_string_paths_hold},
+    {"id": "s10-summaries", "surface": "S10", "desc": "120/120 decision summaries kept (read-skip)",
+     "first": "2026-08-22", "check": s10_summaries_hold},
+    {"id": "s10-stable-home", "surface": "S10", "desc": "no stale prd-queue/archive citation; manifest coherent",
+     "first": "2026-08-22", "check": s10_stale_citations_hold},
 ]
 
 

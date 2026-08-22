@@ -2,9 +2,10 @@
 
 **Status**: accepted
 **Date**: 2026-08-17
-**Task**: implementer-delivery-failure-loud
+**Task**: [implementer-delivery-failure-loud](../../../../tasks/implementer-delivery-failure-loud.md)
 **Project**: software-factory
-**Session**: sessions/afe61c92-6a16-4510-84ea-96d0f91badf6/session.jsonl
+**Session**: [session.jsonl](../session.jsonl)
+**Summary**: Initialize explicitly to empty: local pr_url="", with a comment explaining the set -u/bash-5.2 rationale so it is not "cleaned up" later.
 
 ### Context
 

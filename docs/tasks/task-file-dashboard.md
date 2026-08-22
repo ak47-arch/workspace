@@ -9,7 +9,7 @@
 
 ## Artifacts
 
-- [Plan](../prd-archive/2026-08-01-task-file-dashboard.md)
+- [Plan](../prd/2026-08-01-task-file-dashboard.md)
 
 ## Sessions
 

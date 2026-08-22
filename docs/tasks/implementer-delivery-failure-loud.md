@@ -9,7 +9,7 @@
 
 ## Artifacts
 
-- Plan: `docs/prd-queue/2026-08-17-implementer-delivery-failure-loud.md`
+- Plan: [2026-08-17-implementer-delivery-failure-loud](../prd/2026-08-17-implementer-delivery-failure-loud.md)
 
 ## Sessions
 

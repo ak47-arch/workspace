@@ -3,7 +3,8 @@
 **Status**: accepted
 **Date**: 2026-07-30 01:50
 **Project**: workspace-portability
-**Session**: sessions/019faf44-901a-73f9-aa74-817eead12980/session.jsonl
+**Session**: [session.jsonl](../session.jsonl)
+**Summary**: The device flow is verified working end-to-end.
 
 ### Context
 

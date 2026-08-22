@@ -1,13 +1,12 @@
 # PRD: Implementer must fail loudly when delivery (push/PR) fails
 
 **Date**: 2026-08-17 16:45
-**Status**: Final
+**Status**: [Final](./manifest.json)
 **Owner**: software-factory workspace
-**Task**: implementer-delivery-failure-loud
-**Session**: `docs/knowledge/sessions/01a00c50-b714-7811-8086-3bc6e0a8ea64/session.jsonl`
+**Task**: [implementer-delivery-failure-loud](../tasks/implementer-delivery-failure-loud.md)
+**Session**: [session.jsonl](../knowledge/sessions/01a00c50-b714-7811-8086-3bc6e0a8ea64/session.jsonl)
 **Decisions**:
-  - `docs/knowledge/sessions/01a00c50-b714-7811-8086-3bc6e0a8ea64/decisions/04-factory-run-headless-loop.md`
-
+  - [04-factory-run-headless-loop](../knowledge/sessions/01a00c50-b714-7811-8086-3bc6e0a8ea64/decisions/04-factory-run-headless-loop.md)
 ## Problem statement
 
 On 2026-08-17 a real implementer run hit a delivery failure — the branch push was

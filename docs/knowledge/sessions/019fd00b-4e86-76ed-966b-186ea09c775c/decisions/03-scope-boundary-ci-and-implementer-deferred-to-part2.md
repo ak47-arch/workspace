@@ -2,9 +2,10 @@
 
 **Status**: accepted
 **Date**: 2026-08-05 09:22
-**Task**: extend-pm-assembly-line
+**Task**: [extend-pm-assembly-line](../../../../tasks/extend-pm-assembly-line.md)
 **Project**: software-factory
-**Session**: sessions/019fd00b-4e86-76ed-966b-186ea09c775c/session.jsonl
+**Session**: [session.jsonl](../session.jsonl)
+**Summary**: The current task covers Part 1 only: the PRD verification subsystem (in-session read-only review sub-agent, deterministic + non-deterministic checks, report contract, in-
 
 ### Context
 
@@ -29,6 +30,7 @@ Where do the boundaries fall for the current task — what is in scope for Part 
 The current task covers **Part 1 only**: the PRD verification subsystem (in-session read-only review sub-agent, deterministic + non-deterministic checks, report contract, in-session feedback loop, `in-progress` transition with user blessing) and the supporting PRD-template changes (file map, verification commands, context pointers).
 
 **Explicitly out of scope:**
+**Summary**: ## Decision: Scope Boundary — CI and Implementer Agent Deferred to Part 2 (Assembly Line) Status: accepted Date: 2026-08-05 09:22 Task: extend-pm-assembly-line Project: s
 - **CI/CD infrastructure** — deferred to the implementation stage (Part 2); may or may not be needed later based on requirements.
 - **The autonomous implementation agent** — Part 2, the assembly line's first real component. Its infrastructure (skills, context, extensions) will be implementation-agent-specific to keep it lean.
 - **Code review / verification of implementations** — review bottleneck #2, downstream, out of scope (though it may reuse the review sub-agent's shape).

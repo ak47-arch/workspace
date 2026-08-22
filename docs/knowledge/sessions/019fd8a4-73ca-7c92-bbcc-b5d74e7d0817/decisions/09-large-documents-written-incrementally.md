@@ -2,9 +2,10 @@
 
 **Status**: accepted
 **Date**: 2026-08-09 21:18
-**Task**: extension-inline-agent
+**Task**: [extension-inline-agent](../../../../tasks/extension-inline-agent.md)
 **Project**: software-factory
-**Session**: sessions/019fd8a4-73ca-7c92-bbcc-b5d74e7d0817/session.jsonl
+**Session**: [session.jsonl](../session.jsonl)
+**Summary**: Write large documents incrementally
 
 ### Context
 

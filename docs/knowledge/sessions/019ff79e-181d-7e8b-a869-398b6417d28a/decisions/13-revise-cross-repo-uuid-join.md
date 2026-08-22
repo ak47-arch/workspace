@@ -2,9 +2,10 @@
 
 **Status**: accepted
 **Date**: 2026-08-15 01:45
-**Task**: extension-inline-agent
+**Task**: [extension-inline-agent](../../../../tasks/extension-inline-agent.md)
 **Project**: feed_analyser
-**Session**: sessions/019ff79e-181d-7e8b-a869-398b6417d28a/session.jsonl
+**Session**: [session.jsonl](../session.jsonl)
+**Summary**: A pre-reviewer-era (or any hand-raised) task whose Raised by row lacks a 36-char impl-session UUID gets its UUID backfilled on the task file so --revise resolves cleanly.
 
 ### Context
 
@@ -14,6 +15,7 @@ repo than the software-factory workspace). The first factory review
 (2026-08-15) returned REQUEST_CHANGES (one blocking US5 `FileNotFoundError`).
 Per decision 08 the implementer must fix via `--revise`, but this PR was
 **cross-repo** and **pre-reviewer-era** — both untested paths for the revision
+**Summary**: ## Decision: --revise supports cross-repo / pre-reviewer-era PRs — requires a 36-char impl-session UUID on the task's Raised by row Status: accepted Date: 2026-08-15 01:4
 flow.
 
 ### Problem

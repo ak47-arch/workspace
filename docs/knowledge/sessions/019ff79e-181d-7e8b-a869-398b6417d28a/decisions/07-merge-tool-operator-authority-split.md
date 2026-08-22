@@ -2,9 +2,10 @@
 
 **Status**: accepted
 **Date**: 2026-08-14 17:28
-**Task**: code-review-agent
+**Task**: [code-review-agent](../../../../tasks/code-review-agent.md)
 **Project**: software-factory
-**Session**: sessions/019ff79e-181d-7e8b-a869-398b6417d28a/session.jsonl
+**Session**: [session.jsonl](../session.jsonl)
+**Summary**: Introduce bin/merge-pr.sh as the sole operator-side merge tool (human-Gated, UAT-triggered).
 
 ### Context
 
@@ -43,6 +44,7 @@ and pushes master. Supports `--dry-run`. The autonomous review driver
 
 Physical enforcement is layered too: the review worker runs in a container with
 **no `gh` binary** and a **read-only `/workspace`**, so it cannot mutate the
+**Summary**: ## Decision: Operator merge-tool — authority-split enforced by tooling + container Status: accepted Date: 2026-08-14 17:28 Task: code-review-agent Project: software-facto
 workspace or issue a GitHub merge even if instructed to.
 
 ### Rationale

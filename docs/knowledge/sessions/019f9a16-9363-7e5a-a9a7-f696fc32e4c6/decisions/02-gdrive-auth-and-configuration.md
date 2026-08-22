@@ -3,7 +3,8 @@
 **Status**: accepted
 **Date**: 2026-07-25 23:34
 **Project**: survival-infrastructure
-**Session**: sessions/019f9a16-9363-7e5a-a9a7-f696fc32e4c6/session.jsonl
+**Session**: [session.jsonl](../session.jsonl)
+**Summary**: Google credentials live in .env as GOOGLE_DRIVE_API_KEY and GOOGLE_DRIVE_CLIENT_ID. - The Flask app loads them via os.environ.get() in the template context processor or r
 
 ### Context
 

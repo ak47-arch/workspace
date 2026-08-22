@@ -1,7 +1,7 @@
 **Date**: 2026-08-01 14:01
-**Status**: Final
+**Status**: [Final](./manifest.json)
 **Owner**: software-factory
-**Task**: task-file-dashboard
+**Task**: [task-file-dashboard](../tasks/task-file-dashboard.md)
 **Session**: _(this session)_
 **Decisions**:
   - _(captured inline below)_

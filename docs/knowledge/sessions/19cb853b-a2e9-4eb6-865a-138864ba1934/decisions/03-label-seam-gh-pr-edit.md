@@ -1,3 +1,7 @@
+**Summary**: ## Decision: Label seam — gh pr edit --add-label fails on this gh (classic-Projects GraphQL error); use the REST labels API - Slug: code-review-agent · Review session: 19
+
+**Summary**: Use the REST issue-labels endpoints in update_label() (bypass projectCards)
+
 ## Decision: Label seam — `gh pr edit --add-label` fails on this gh (classic-Projects GraphQL error); use the REST labels API
 
 - Slug: code-review-agent · Review session: 19cb853b-a2e9-4eb6-865a-138864ba1934

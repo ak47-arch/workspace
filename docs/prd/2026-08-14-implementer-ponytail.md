@@ -1,14 +1,13 @@
 # PRD: Implementer ponytail wiring — real skills via `--skill` flags, replacing the prose directive
 
 **Date**: 2026-08-14
-**Status**: Final
+**Status**: [Final](./manifest.json)
 **Owner**: software-factory
-**Task**: implementer-ponytail
-**Session**: `docs/knowledge/sessions/019ff79e-181d-7e8b-a869-398b6417d28a/session.jsonl`
+**Task**: [implementer-ponytail](../tasks/implementer-ponytail.md)
+**Session**: [session.jsonl](../knowledge/sessions/019ff79e-181d-7e8b-a869-398b6417d28a/session.jsonl)
 **Decisions**:
-  - `docs/knowledge/sessions/019ff79e-181d-7e8b-a869-398b6417d28a/decisions/04-ponytail-review-worker-skills.md`
-  - `docs/knowledge/sessions/019ff79e-181d-7e8b-a869-398b6417d28a/decisions/07-merge-tool-operator-authority-split.md`
-
+  - [04-ponytail-review-worker-skills](../knowledge/sessions/019ff79e-181d-7e8b-a869-398b6417d28a/decisions/04-ponytail-review-worker-skills.md)
+  - [07-merge-tool-operator-authority-split](../knowledge/sessions/019ff79e-181d-7e8b-a869-398b6417d28a/decisions/07-merge-tool-operator-authority-split.md)
 ## Problem statement
 
 The implementer persona (`.pi/agents/implementer.md`) declares ponytail as a
@@ -152,8 +151,8 @@ exactly like the reviewer.
 
 ## Context pointers
 
-- Decision 04 (mechanism precedent): `docs/knowledge/sessions/019ff79e-181d-7e8b-a869-398b6417d28a/decisions/04-ponytail-review-worker-skills.md`
-- Decision 07 (authority split): `docs/knowledge/sessions/019ff79e-181d-7e8b-a869-398b6417d28a/decisions/07-merge-tool-operator-authority-split.md`
+- Decision 04 (mechanism precedent): [04-ponytail-review-worker-skills](../knowledge/sessions/019ff79e-181d-7e8b-a869-398b6417d28a/decisions/04-ponytail-review-worker-skills.md)
+- Decision 07 (authority split): [07-merge-tool-operator-authority-split](../knowledge/sessions/019ff79e-181d-7e8b-a869-398b6417d28a/decisions/07-merge-tool-operator-authority-split.md)
 - Working reference: `bin/review-run.sh` lines ~59-75 (config/fallbacks),
   ~442-443 (env-file line), ~448-456 (skill names + flags seam), ~506-510 (injection).
 - Task file: `docs/tasks/implementer-ponytail.md`; factory context: `docs/factory-context.md`.

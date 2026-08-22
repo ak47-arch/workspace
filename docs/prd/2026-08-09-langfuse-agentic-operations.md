@@ -3,11 +3,10 @@
 **Date**: 2026-08-09
 **Status**: Final (achieved 2026-08-21 — integration goal met; amended 2026-08-19 — requirement change, see below)
 **Owner**: software-factory workspace
-**Task**: langfuse-agentic-operations
-**Session**: `docs/knowledge/sessions/019fc40a-5458-7310-89c4-53e098060973/session.jsonl`
+**Task**: [langfuse-agentic-operations](../tasks/langfuse-agentic-operations.md)
+**Session**: [session.jsonl](../knowledge/sessions/019fc40a-5458-7310-89c4-53e098060973/session.jsonl)
 **Decisions**:
-  - `docs/knowledge/sessions/019fc40a-5458-7310-89c4-53e098060973/decisions/01-langfuse-v3-to-v4-upgrade.md`
-
+  - [01-langfuse-v3-to-v4-upgrade](../knowledge/sessions/019fc40a-5458-7310-89c4-53e098060973/decisions/01-langfuse-v3-to-v4-upgrade.md)
 ## Problem statement
 
 Three lines in `docs/tasks.txt` converge on one goal: make Langfuse the observability
@@ -104,11 +103,11 @@ queues → LLM-as-judge on v4-native observations → cross-run regression), and
 evals run on live per-run traces or on retained session `.jsonl` imports. **Resolution
 2026-08-19**: decided — one shared eval spine, seeded on the decision-record loop with
 deterministic checks on live traces, extending surface-by-surface; see
-`docs/knowledge/sessions/01a01a70-b2b6-7c00-96ca-7292e6e067e2/decisions/01-langfuse-factory-eval-spine-decision-loop.md`.
+[01-langfuse-factory-eval-spine-decision-loop](../knowledge/sessions/01a01a70-b2b6-7c00-96ca-7292e6e067e2/decisions/01-langfuse-factory-eval-spine-decision-loop.md).
 
 **Resolution 2026-08-20**: evals are **integrated as a dedicated factory department** — a fifth factory
 component (decision
-`docs/knowledge/sessions/01a01a70-b2b6-7c00-96ca-7292e6e067e2/decisions/02-eval-factory-department.md`): roster
+[02-eval-factory-department](../knowledge/sessions/01a01a70-b2b6-7c00-96ca-7292e6e067e2/decisions/02-eval-factory-department.md)): roster
 `evaluator` agent (`.pi/agents/evaluator.md`, run contract `.agents/skills/eval-ops/SKILL.md`, artifact map
 `docs/reference/evaluator-agent.md`), report home + index `docs/evaluations/README.md`. Seed surfaces
 (decision-record + task loops) tooled by `bin/eval-decisions.py` / `bin/eval-pipeline.py`; grounded-judge
@@ -197,4 +196,4 @@ suite — live panels, surface register, drift/L2, and semantic-tier research.
 - Phase 6 first-party app integration (`llm/`, `survival-infrastructure/`,
   phase-2 apps) — gated on each project's preflight passing.
 
-**Superseded by**: `docs/prd-queue/2026-08-21-context-disclosure-semantic-probe.md`.
+**Superseded by**: [context-disclosure-semantic-probe](../prd/2026-08-21-context-disclosure-semantic-probe.md).

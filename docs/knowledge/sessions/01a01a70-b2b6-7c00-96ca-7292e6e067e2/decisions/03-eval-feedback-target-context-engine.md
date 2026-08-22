@@ -2,9 +2,10 @@
 
 **Status**: accepted
 **Date**: 2026-08-20 01:10
-**Task**: langfuse-agentic-operations
+**Task**: [langfuse-agentic-operations](../../../../tasks/langfuse-agentic-operations.md)
 **Project**: langfuse-agentic-operations
-**Session**: sessions/01a01a70-b2b6-7c00-96ca-7292e6e067e2/session.jsonl
+**Session**: [session.jsonl](../session.jsonl)
+**Summary**: Feedback target: the context engine — eval results flow into refining how the factory feeds agents context (progressive disclosure granularity, decision/knowledge summari
 
 ### Context
 

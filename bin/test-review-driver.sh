@@ -139,14 +139,14 @@ MOCK
 #   <dir>                 git repo (branch master)
 #   <dir>/config/reviewer.json
 #   <dir>/docs/tasks/<slug>.md
-#   <dir>/docs/prd-queue/<date>-<slug>.md
+#   <dir>/docs/prd/<date>-<slug>.md
 #   <dir>/docs/code-reviews/        (archive root)
 #   <dir>/bin/transition-task.sh     (stub, dry-run transitions never call it)
 # Plus a mock gh + call-log.
 setup_fixture() {
   local dir
   dir="$(mktemp -d)"
-  mkdir -p "$dir/config" "$dir/docs/tasks" "$dir/docs/prd-queue" \
+  mkdir -p "$dir/config" "$dir/docs/tasks" "$dir/docs/prd" \
            "$dir/docs/code-reviews" "$dir/docs/knowledge/sessions" \
            "$dir/bin" "$dir/.factory/runs"
   # Stub the host skills checkout the driver binds into the container at /skills
@@ -171,7 +171,7 @@ setup_fixture() {
   # Task + PRD for slug 'demo'.
   printf '**Status**: in-progress\n**Project**: software-factory\n' > "$dir/docs/tasks/demo.md"
   printf '**Date**: 2026-08-13 12:00\n**Status**: Final\n## Testing decisions\nrun the demo verification\n' \
-    > "$dir/docs/prd-queue/2026-08-13-demo.md"
+    > "$dir/docs/prd/2026-08-13-demo.md"
 
   # Driver config (root project → '.' so the fixture repo IS the target).
   cat > "$dir/config/reviewer.json" <<'CFG'

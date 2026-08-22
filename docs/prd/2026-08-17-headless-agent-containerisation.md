@@ -1,16 +1,15 @@
 # PRD: Headless Agent Containerisation — backend implement → review loop delivering merge-ready PRs
 
 **Date**: 2026-08-17 03:26
-**Status**: Final
+**Status**: [Final](./manifest.json)
 **Owner**: software-factory workspace
-**Task**: headless-agent-containerisation
-**Session**: `docs/knowledge/sessions/01a00c50-b714-7811-8086-3bc6e0a8ea64/session.jsonl`
+**Task**: [headless-agent-containerisation](../tasks/headless-agent-containerisation.md)
+**Session**: [session.jsonl](../knowledge/sessions/01a00c50-b714-7811-8086-3bc6e0a8ea64/session.jsonl)
 **Decisions**:
-  - `docs/knowledge/sessions/01a00c50-b714-7811-8086-3bc6e0a8ea64/decisions/01-headless-backend-host-scope.md`
-  - `docs/knowledge/sessions/01a00c50-b714-7811-8086-3bc6e0a8ea64/decisions/02-merge-ready-deliverable.md`
-  - `docs/knowledge/sessions/01a00c50-b714-7811-8086-3bc6e0a8ea64/decisions/03-github-actions-fast-path.md`
-  - `docs/knowledge/sessions/01a00c50-b714-7811-8086-3bc6e0a8ea64/decisions/04-factory-run-headless-loop.md`
-
+  - [01-headless-backend-host-scope](../knowledge/sessions/01a00c50-b714-7811-8086-3bc6e0a8ea64/decisions/01-headless-backend-host-scope.md)
+  - [02-merge-ready-deliverable](../knowledge/sessions/01a00c50-b714-7811-8086-3bc6e0a8ea64/decisions/02-merge-ready-deliverable.md)
+  - [03-github-actions-fast-path](../knowledge/sessions/01a00c50-b714-7811-8086-3bc6e0a8ea64/decisions/03-github-actions-fast-path.md)
+  - [04-factory-run-headless-loop](../knowledge/sessions/01a00c50-b714-7811-8086-3bc6e0a8ea64/decisions/04-factory-run-headless-loop.md)
 ## Problem statement
 
 The factory's implement → review pipeline is manual and session-bound. The user

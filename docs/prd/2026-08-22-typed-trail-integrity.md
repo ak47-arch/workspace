@@ -1,9 +1,9 @@
 # PRD: Typed-Trail Integrity
 
 **Date**: 2026-08-22
-**Status**: Final
+**Status**: [Final](./manifest.json)
 **Owner**: software-factory workspace
-**Task**: typed-trail-integrity
+**Task**: [typed-trail-integrity](../tasks/typed-trail-integrity.md)
 **Session**: [session.jsonl](../knowledge/sessions/01a01a70-b2b6-7c00-96ca-7292e6e067e2/session.jsonl)
 **Decisions**:
   - [02 — evaluation factory department](../knowledge/sessions/01a01a70-b2b6-7c00-96ca-7292e6e067e2/decisions/02-eval-factory-department.md)

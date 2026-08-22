@@ -3,7 +3,8 @@
 **Status**: accepted
 **Date**: 2026-07-25 20:01
 **Project**: feed-analyser
-**Session**: sessions/019f9487-9ea0-7905-8ae6-eaa2aff6bbdd/session.jsonl
+**Session**: [session.jsonl](../session.jsonl)
+**Summary**: Artefact shape (sent from extension to server)
 
 ### Context
 
@@ -46,6 +47,7 @@ The old system stored data in SQLite with a rigid schema (ideas table with categ
 - No dedup — same tweet captured twice = two independent artefacts.
 
 **Error handling**:
+**Summary**: ## Decision: Artefact data model and JSONL storage Status: accepted Date: 2026-07-25 20:01 Project: feed-analyser Session: session.jsonl
 - Server offline: error displayed in side panel, data stays in panel, user retries.
 - Auto-scrape failure: yellow warning shown, Save still active. Tweet URL is always the anchor.
 

@@ -3,13 +3,14 @@
 **Status**: accepted
 **Date**: 2026-07-30 01:09
 **Project**: workspace-portability
-**Session**: sessions/019faf44-901a-73f9-aa74-817eead12980/session.jsonl
+**Session**: [session.jsonl](../session.jsonl)
+**Summary**: Implemented the GitHub Device Authorization Flow across four files
 
 ### Context
 
 The workspace-portability Phase 1 restore pipeline (`magic-setup.sh` → `bootstrap-orchestrator.sh` → `restore_workspace.py`) requires a `GITHUB_TOKEN` to clone private repos and download critical snapshots. On a fresh machine, the user must manually create a PAT — this breaks the "one command" magic setup promise.
 
-PRD `docs/prd-queue/2026-07-24-github-browser-auth-flow.md` specified the solution: a GitHub Device Authorization Flow as fallback when `GITHUB_TOKEN` is absent.
+PRD [github-browser-auth-flow](../../../../prd/2026-07-24-github-browser-auth-flow.md) specified the solution: a GitHub Device Authorization Flow as fallback when `GITHUB_TOKEN` is absent.
 
 ### Problem
 

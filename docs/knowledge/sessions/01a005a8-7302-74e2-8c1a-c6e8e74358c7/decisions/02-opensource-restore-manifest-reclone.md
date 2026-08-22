@@ -2,9 +2,10 @@
 
 **Status**: accepted
 **Date**: 2026-08-16 23:20
-**Task**: ponytail-skills-fixed-mount
+**Task**: [ponytail-skills-fixed-mount](../../../../tasks/ponytail-skills-fixed-mount.md)
 **Project**: software-factory
-**Session**: sessions/01a005a8-7302-74e2-8c1a-c6e8e74358c7/session.jsonl
+**Session**: [session.jsonl](../session.jsonl)
+**Summary**: 1.
 
 ### Context
 

@@ -2,9 +2,10 @@
 
 **Status**: accepted
 **Date**: 2026-08-10 20:59
-**Task**: implementer-agent
+**Task**: [implementer-agent](../../../../tasks/implementer-agent.md)
 **Project**: software-factory
-**Session**: sessions/019fe7d2-aa31-77e6-8ea0-9df3d6b3c6ed/session.jsonl
+**Session**: [session.jsonl](../session.jsonl)
+**Summary**: Lifecycle: driver runs bin/transition-task.sh <slug> --to in-progress at pickup (commit + push the workspace root).
 
 ### Context
 

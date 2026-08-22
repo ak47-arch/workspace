@@ -9,7 +9,7 @@
 
 ## Artifacts
 
-- Plan: [prd-archive/2026-07-25-x-capture-instrument.md](../prd-archive/2026-07-25-x-capture-instrument.md)
+- Plan: [2026-07-25-x-capture-instrument.md](../prd/2026-07-25-x-capture-instrument.md)
 
 ## Sessions
 

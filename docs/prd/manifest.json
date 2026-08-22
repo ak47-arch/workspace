@@ -1,0 +1,125 @@
+{
+  "version": 1,
+  "prds": [
+    {
+      "slug": "github-browser-auth-flow",
+      "file": "2026-07-24-github-browser-auth-flow.md",
+      "status": "final",
+      "ordering_key": "2026-07-24-github-browser-auth-flow"
+    },
+    {
+      "slug": "gdrive-instruction-source-ingest",
+      "file": "2026-07-25-gdrive-instruction-source-ingest.md",
+      "status": "draft",
+      "ordering_key": "2026-07-25-gdrive-instruction-source-ingest"
+    },
+    {
+      "slug": "x-capture-instrument",
+      "file": "2026-07-25-x-capture-instrument.md",
+      "status": "final",
+      "ordering_key": "2026-07-25-x-capture-instrument"
+    },
+    {
+      "slug": "extend-software-factory-wsff",
+      "file": "2026-07-31-extend-software-factory-wsff.md",
+      "status": "final",
+      "ordering_key": "2026-07-31-extend-software-factory-wsff"
+    },
+    {
+      "slug": "task-file-dashboard",
+      "file": "2026-08-01-task-file-dashboard.md",
+      "status": "final",
+      "ordering_key": "2026-08-01-task-file-dashboard"
+    },
+    {
+      "slug": "extension-inline-agent",
+      "file": "2026-08-08-extension-inline-agent.md",
+      "status": "final",
+      "ordering_key": "2026-08-08-extension-inline-agent"
+    },
+    {
+      "slug": "langfuse-agentic-operations",
+      "file": "2026-08-09-langfuse-agentic-operations.md",
+      "status": "final",
+      "ordering_key": "2026-08-09-langfuse-agentic-operations"
+    },
+    {
+      "slug": "implementer-agent",
+      "file": "2026-08-10-implementer-agent.md",
+      "status": "final",
+      "ordering_key": "2026-08-10-implementer-agent"
+    },
+    {
+      "slug": "code-review-agent",
+      "file": "2026-08-13-code-review-agent.md",
+      "status": "final",
+      "ordering_key": "2026-08-13-code-review-agent"
+    },
+    {
+      "slug": "implementer-ponytail",
+      "file": "2026-08-14-implementer-ponytail.md",
+      "status": "final",
+      "ordering_key": "2026-08-14-implementer-ponytail"
+    },
+    {
+      "slug": "implementer-revision-mode",
+      "file": "2026-08-14-implementer-revision-mode.md",
+      "status": "final",
+      "ordering_key": "2026-08-14-implementer-revision-mode"
+    },
+    {
+      "slug": "ponytail-skills-fixed-mount",
+      "file": "2026-08-16-ponytail-skills-fixed-mount.md",
+      "status": "final",
+      "ordering_key": "2026-08-16-ponytail-skills-fixed-mount"
+    },
+    {
+      "slug": "headless-agent-containerisation",
+      "file": "2026-08-17-headless-agent-containerisation.md",
+      "status": "final",
+      "ordering_key": "2026-08-17-headless-agent-containerisation"
+    },
+    {
+      "slug": "implementer-delivery-failure-loud",
+      "file": "2026-08-17-implementer-delivery-failure-loud.md",
+      "status": "final",
+      "ordering_key": "2026-08-17-implementer-delivery-failure-loud"
+    },
+    {
+      "slug": "sandbox-credential-mounting",
+      "file": "2026-08-17-sandbox-credential-mounting.md",
+      "status": "final",
+      "ordering_key": "2026-08-17-sandbox-credential-mounting"
+    },
+    {
+      "slug": "task-pickup-similarity-merge",
+      "file": "2026-08-17-task-pickup-similarity-merge.md",
+      "status": "final",
+      "ordering_key": "2026-08-17-task-pickup-similarity-merge"
+    },
+    {
+      "slug": "branch-protection-merge-only",
+      "file": "2026-08-18-branch-protection-merge-only.md",
+      "status": "draft",
+      "ordering_key": "2026-08-18-branch-protection-merge-only"
+    },
+    {
+      "slug": "multi-repo-delivery-bookkeeping-prs",
+      "file": "2026-08-18-multi-repo-delivery-bookkeeping-prs.md",
+      "status": "final",
+      "ordering_key": "2026-08-18-multi-repo-delivery-bookkeeping-prs"
+    },
+    {
+      "slug": "context-disclosure-semantic-probe",
+      "file": "2026-08-21-context-disclosure-semantic-probe.md",
+      "status": "draft",
+      "ordering_key": "2026-08-21-context-disclosure-semantic-probe"
+    },
+    {
+      "slug": "typed-trail-integrity",
+      "file": "2026-08-22-typed-trail-integrity.md",
+      "status": "final",
+      "ordering_key": "2026-08-22-typed-trail-integrity"
+    }
+  ]
+}

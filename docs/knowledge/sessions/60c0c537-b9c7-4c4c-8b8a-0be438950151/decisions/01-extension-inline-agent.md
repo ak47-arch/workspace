@@ -2,9 +2,10 @@
 
 **Status**: accepted
 **Date**: 2026-08-11 (original run); revision 2026-08-14 — unchanged
-**Task**: extension-inline-agent
+**Task**: [extension-inline-agent](../../../../tasks/extension-inline-agent.md)
 **Project**: feed_analyser / capture
 **Session**: 60c0c537-b9c7-4c4c-8b8a-0be438950151
+**Summary**: Implementation deviations & small decisions for extension-inline-agent
 
 This record captures the small decisions that emerged while implementing the PRD
 inside the sandbox. The PRD decisions 01–06 (pi SDK service, OpenRouter server

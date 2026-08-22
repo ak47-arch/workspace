@@ -8,7 +8,7 @@
 
 ## Artifacts
 
-- Plan: `docs/prd-queue/2026-08-22-typed-trail-integrity.md`
+- Plan: [2026-08-22-typed-trail-integrity](../prd/2026-08-22-typed-trail-integrity.md)
 
 ## Progress
 

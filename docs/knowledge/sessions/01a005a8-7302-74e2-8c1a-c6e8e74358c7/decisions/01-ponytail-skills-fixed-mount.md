@@ -2,10 +2,11 @@
 
 **Status**: accepted
 **Date**: 2026-08-16 21:28
-**Task**: ponytail-skills-fixed-mount
+**Task**: [ponytail-skills-fixed-mount](../../../../tasks/ponytail-skills-fixed-mount.md)
 **Project**: software-factory
-**Session**: sessions/01a005a8-7302-74e2-8c1a-c6e8e74358c7/session.jsonl
+**Session**: [session.jsonl](../session.jsonl)
 **Supersedes**: D2 path-coupling half of the "live checkout, read-only, no vendoring" decision (code-review-agent PRD, implementer-ponytail PRD)
+**Summary**: The six ponytail skills are delivered via an explicit bind mount at the fixed container path /skills
 
 ### Context
 
@@ -59,6 +60,7 @@ The fixed `/skills` mount preserves all four of D2's real protections — no ven
 - `config/implementer.json` and `config/reviewer.json` both gain a new key (`host_skills_dir`), adding one machine-specific path per config.
 
 **Deprecated/removed:**
+**Summary**: ## Decision: Ponytail skills delivered via fixed /skills mount — D2 delivery-path repair Status: accepted Date: 2026-08-16 21:28 Task: ponytail-skills-fixed-mount Project
 - The D2 path-coupling half: "flags resolve under mounted `/workspace/opensource/ponytail/skills`" is replaced by the fixed `/skills` mount.
 - `test-review-driver.sh:373`'s hard assertion on `$SCRIPT_DIR/opensource/ponytail/skills` is removed (replaced by the skip-tolerant mount-flag assertion).
 

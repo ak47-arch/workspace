@@ -2,9 +2,10 @@
 
 **Status**: accepted
 **Date**: 2026-08-16 23:49
-**Task**: task-pickup-similarity-merge
+**Task**: [task-pickup-similarity-merge](../../../../tasks/task-pickup-similarity-merge.md)
 **Project**: software-factory
-**Session**: sessions/357a4c1d-cfd2-47d4-b3a8-a831dd310daf/session.jsonl
+**Session**: [session.jsonl](../session.jsonl)
+**Summary**: The similarity check scans all task lines across all projects and statuses, but the merge offer is only for Pending/Queued tasks.
 
 ### Context
 

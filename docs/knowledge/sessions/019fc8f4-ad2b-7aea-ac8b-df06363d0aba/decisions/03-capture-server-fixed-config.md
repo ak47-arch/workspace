@@ -2,9 +2,10 @@
 
 **Status**: accepted
 **Date**: 2026-08-04 12:22
-**Task**: x-capture-instrument
+**Task**: [x-capture-instrument](../../../../tasks/x-capture-instrument.md)
 **Project**: feed-analyser
-**Session**: sessions/019fc8f4-ad2b-7aea-ac8b-df06363d0aba/session.jsonl
+**Session**: [session.jsonl](../session.jsonl)
+**Summary**: Data file: a single artefacts.jsonl beside the server (server/artefacts.jsonl), opened in append mode, write + flush per line.
 
 ### Context
 

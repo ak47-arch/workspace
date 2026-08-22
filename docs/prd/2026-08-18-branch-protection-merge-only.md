@@ -1,13 +1,13 @@
 # PRD: Enforce merge-only on all repos — no direct pushes to any default branch
 
 **Date**: 2026-08-18 19:59
-**Status**: Draft
+**Status**: [Draft](./manifest.json)
 **Owner**: software-factory workspace
-**Task**: branch-protection-merge-only
+**Task**: [branch-protection-merge-only](../tasks/branch-protection-merge-only.md)
 **Repos**: workspace (root)
-**Session**: `docs/knowledge/sessions/01a01515-8457-7260-a4d6-45731d61d571/session.jsonl`
+**Session**: [session.jsonl](../knowledge/sessions/01a01515-8457-7260-a4d6-45731d61d571/session.jsonl)
 **Decisions**:
-  - `docs/knowledge/sessions/01a01515-8457-7260-a4d6-45731d61d571/decisions/02-branch-protection-merge-only.md`
+  - [02-branch-protection-merge-only](../knowledge/sessions/01a01515-8457-7260-a4d6-45731d61d571/decisions/02-branch-protection-merge-only.md)
 **Context**: decision 09 `09-code-master-pr-gate.md` (the bdac29e direct-sweep) · `docs/reference/implementer-agent.md` (repo inventory) · companion task `multi-repo-delivery-bookkeeping-prs`
 
 ## Problem statement

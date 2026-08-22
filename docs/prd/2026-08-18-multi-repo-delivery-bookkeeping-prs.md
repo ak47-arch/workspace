@@ -1,14 +1,14 @@
 # PRD: Multi-repo delivery — per-repo implementation PRs + PR-based bookkeeping on the workspace root
 
 **Date**: 2026-08-18 19:59
-**Status**: Final
+**Status**: [Final](./manifest.json)
 **Owner**: software-factory workspace
-**Task**: multi-repo-delivery-bookkeeping-prs
+**Task**: [multi-repo-delivery-bookkeeping-prs](../tasks/multi-repo-delivery-bookkeeping-prs.md)
 **Repos**: workspace (root)
-**Session**: `docs/knowledge/sessions/01a01515-8457-7260-a4d6-45731d61d571/session.jsonl`
+**Session**: [session.jsonl](../knowledge/sessions/01a01515-8457-7260-a4d6-45731d61d571/session.jsonl)
 **Decisions**:
-  - `docs/knowledge/sessions/01a01515-8457-7260-a4d6-45731d61d571/decisions/01-multi-repo-delivery-pr-shapes.md`
-  - `docs/knowledge/sessions/01a01515-8457-7260-a4d6-45731d61d571/decisions/02-branch-protection-merge-only.md`
+  - [01-multi-repo-delivery-pr-shapes](../knowledge/sessions/01a01515-8457-7260-a4d6-45731d61d571/decisions/01-multi-repo-delivery-pr-shapes.md)
+  - [02-branch-protection-merge-only](../knowledge/sessions/01a01515-8457-7260-a4d6-45731d61d571/decisions/02-branch-protection-merge-only.md)
 **Context**: `docs/factory-context.md` (assembly_line + agents) · `docs/reference/implementer-agent.md` · `docs/reference/reviewer-agent.md` · decision 04/07/08/09 in the harness session `01a00c50-b714-7811-8086-3bc6e0a8ea64`
 
 ## Problem statement

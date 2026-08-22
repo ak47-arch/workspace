@@ -2,10 +2,10 @@
 
 **Status**: proposed
 **Date**: 2026-08-18 19:59
-**Task**: multi-repo-delivery-bookkeeping-prs
+**Task**: [multi-repo-delivery-bookkeeping-prs](../../../../tasks/multi-repo-delivery-bookkeeping-prs.md)
 **Project**: software-factory
-**Session**: sessions/01a01515-8457-7260-a4d6-45731d61d571/session.jsonl
-**Summary**: Defines the two delivery shapes — Shape A = N app code PRs per repo + 1 bookkeeping PR to root; Shape B = 1 root PR carrying code + bookkeeping as separate commits. Root merges only via PRs.
+**Session**: [session.jsonl](../session.jsonl)
+**Summary**: A task touches a declared set of repos; the workspace root is a repo like any other.
 
 ### Context
 

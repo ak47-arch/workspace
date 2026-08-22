@@ -2,9 +2,10 @@
 
 **Status**: accepted
 **Date**: 2026-08-20 00:20
-**Task**: langfuse-agentic-operations
+**Task**: [langfuse-agentic-operations](../../../../tasks/langfuse-agentic-operations.md)
 **Project**: langfuse-agentic-operations
-**Session**: sessions/01a01a70-b2b6-7c00-96ca-7292e6e067e2/session.jsonl
+**Session**: [session.jsonl](../session.jsonl)
+**Summary**: Evals are a named fifth component of the factory: the evaluation component.
 
 ### Context
 

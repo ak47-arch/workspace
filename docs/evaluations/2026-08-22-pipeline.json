@@ -27,11 +27,6 @@
           "check": "T1 state-legal",
           "pass": true,
           "evidence": "status 'in-prd'"
-        },
-        {
-          "check": "T6 queue-gate",
-          "pass": true,
-          "evidence": "queued + status 'in-prd'"
         }
       ]
     },
@@ -98,8 +93,8 @@
         },
         {
           "check": "T2 complete-archived",
-          "pass": true,
-          "evidence": "PRD archived"
+          "pass": null,
+          "evidence": "no PRD anywhere (pre-PRD-era)"
         },
         {
           "check": "T3 complete-evidence",
@@ -274,7 +269,7 @@
       "stories_fail": 0,
       "blocking_findings": 0,
       "advisory_findings": 0,
-      "s2_verdict": "PASS",
+      "s2_verdict": "SKIP",
       "checks": [
         {
           "check": "T1 state-legal",
@@ -282,9 +277,9 @@
           "evidence": "status 'complete'"
         },
         {
-          "check": "T2 complete-archived",
-          "pass": true,
-          "evidence": "PRD archived"
+          "check": "T0 zero-evidence completion",
+          "pass": null,
+          "evidence": "complete but no PRD/impl/rev anywhere (unverifiable)"
         }
       ]
     },
@@ -317,8 +312,8 @@
         },
         {
           "check": "T2 complete-archived",
-          "pass": true,
-          "evidence": "PRD archived"
+          "pass": null,
+          "evidence": "no PRD anywhere (pre-PRD-era)"
         },
         {
           "check": "T3 complete-evidence",
@@ -391,7 +386,7 @@
       "stories_fail": 0,
       "blocking_findings": 0,
       "advisory_findings": 0,
-      "s2_verdict": "PASS",
+      "s2_verdict": "SKIP",
       "checks": [
         {
           "check": "T1 state-legal",
@@ -399,9 +394,9 @@
           "evidence": "status 'complete'"
         },
         {
-          "check": "T2 complete-archived",
-          "pass": true,
-          "evidence": "PRD archived"
+          "check": "T0 zero-evidence completion",
+          "pass": null,
+          "evidence": "complete but no PRD/impl/rev anywhere (unverifiable)"
         }
       ]
     },
@@ -434,8 +429,8 @@
         },
         {
           "check": "T2 complete-archived",
-          "pass": true,
-          "evidence": "PRD archived"
+          "pass": null,
+          "evidence": "no PRD anywhere (pre-PRD-era)"
         },
         {
           "check": "T3 complete-evidence",
@@ -474,7 +469,7 @@
       "stories_fail": 0,
       "blocking_findings": 0,
       "advisory_findings": 0,
-      "s2_verdict": "PASS",
+      "s2_verdict": "SKIP",
       "checks": [
         {
           "check": "T1 state-legal",
@@ -482,9 +477,9 @@
           "evidence": "status 'complete'"
         },
         {
-          "check": "T2 complete-archived",
-          "pass": true,
-          "evidence": "PRD archived"
+          "check": "T0 zero-evidence completion",
+          "pass": null,
+          "evidence": "complete but no PRD/impl/rev anywhere (unverifiable)"
         }
       ]
     },
@@ -517,8 +512,8 @@
         },
         {
           "check": "T2 complete-archived",
-          "pass": true,
-          "evidence": "PRD archived"
+          "pass": null,
+          "evidence": "no PRD anywhere (pre-PRD-era)"
         },
         {
           "check": "T3 complete-evidence",
@@ -566,8 +561,8 @@
         },
         {
           "check": "T2 complete-archived",
-          "pass": true,
-          "evidence": "PRD archived"
+          "pass": null,
+          "evidence": "no PRD anywhere (pre-PRD-era)"
         },
         {
           "check": "T3 complete-evidence",
@@ -615,8 +610,8 @@
         },
         {
           "check": "T2 complete-archived",
-          "pass": true,
-          "evidence": "PRD archived"
+          "pass": null,
+          "evidence": "no PRD anywhere (pre-PRD-era)"
         },
         {
           "check": "T3 complete-evidence",
@@ -655,7 +650,7 @@
       "stories_fail": 0,
       "blocking_findings": 0,
       "advisory_findings": 0,
-      "s2_verdict": "PASS",
+      "s2_verdict": "SKIP",
       "checks": [
         {
           "check": "T1 state-legal",
@@ -663,9 +658,9 @@
           "evidence": "status 'complete'"
         },
         {
-          "check": "T2 complete-archived",
-          "pass": true,
-          "evidence": "PRD archived"
+          "check": "T0 zero-evidence completion",
+          "pass": null,
+          "evidence": "complete but no PRD/impl/rev anywhere (unverifiable)"
         }
       ]
     },
@@ -732,8 +727,8 @@
         },
         {
           "check": "T2 complete-archived",
-          "pass": true,
-          "evidence": "PRD archived"
+          "pass": null,
+          "evidence": "no PRD anywhere (pre-PRD-era)"
         },
         {
           "check": "T3 complete-evidence",
@@ -781,8 +776,8 @@
         },
         {
           "check": "T2 complete-archived",
-          "pass": true,
-          "evidence": "PRD archived"
+          "pass": null,
+          "evidence": "no PRD anywhere (pre-PRD-era)"
         }
       ]
     },
@@ -806,7 +801,7 @@
       "stories_fail": 0,
       "blocking_findings": 0,
       "advisory_findings": 0,
-      "s2_verdict": "PASS",
+      "s2_verdict": "SKIP",
       "checks": [
         {
           "check": "T1 state-legal",
@@ -814,9 +809,9 @@
           "evidence": "status 'complete'"
         },
         {
-          "check": "T2 complete-archived",
-          "pass": true,
-          "evidence": "PRD archived"
+          "check": "T0 zero-evidence completion",
+          "pass": null,
+          "evidence": "complete but no PRD/impl/rev anywhere (unverifiable)"
         }
       ]
     },
@@ -840,7 +835,7 @@
       "stories_fail": 0,
       "blocking_findings": 0,
       "advisory_findings": 0,
-      "s2_verdict": "PASS",
+      "s2_verdict": "SKIP",
       "checks": [
         {
           "check": "T1 state-legal",
@@ -848,9 +843,9 @@
           "evidence": "status 'complete'"
         },
         {
-          "check": "T2 complete-archived",
-          "pass": true,
-          "evidence": "PRD archived"
+          "check": "T0 zero-evidence completion",
+          "pass": null,
+          "evidence": "complete but no PRD/impl/rev anywhere (unverifiable)"
         }
       ]
     },
@@ -883,8 +878,8 @@
         },
         {
           "check": "T2 complete-archived",
-          "pass": true,
-          "evidence": "PRD archived"
+          "pass": null,
+          "evidence": "no PRD anywhere (pre-PRD-era)"
         },
         {
           "check": "T3 complete-evidence",
@@ -934,7 +929,7 @@
     },
     {
       "task": "typed-trail-integrity",
-      "status": "in-prd",
+      "status": "prd-ready",
       "pr": null,
       "repo": null,
       "url": null,
@@ -957,12 +952,7 @@
         {
           "check": "T1 state-legal",
           "pass": true,
-          "evidence": "status 'in-prd'"
-        },
-        {
-          "check": "T6 queue-gate",
-          "pass": true,
-          "evidence": "queued + status 'in-prd'"
+          "evidence": "status 'prd-ready'"
         }
       ]
     },
@@ -1020,7 +1010,7 @@
       "stories_fail": 0,
       "blocking_findings": 0,
       "advisory_findings": 0,
-      "s2_verdict": "PASS",
+      "s2_verdict": "SKIP",
       "checks": [
         {
           "check": "T1 state-legal",
@@ -1028,18 +1018,18 @@
           "evidence": "status 'complete'"
         },
         {
-          "check": "T2 complete-archived",
-          "pass": true,
-          "evidence": "PRD archived"
+          "check": "T0 zero-evidence completion",
+          "pass": null,
+          "evidence": "complete but no PRD/impl/rev anywhere (unverifiable)"
         }
       ]
     }
   ],
   "schema_gaps": [],
   "verdicts": {
-    "PASS": 19,
+    "PASS": 12,
     "FAIL": 0,
-    "SKIP": 8
+    "SKIP": 15
   },
   "overall": "PASS"
 }

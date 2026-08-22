@@ -46,7 +46,7 @@ never overrides — that brief.
 2. **No `gh`.** Every GitHub call is driver-side. You do network-free review from the
    on-disk checkout only.
 3. **No secrets** — never write API keys, tokens, or `.env` with real values anywhere.
-4. Do not touch `docs/tasks*`, `docs/prd-queue/`, `docs/knowledge/index.md` (driver-owned).
+4. Do not touch `docs/tasks*`, `docs/prd/`, `docs/knowledge/index.md` (driver-owned).
 5. Run everything with `cwd=/workspace` so pi discovers the workspace's skills
    (including the six ponytail skills injected via `--skill`) and extensions correctly.
 

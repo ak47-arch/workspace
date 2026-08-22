@@ -133,6 +133,12 @@ def session_resolvable():
                 if m:
                     ref = "sessions/{}/session.jsonl".format(m.group(1))
             if not ref:
+                # typed-link form (typed-trail convention): [session.jsonl](../session.jsonl)
+                # resolved from the decision's own location → sibling of the session dir.
+                m = re.search(r"\*\*Session\*\*:\s*\[session\.jsonl\]\s*\(\s*[^)]*session\.jsonl\s*\)", t)
+                if m:
+                    ref = "sessions/{}/session.jsonl".format(sess)
+            if not ref:
                 m = re.search(r"\bSession:\s*sessions/([0-9a-f-]+)/session\.jsonl", t)
                 if m:
                     ref = "sessions/{}/session.jsonl".format(m.group(1))

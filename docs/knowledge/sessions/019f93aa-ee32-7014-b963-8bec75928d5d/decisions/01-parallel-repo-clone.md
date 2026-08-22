@@ -3,7 +3,8 @@
 **Status**: accepted
 **Date**: 2026-07-24 17:07
 **Project**: workspace-portability
-**Session**: sessions/019f93aa-ee32-7014-b963-8bec75928d5d/session.jsonl
+**Session**: [session.jsonl](../session.jsonl)
+**Summary**: Replace the sequential for repo in repos: loop with concurrent.futures.ThreadPoolExecutor(max_workers=4).
 
 ### Context
 

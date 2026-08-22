@@ -2,9 +2,10 @@
 
 **Status**: accepted
 **Date**: 2026-08-10 20:59
-**Task**: implementer-agent
+**Task**: [implementer-agent](../../../../tasks/implementer-agent.md)
 **Project**: software-factory
-**Session**: sessions/019fe7d2-aa31-77e6-8ea0-9df3d6b3c6ed/session.jsonl
+**Session**: [session.jsonl](../session.jsonl)
+**Summary**: Container definition lives in workspace-portability: container/Dockerfile, container/sandbox-entrypoint.sh, container/run-sandbox.sh (host wrapper), plus a new profiles/f
 
 ### Context
 

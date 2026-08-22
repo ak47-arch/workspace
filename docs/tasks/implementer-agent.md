@@ -9,7 +9,7 @@
 
 ## Artifacts
 
-- Plan: [2026-08-10-implementer-agent.md](../prd-queue/2026-08-10-implementer-agent.md)
+- Plan: [2026-08-10-implementer-agent.md](../prd/2026-08-10-implementer-agent.md)
 
 ## Sessions
 

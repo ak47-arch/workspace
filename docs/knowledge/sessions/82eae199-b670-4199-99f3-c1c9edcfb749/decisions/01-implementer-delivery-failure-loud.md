@@ -2,9 +2,10 @@
 
 **Status**: accepted
 **Date**: 2026-08-17
-**Task**: implementer-delivery-failure-loud
+**Task**: [implementer-delivery-failure-loud](../../../../tasks/implementer-delivery-failure-loud.md)
 **Project**: software-factory
-**Session**: sessions/82eae199-b670-4199-99f3-c1c9edcfb749/session.jsonl
+**Session**: [session.jsonl](../session.jsonl)
+**Summary**: Use the explicit if ! push_and_pr guard and add explicit failure returns inside push_and_pr for the push and gh pr create steps.
 
 ### Context
 

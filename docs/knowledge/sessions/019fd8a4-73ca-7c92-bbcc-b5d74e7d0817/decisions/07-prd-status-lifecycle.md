@@ -2,9 +2,10 @@
 
 **Status**: accepted
 **Date**: 2026-08-09 21:18
-**Task**: extension-inline-agent
+**Task**: [extension-inline-agent](../../../../tasks/extension-inline-agent.md)
 **Project**: software-factory
-**Session**: sessions/019fd8a4-73ca-7c92-bbcc-b5d74e7d0817/session.jsonl
+**Session**: [session.jsonl](../session.jsonl)
+**Summary**: A PRD moves Review → Final when the prd-reviewer gate returns READY (a NOT READY verdict keeps it at Review until the blocking findings are fixed and re-reviewed). - Arch
 
 ### Context
 
@@ -54,7 +55,7 @@ tasks completed).
 
 ### Consequences
 
-- `docs/prd-queue/2026-08-08-extension-inline-agent.md` was promoted to
+- [extension-inline-agent](../../../../prd/2026-08-08-extension-inline-agent.md) was promoted to
   `Final` after the round-2 READY review; four archived PRDs
   (github-browser-auth-flow, x-capture-instrument, extend-software-factory-wsff,
   task-file-dashboard) were promoted during the same cleanup.

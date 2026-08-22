@@ -91,8 +91,8 @@
         },
         {
           "check": "branch protection on master (gh api)",
-          "pass": true,
-          "evidence": "required_pull_request_reviews present"
+          "pass": false,
+          "evidence": "gh api returned no protection"
         },
         {
           "check": "opensource/ gitignored",
@@ -108,6 +108,29 @@
           "check": "no secret values in tracked files",
           "pass": true,
           "evidence": "4 hit(s) \u2014 langfuse keys only, LOCAL instance, accepted risk"
+        }
+      ],
+      "failures": [
+        "no branch protection on master"
+      ],
+      "verdict": "FAIL"
+    },
+    "S10-typed-trail-integrity": {
+      "rows": [
+        {
+          "check": "string-path refs",
+          "pass": true,
+          "evidence": "0 \u2014 0 string-path refs on the typed-trail surface"
+        },
+        {
+          "check": "decision **Summary**: present",
+          "pass": true,
+          "evidence": "0 \u2014 120/120 decision files carry **Summary**:"
+        },
+        {
+          "check": "no stale/mismatched citations + manifest coherence",
+          "pass": true,
+          "evidence": "0 \u2014 0 stale prd-queue/archive citations; manifest\u2194docs/prd coherent"
         }
       ],
       "failures": [],

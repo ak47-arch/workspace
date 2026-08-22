@@ -2,9 +2,10 @@
 
 **Status**: accepted
 **Date**: 2026-08-09 21:25
-**Task**: extension-inline-agent
+**Task**: [extension-inline-agent](../../../../tasks/extension-inline-agent.md)
 **Project**: software-factory
-**Session**: sessions/019fd8a4-73ca-7c92-bbcc-b5d74e7d0817/session.jsonl
+**Session**: [session.jsonl](../session.jsonl)
+**Summary**: Fix the root cause — APPLIED 2026-08-09: patched herdr-agent-state.ts — heartbeat.unref?.() on the 10 s interval and clearInterval(heartbeat) in session_shutdown (mirrori
 
 ### Context
 
@@ -17,6 +18,7 @@ built-in subagent implementation was at fault and searched pi's compiled
 output in vain.
 
 **Update 2026-08-09 21:25**: the fix described below has been applied
+**Summary**: ## Decision: Subagent runs hang at handover — herdr heartbeat root cause, fix applied + persist-step mitigation Status: accepted Date: 2026-08-09 21:25 Task: extension-in
 (`.pi/extensions/herdr-agent-state.ts`, commit `5bd33ec`) and verified
 
 ### Problem

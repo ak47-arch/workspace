@@ -60,7 +60,7 @@ implementer); deps are workspace-side.
 
 | Artefact | Location |
 |---|---|
-| PRD the PR must satisfy | `docs/prd-queue/<date>-<slug>.md` |
+| PRD the PR must satisfy | `docs/prd/<date>-<slug>.md` |
 | Task file (status gate) | `docs/tasks/<slug>.md` |
 | Task list | `docs/tasks.txt` |
 
@@ -95,10 +95,10 @@ is the PRD-mandated source of truth for the loop gate.
 - Read-only git (`diff/log/show/status`) **is** permitted — it is how the worker
   reviews `base...head`.
 - A `REQUEST_CHANGES` verdict does **not** merge and does **not** complete the
-  task; the PRD stays in `docs/prd-queue/` until user UAT + go-ahead. On APPROVE
+  task; the PRD stays in `docs/prd/` until user UAT + go-ahead. On APPROVE
   the driver transitions the task `in-progress → in-review` with the review session
   link.
-- Do not modify `docs/tasks*`, `docs/prd-queue/`, or the knowledge index.
+- Do not modify `docs/tasks*`, `docs/prd/`, or the knowledge index.
 - Continuation across a container respawn uses pi's native session continuation
   (`--session-dir /sandbox/sessions` + `--continue`), so the session id survives a
   kill; there is no PROGRESS.md.

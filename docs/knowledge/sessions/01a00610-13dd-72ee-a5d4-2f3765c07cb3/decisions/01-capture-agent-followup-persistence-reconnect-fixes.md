@@ -2,9 +2,10 @@
 
 **Status**: accepted
 **Date**: 2026-08-15 22:40
-**Task**: x-capture-instrument
+**Task**: [x-capture-instrument](../../../../tasks/x-capture-instrument.md)
 **Project**: feed-analyser
-**Session**: sessions/01a00610-13dd-72ee-a5d4-2f3765c07cb3/session.jsonl
+**Session**: [session.jsonl](../session.jsonl)
+**Summary**: agent.js: follow-ups use session.prompt() (not session.followUp()), against the same in-memory session so context is retained. - server.js: onSettled accumulates handle.a
 
 ### Context
 

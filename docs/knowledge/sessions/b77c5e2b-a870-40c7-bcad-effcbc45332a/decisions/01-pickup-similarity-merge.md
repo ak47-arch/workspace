@@ -2,8 +2,9 @@
 
 **Status**: accepted
 **Date**: 2026-08-16
-**Task**: task-pickup-similarity-merge
+**Task**: [task-pickup-similarity-merge](../../../../tasks/task-pickup-similarity-merge.md)
 **Session**: b77c5e2b-a870-40c7-bcad-effcbc45332a
+**Summary**: When collecting [slug] lines: if there is exactly one line, relocate it into the task file's declared project (legacy behaviour, unchanged).
 
 ### Context
 

@@ -1,3 +1,7 @@
+**Summary**: ## Decision: Code-review agent APPROVED PR #1, but a real host run surfaced 3 driver bugs the in-container review could not see - Slug: code-review-agent · Review session
+
+**Summary**: Treat an in-container APPROVE as necessary but not sufficient; the host-side UAT hand-off list (item 1: real container run + real gh) is the authority that catches real-p
+
 ## Decision: Code-review agent APPROVED PR #1, but a real host run surfaced 3 driver bugs the in-container review could not see
 
 - Slug: code-review-agent · Review session: 19cb853b-a2e9-4eb6-865a-138864ba1934

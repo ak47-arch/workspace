@@ -1,18 +1,17 @@
 # PRD: Extension Inline Agent — reason over captures, save enriched evidence
 
 **Date**: 2026-08-08 21:50
-**Status**: Final
+**Status**: [Final](./manifest.json)
 **Owner**: feed_analyser / capture instrument
-**Task**: extension-inline-agent
-**Session**: `docs/knowledge/sessions/019fd8a4-73ca-7c92-bbcc-b5d74e7d0817/session.jsonl`
+**Task**: [extension-inline-agent](../tasks/extension-inline-agent.md)
+**Session**: [session.jsonl](../knowledge/sessions/019fd8a4-73ca-7c92-bbcc-b5d74e7d0817/session.jsonl)
 **Decisions**:
-  - `docs/knowledge/sessions/019fd8a4-73ca-7c92-bbcc-b5d74e7d0817/decisions/01-pi-sdk-agent-service.md`
-  - `docs/knowledge/sessions/019fd8a4-73ca-7c92-bbcc-b5d74e7d0817/decisions/02-openrouter-inference-server-side-key.md`
-  - `docs/knowledge/sessions/019fd8a4-73ca-7c92-bbcc-b5d74e7d0817/decisions/03-agent-tools-fetch-url-only.md`
-  - `docs/knowledge/sessions/019fd8a4-73ca-7c92-bbcc-b5d74e7d0817/decisions/04-artefact-session-evidence-model.md`
-  - `docs/knowledge/sessions/019fd8a4-73ca-7c92-bbcc-b5d74e7d0817/decisions/05-twitter-kb-plain-files-fts5-read-api.md`
-  - `docs/knowledge/sessions/019fd8a4-73ca-7c92-bbcc-b5d74e7d0817/decisions/06-browser-control-deferred.md`
-
+  - [01-pi-sdk-agent-service](../knowledge/sessions/019fd8a4-73ca-7c92-bbcc-b5d74e7d0817/decisions/01-pi-sdk-agent-service.md)
+  - [02-openrouter-inference-server-side-key](../knowledge/sessions/019fd8a4-73ca-7c92-bbcc-b5d74e7d0817/decisions/02-openrouter-inference-server-side-key.md)
+  - [03-agent-tools-fetch-url-only](../knowledge/sessions/019fd8a4-73ca-7c92-bbcc-b5d74e7d0817/decisions/03-agent-tools-fetch-url-only.md)
+  - [04-artefact-session-evidence-model](../knowledge/sessions/019fd8a4-73ca-7c92-bbcc-b5d74e7d0817/decisions/04-artefact-session-evidence-model.md)
+  - [05-twitter-kb-plain-files-fts5-read-api](../knowledge/sessions/019fd8a4-73ca-7c92-bbcc-b5d74e7d0817/decisions/05-twitter-kb-plain-files-fts5-read-api.md)
+  - [06-browser-control-deferred](../knowledge/sessions/019fd8a4-73ca-7c92-bbcc-b5d74e7d0817/decisions/06-browser-control-deferred.md)
 ## Problem statement
 
 The capture instrument saves X/Twitter posts (text + links + curated comment

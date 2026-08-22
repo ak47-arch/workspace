@@ -3,7 +3,8 @@
 **Status**: accepted
 **Date**: 2026-07-24 15:53
 **Project**: workspace-portability
-**Session**: sessions/019f937c-9afe-731e-a70d-c88d4eb9d675/session.jsonl
+**Session**: [session.jsonl](../session.jsonl)
+**Summary**: Use GitHub Device Authorization Flow as the fallback when GITHUB_TOKEN is not provided.
 
 ### Context
 

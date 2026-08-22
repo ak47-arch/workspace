@@ -2,9 +2,10 @@
 
 **Status**: accepted
 **Date**: 2026-08-01 16:36
-**Task**: task-file-dashboard
+**Task**: [task-file-dashboard](../../../../tasks/task-file-dashboard.md)
 **Project**: software-factory
-**Session**: sessions/019fb98c-22b4-7a11-8ef5-fc3baa6634c0/session.jsonl
+**Session**: [session.jsonl](../session.jsonl)
+**Summary**: Adopt a state machine + CLI tool approach
 
 ### Context
 

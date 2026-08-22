@@ -2,9 +2,10 @@
 
 **Status**: accepted
 **Date**: 2026-08-18 02:27
-**Task**: implementer-delivery-failure-loud
+**Task**: [implementer-delivery-failure-loud](../../../../tasks/implementer-delivery-failure-loud.md)
 **Project**: software-factory
-**Session**: sessions/01a00c50-b714-7811-8086-3bc6e0a8ea64/session.jsonl
+**Session**: [session.jsonl](../session.jsonl)
+**Summary**: Code — any change under bin/, config/, .github/, opensource/, src/ — reaches master only via a PR merged by the user (merge authority, decision 05).
 
 ### Context
 

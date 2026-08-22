@@ -12,7 +12,7 @@ This directory (`docs/tasks/`) contains one file per task — a **reference hub*
 
 3. **Work progresses** — the task file accumulates links to the plan document, session files, and decisions as they're created.
 
-4. **Task completes** — the plan document moves from `docs/prd-queue/` to `docs/prd-archive/` (same filename, just moved), and the task file status updates to `complete`.
+4. **Task completes** — the task file status updates to `complete`; the plan document **stays at its stable `docs/prd/<date>-<slug>.md` home** (never moves — lifecycle state is the manifest's `prds[].status`, updated by `bin/transition-task.sh`, not a directory relocation).
 
 ## Lifecycle states
 
@@ -24,10 +24,10 @@ open → in-prd → prd-ready → in-implementation → in-verification → comp
 |-------|---------|
 | `open` | In `tasks.txt` but not yet picked up (no `[slug]` annotation, no task file) |
 | `in-prd` | Being analysed; plan document is being drafted (may include Architecture and Program Design sections for Medium/Large tasks) |
-| `prd-ready` | Plan document is in `docs/prd-queue/` ready for implementation |
+| `prd-ready` | Plan document is in `docs/prd/` ready for implementation |
 | `in-implementation` | Implementation is active |
 | `in-verification` | Testing/verification in progress |
-| `complete` | Done; plan document moved to `docs/prd-archive/` |
+| `complete` | Done; manifest `prds[].status` set accordingly; plan doc stays at `docs/prd/` |
 
 The user marks state transitions manually. The agent updates the task file and moves artifacts accordingly.
 
@@ -65,10 +65,9 @@ docs/
 ├── tasks/                    ← task reference hubs
 │   ├── README.md
 │   └── <slug>.md
-├── prd-queue/                ← PRDs ready for implementation
-│   └── <yyyy-mm-dd>-<slug>.md
-├── prd-archive/              ← completed PRDs (same filename)
-│   └── <yyyy-mm-dd>-<slug>.md
+├── prd/                     ← stable PRD home (never moves; lifecycle = manifest status)
+│   ├── <yyyy-mm-dd>-<slug>.md
+│   └── manifest.json         ← routing manifest: slug → status + ordering_key
 └── knowledge/
     └── sessions/
         └── <uuid>/

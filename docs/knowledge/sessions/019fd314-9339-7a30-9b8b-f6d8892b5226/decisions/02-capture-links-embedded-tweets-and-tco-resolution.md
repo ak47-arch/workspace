@@ -2,9 +2,10 @@
 
 **Status**: accepted
 **Date**: 2026-08-06
-**Task**: x-capture-instrument
+**Task**: [x-capture-instrument](../../../../tasks/x-capture-instrument.md)
 **Project**: feed-analyser
-**Session**: sessions/019fd314-9339-7a30-9b8b-f6d8892b5226/session.jsonl
+**Session**: [session.jsonl](../session.jsonl)
+**Summary**: External links: for t.co anchors, resolve the real destination from the anchor's display text; if the text is not a recognizable URL, fall back to the t.co href.
 
 ### Context
 

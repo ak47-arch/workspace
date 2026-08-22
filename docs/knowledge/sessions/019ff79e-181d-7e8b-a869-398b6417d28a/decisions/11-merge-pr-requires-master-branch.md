@@ -4,7 +4,8 @@
 **Date**: 2026-08-15 01:12
 **Task**: software-factory
 **Project**: software-factory
-**Session**: sessions/019ff79e-181d-7e8b-a869-398b6417d28a/session.jsonl
+**Session**: [session.jsonl](../session.jsonl)
+**Summary**: merge-pr.sh must run with the workspace's current branch = master.
 
 ### Context
 

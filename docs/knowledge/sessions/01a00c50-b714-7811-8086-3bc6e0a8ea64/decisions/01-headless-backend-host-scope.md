@@ -2,9 +2,10 @@
 
 **Status**: accepted
 **Date**: 2026-08-17 02:56
-**Task**: headless-agent-containerisation
+**Task**: [headless-agent-containerisation](../../../../tasks/headless-agent-containerisation.md)
 **Project**: software-factory
-**Session**: sessions/01a00c50-b714-7811-8086-3bc6e0a8ea64/session.jsonl
+**Session**: [session.jsonl](../session.jsonl)
+**Summary**: Once a PRD is Final (task prd-ready), a headless backend host takes over autonomously: it picks up the PRD, runs the implementer (container, separate worktree), runs the
 
 ### Context
 

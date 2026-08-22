@@ -1,11 +1,11 @@
 # PRD: X Capture Instrument
 
 **Date**: 2026-08-06 (rev 4; revised from 2026-08-04, original 2026-07-25 20:01)
-**Status**: Final
+**Status**: [Final](./manifest.json)
 **Project**: feed-analyser
 **Vision**: feed_analyser/capture/docs/vision/VISION.md
 **Owner**: Feed analyser → capture pivot initiative
-**Task**: x-capture-instrument
+**Task**: [x-capture-instrument](../tasks/x-capture-instrument.md)
 **Session**: (current session — product-layer skill conversation)
 **Decisions**: Recorded inline in this PRD (see Implementation decisions, Architecture, and Program Design sections).
 

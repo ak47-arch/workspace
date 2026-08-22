@@ -2,9 +2,10 @@
 
 **Status**: accepted
 **Date**: 2026-08-13 23:00
-**Task**: code-review-agent
+**Task**: [code-review-agent](../../../../tasks/code-review-agent.md)
 **Project**: software-factory
-**Session**: sessions/019ff79e-181d-7e8b-a869-398b6417d28a/session.jsonl
+**Session**: [session.jsonl](../session.jsonl)
+**Summary**: The review worker MAY run read-only git subcommands (diff, log, show, status) against its PR-head checkout; it must never mutate anything (no add/ commit/push/checkout/wo
 
 ### Context
 
