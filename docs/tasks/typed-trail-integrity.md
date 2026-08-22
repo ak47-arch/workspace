@@ -45,3 +45,4 @@ against.
 - Merge: `50dc536` (2026-08-22, ak47-arch — user go-ahead, decision 05) [ak47-arch/workspace#46]
 - Bookkeeping PR: #47 → Merge `fbfd32e` (2026-08-22, ak47-arch — user go-ahead, decision 05) [ak47-arch/workspace#47]
 - Complete — both PRs merged (code #46 = `50dc536`, bookkeeping #47 = `fbfd32e`). Reviewed to APPROVE after three REQUEST_CHANGES rounds; UAT-merged.
+- Merge: f453e4f1a13e195a9d5588936d30388a7f55d5f8 (2026-08-22 23:28, ak47-arch — user go-ahead, decision 05) [ak47-arch/workspace#52]
