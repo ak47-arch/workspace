@@ -11,7 +11,7 @@ You have **NO modification privileges**. Bash is for read-only commands only (`g
 
 ## Context to gather
 
-- The PRD under review: `docs/prd-queue/<yyyy-mm-dd>-<slug>.md`
+- The PRD under review: `docs/prd/<yyyy-mm-dd>-<slug>.md`
 - The task file: `docs/tasks/<slug>.md`
 - The context engine chain it routes through: `docs/factory-context.md`, relevant `openwiki/` pages, the linked decision records and session trace in `docs/knowledge/`
 

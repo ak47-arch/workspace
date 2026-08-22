@@ -2,9 +2,10 @@
 
 **Status**: accepted
 **Date**: 2026-08-14 22:37
-**Task**: task-selection-abstraction-layer
+**Task**: [task-selection-abstraction-layer](../../../../tasks/task-selection-abstraction-layer.md)
 **Project**: software-factory
-**Session**: sessions/019ff79e-181d-7e8b-a869-398b6417d28a/session.jsonl
+**Session**: [session.jsonl](../session.jsonl)
+**Summary**: resolve_prd in bin/implementer-run.sh: --pick selects the oldest Final PRD whose task file status is Status: prd-ready. in-prd, in-progress, in-review, and complete tasks
 
 ### Context
 

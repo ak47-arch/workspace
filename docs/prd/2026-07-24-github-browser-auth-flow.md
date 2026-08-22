@@ -1,13 +1,12 @@
 # PRD: GitHub Browser Auth Flow for Workspace Restore
 
 **Date**: 2026-07-24 15:53
-**Status**: Final
+**Status**: [Final](./manifest.json)
 **Owner**: Workspace portability initiative
-**Task**: github-browser-auth-flow
-**Session**: `docs/knowledge/sessions/019f937c-9afe-731e-a70d-c88d4eb9d675/session.jsonl`
+**Task**: [github-browser-auth-flow](../tasks/github-browser-auth-flow.md)
+**Session**: [session.jsonl](../knowledge/sessions/019f937c-9afe-731e-a70d-c88d4eb9d675/session.jsonl)
 **Decisions**:
-  - `docs/knowledge/sessions/019f937c-9afe-731e-a70d-c88d4eb9d675/decisions/01-github-browser-auth-flow.md`
-
+  - [01-github-browser-auth-flow](../knowledge/sessions/019f937c-9afe-731e-a70d-c88d4eb9d675/decisions/01-github-browser-auth-flow.md)
 ## Problem statement
 
 The workspace-portability Phase 1 restore pipeline (`magic-setup.sh` → `bootstrap-orchestrator.sh` → `restore_workspace.py`) requires a `GITHUB_TOKEN` to clone private repos and download critical snapshots from GitHub Releases. On a fresh machine, the user must manually:

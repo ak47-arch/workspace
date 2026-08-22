@@ -9,7 +9,7 @@
 
 ## Artifacts
 
-- Plan: `docs/prd-queue/2026-08-17-sandbox-credential-mounting.md`
+- Plan: [2026-08-17-sandbox-credential-mounting](../prd/2026-08-17-sandbox-credential-mounting.md)
 
 ## Sessions
 

@@ -9,7 +9,7 @@
 
 ## Artifacts
 
-- Plan: `docs/prd-queue/2026-08-17-headless-agent-containerisation.md`
+- Plan: [2026-08-17-headless-agent-containerisation](../prd/2026-08-17-headless-agent-containerisation.md)
 
 ## Sessions
 

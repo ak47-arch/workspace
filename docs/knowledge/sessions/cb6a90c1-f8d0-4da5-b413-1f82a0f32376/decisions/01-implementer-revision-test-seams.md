@@ -2,9 +2,10 @@
 
 **Status**: accepted
 **Date**: 2026-08-14
-**Task**: implementer-revision-mode
+**Task**: [implementer-revision-mode](../../../../tasks/implementer-revision-mode.md)
 **Project**: software-factory
-**Session**: sessions/cb6a90c1-f8d0-4da5-b413-1f82a0f32376/session.jsonl
+**Session**: [session.jsonl](../session.jsonl)
+**Summary**: Add a podman_call() seam (${IMPLEMENTER_PODMAN_BIN:-podman}) to bin/implementer-run.sh, mirroring review-run.sh, and route run_container()/stop_container() through it (dr
 
 ### Context
 

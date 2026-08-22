@@ -2,9 +2,10 @@
 
 **Status**: accepted
 **Date**: 2026-07-30 23:32
-**Task**: end-to-end-traceability
+**Task**: [end-to-end-traceability](../../../../tasks/end-to-end-traceability.md)
 **Project**: software-factory
-**Session**: sessions/019fb3ee-9573-78d2-9d4b-a4bf49a742a7/session.jsonl
+**Session**: [session.jsonl](../session.jsonl)
+**Summary**: The PRD queue is a real queue: - A PRD enters docs/prd-queue/ when a task transitions to prd-ready - A PRD leaves docs/prd-queue/ when the task transitions to complete —
 
 ### Context
 

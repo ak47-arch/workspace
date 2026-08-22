@@ -24,13 +24,10 @@ Invoked via the `product-layer` skill.
 (`in-prd` → `prd-ready` → `in-progress` → `in-review` → `complete`).
 Tooling: `bin/transition-task.sh`.
 
-**PRD lifecycle.** A PRD enters `docs/prd-queue/` when its task reaches
-`prd-ready`, and leaves for `docs/prd-archive/` only when the task is genuinely
-done: feature passed user acceptance testing **and** the user explicitly gave
-the go-ahead — **code written + unit tests passing is NOT "complete."** Until
-UAT + sign-off, keep the task at `prd-ready` and the PRD in the queue. To reopen
-an archived PRD: move back to `docs/prd-queue/`, set the task to `prd-ready`,
-re-point the Plan artifact path. (See decision
+**PRD lifecycle.** A PRD lives at the stable home `docs/prd/<date>-<slug>.md` — it never physically moves. Lifecycle state is the routing
+manifest (`docs/prd/manifest.json`, `prds[].status`), updated by `bin/transition-task.sh` instead of a file move. Until
+UAT + sign-off, keep the task at `prd-ready` and the PRD's manifest status open. To reopen a closed PRD: set the task back to
+`prd-ready` and the manifest status back to open. (See decision
 [PRD moves to archive only after UAT + user go-ahead](knowledge/index.md).)
 
 **assembly_line** — CI/CD, agents, sandboxes, testing. Orchestrated by
@@ -38,7 +35,7 @@ re-point the Plan artifact path. (See decision
 two agents:
 - **implementer agent** — a decoupled brain/hands pipeline
   (`bin/implementer-run.sh` host driver + a disposable sandbox container) that
-  picks a `Final` PRD from `docs/prd-queue/`, implements it in a durable
+  picks a `Final` PRD from `docs/prd/`, implements it in a durable
   host-side worktree via a headless `pi` worker, and **raises one code PR per
 touched repo + a bookkeeping PR to the workspace root** (multi-repo delivery,
   decision 01: Shape A = N app code PRs + 1 bookkeeping PR; Shape B = 1 root
@@ -120,7 +117,7 @@ factory-context.md (this file)
 Discovery layer
   openwiki/           Per-project code docs (what/how)
   docs/vision/        Stakeholder vision, end goals (why a project exists)
-  docs/prd-queue/     Forward-looking specs for active tasks
+  docs/prd/              Stable PRD home (lifecycle = manifest.status)
   docs/research/      In-session research signals (candidate PRD backlog)
   docs/evaluations/   Eval reports + index (what the factory verified and how)
   .agents/skills/     Operational playbooks

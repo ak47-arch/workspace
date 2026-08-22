@@ -3,7 +3,8 @@
 **Status**: accepted
 **Date**: 2026-07-30 21:18
 **Project**: headroom-pi
-**Session**: sessions/019fb3a9-bf84-79db-b194-c580b76e4228/session.jsonl
+**Session**: [session.jsonl](../session.jsonl)
+**Summary**: The session repopulation uses a three-layer architecture
 
 ### Context
 
@@ -51,6 +52,7 @@ Herdr's Rust codebase stores the session ref in terminal state (`terminal.persis
 - `src/terminal/state.rs` — `set_agent_session_ref_for_session_start()`, `persisted_agent_session` field, full-lifecycle hook authority
 
 **Layer 3 — Mission Control Orphaned Session Fallback (last resort):**
+**Summary**: ## Decision: Herdr-Pi Session Repopulation Architecture Status: accepted Date: 2026-07-30 21:18 Project: headroom-pi Session: session.jsonl
 If both layers 1 and 2 fail, mission-control's herdr collector (`mc-core/src/collector/herdr.rs`) scans pi's session directories by cwd:
 - `find_orphaned_session_path()` — derives pi's session directory slug from the pane's `cwd`, finds the newest `.jsonl`, verifies the header `cwd` field
 - `find_orphaned_session_path_by_header()` — fallback that scans all session directories and matches by header `cwd`

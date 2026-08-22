@@ -2,9 +2,10 @@
 
 **Status**: accepted
 **Date**: 2026-08-17 20:05
-**Task**: implementer-delivery-failure-loud
+**Task**: [implementer-delivery-failure-loud](../../../../tasks/implementer-delivery-failure-loud.md)
 **Project**: software-factory
-**Session**: sessions/d5492a5c-6c07-4f58-b410-5feefa2a43c2/session.jsonl
+**Session**: [session.jsonl](../session.jsonl)
+**Summary**: In bin/implementer-run.sh: - Capture the git push status; on failure print ERROR: git push of branch … failed. and return 3 — never print Pushed branch … on a failed push
 
 ### Context
 The implementer driver's success path delivered via `push_and_pr || true`,

@@ -2,9 +2,10 @@
 
 **Status**: accepted
 **Date**: 2026-07-31 01:56
-**Task**: feed-analyser-survival-infra-private-repos
+**Task**: [feed-analyser-survival-infra-private-repos](../../../../tasks/feed-analyser-survival-infra-private-repos.md)
 **Project**: workspace-portability
-**Session**: sessions/019fb4a3-3b15-7363-838d-100a18ed270f/session.jsonl
+**Session**: [session.jsonl](../session.jsonl)
+**Summary**: Use gh repo edit --visibility private to flip both ak47-arch/feed_analyser and ak47-arch/goal-agent from PUBLIC to PRIVATE on GitHub.
 
 ### Context
 

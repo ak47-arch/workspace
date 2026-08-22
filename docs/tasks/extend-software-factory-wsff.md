@@ -9,7 +9,7 @@
 
 ## Artifacts
 
-- [Plan](../prd-archive/2026-07-31-extend-software-factory-wsff.md) (completed)
+- [Plan](../prd/2026-07-31-extend-software-factory-wsff.md) (completed)
 
 ## Sessions
 

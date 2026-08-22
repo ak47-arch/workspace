@@ -1,5 +1,7 @@
 ## Decision
 
+**Summary**: ## Decision
+
 Implementer delivery failures route to the existing `fail_run` failure path
 with an explicit guard + return discipline, instead of being swallowed into a
 false success; and the driver's test fixture no longer depends on the
@@ -7,9 +9,10 @@ false success; and the driver's test fixture no longer depends on the
 
 **Status**: Accepted
 **Date**: 2026-08-17
-**Task**: implementer-delivery-failure-loud
+**Task**: [implementer-delivery-failure-loud](../../../../tasks/implementer-delivery-failure-loud.md)
 **Project**: software-factory
 **Session**: 8370f85b-3627-49fd-ad16-0df58e6c7cd4
+**Summary**: ## Decision Implementer delivery failures route to the existing fail_run failure path with an explicit guard + return discipline, instead of being swallowed into a false
 
 ## Context
 

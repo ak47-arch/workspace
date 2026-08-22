@@ -238,7 +238,7 @@ DEPTH_CLAIMS = [
               "bin/merge-pr.sh present; review-run.sh has no merge-pr call")),
     # 09-pick-prd-ready-only → --pick keys on prd-ready task state
     ("09-pick-prd-ready-only",
-     "implementer --pick keys on prd-ready/prd-queue (not just Final PRDs)",
+     "implementer --pick keys on prd-ready task state from stable docs/prd/ (not just Final PRDs)",
      lambda: (_contains("bin", "implementer-run.sh", needle="prd-ready"),
               "bin/implementer-run.sh references prd-ready")),
     # 02-branch-protection-merge-only → master is branch-protected, merge-only
@@ -293,12 +293,12 @@ DEPTH_CLAIMS = [
      "code lands on master only via PR (master merge-only enforced)",
      lambda: (_gh_protected() and _fexists("bin", "merge-pr.sh"),
               "master branch protection + bin/merge-pr.sh gate")),
-    # 03-prd-archive-requires-uat-and-user-signoff → PRD archive + queue split
+    # 03-prd-archive-requires-uat-and-user-signoff → stable home + routing manifest
     ("03-prd-archive-requires-uat-and-user-signoff",
-     "PRD archive/queue split exists (queue ≠ archive; archive is final)",
-     lambda: (_fexists("docs", "prd-queue")
-              and _fexists("docs", "prd-archive"),
-              "docs/prd-queue + docs/prd-archive present")),
+     "PRD lifecycle lives in a stable home + routing manifest (no queue/archive split)",
+     lambda: (_fexists("docs", "prd", "manifest.json")
+              and _fexists("docs", "prd"),
+              "docs/prd home + routing manifest present")),
     # 02-review-sub-agent-in-session-validation-gate → reviewer as read-only sub-agent
     ("02-review-sub-agent-in-session-validation-gate",
      "reviewer is a read-only sub-agent (persona present)",
@@ -384,9 +384,9 @@ APP_CLAIMS = [
      "task-centric storage present (docs/tasks/)",
      lambda: (_fexists("docs", "tasks"), "docs/tasks dir present")),
     ("03-prd-queue-lifecycle",
-     "PRD queue lifecycle dirs present (queue + archive)",
-     lambda: (_fexists("docs", "prd-queue") and _fexists("docs", "prd-archive"),
-              "docs/prd-queue + docs/prd-archive present")),
+     "PRD lifecycle tracked via routing manifest (stable docs/prd/ home)",
+     lambda: (_fexists("docs", "prd") and _fexists("docs", "prd", "manifest.json"),
+              "docs/prd home + routing manifest present")),
     ("02-context-engine-nomenclature",
      "context-engine nomenclature docs present",
      lambda: (_fexists("docs", "factory-context.md")
@@ -444,17 +444,17 @@ LEGACY_CLAIMS = [
     # survival-infrastructure / gdrive (PRD is in the queue — feature is planned,
     # not yet implemented; the checkable claim is the PRD backlog entry)
     ("01-gdrive-integration-model",
-     "gdrive ingestion is a planned feature (PRD in queue)",
-     lambda: (_fexists("docs", "prd-queue", "2026-07-25-gdrive-instruction-source-ingest.md"),
-              "gdrive PRD present in queue")),
+     "gdrive ingestion is a planned feature (PRD in stable home)",
+     lambda: (_fexists("docs", "prd", "2026-07-25-gdrive-instruction-source-ingest.md"),
+              "gdrive PRD present in docs/prd/")),
     ("02-gdrive-auth-and-configuration",
-     "gdrive auth config scoped (PRD in queue)",
-     lambda: (_fexists("docs", "prd-queue", "2026-07-25-gdrive-instruction-source-ingest.md"),
-              "gdrive PRD present in queue")),
+     "gdrive auth config scoped (PRD in stable home)",
+     lambda: (_fexists("docs", "prd", "2026-07-25-gdrive-instruction-source-ingest.md"),
+              "gdrive PRD present in docs/prd/")),
     ("03-gdrive-file-export-and-storage",
-     "gdrive export/storage scoped (PRD in queue)",
-     lambda: (_fexists("docs", "prd-queue", "2026-07-25-gdrive-instruction-source-ingest.md"),
-              "gdrive PRD present in queue")),
+     "gdrive export/storage scoped (PRD in stable home)",
+     lambda: (_fexists("docs", "prd", "2026-07-25-gdrive-instruction-source-ingest.md"),
+              "gdrive PRD present in docs/prd/")),
     # feed_analyser capture (agent-service + server pieces)
     ("01-capture-agent-followup-persistence-reconnect-fixes",
      "capture agent followup/persistence/reconnect fixes landed (agent-service)",
@@ -525,11 +525,12 @@ LEGACY_CLAIMS = [
     ("07-prd-status-lifecycle",
      "PRD status-lifecycle vocabulary present (prd docs carry Status)",
      lambda: (all("**Status**" in read(f) for f in
-                  glob.glob(os.path.join(WS, "docs", "prd-queue", "*.md"))),
-              "all queue PRDs carry **Status**")),
+                  glob.glob(os.path.join(WS, "docs", "prd", "*.md"))),
+              "all stable-home PRDs carry **Status**")),
     ("01-prd-as-routing-document-context-engine-depth",
-     "PRD-as-routing-document exists (prd-queue is the routing entry)",
-     lambda: (_fexists("docs", "prd-queue"), "docs/prd-queue present")),
+     "PRD-as-routing-document exists (routing manifest is the entry)",
+     lambda: (_fexists("docs", "prd", "manifest.json"),
+              "docs/prd/manifest.json present")),
     # task identification / traceability
     ("01-task-identification",
      "task identification convention present (docs/tasks.txt)",
@@ -537,8 +538,8 @@ LEGACY_CLAIMS = [
     ("04-traceability-links",
      "traceability links present (task → PRD → review in task files)",
      lambda: (_fexists("docs", "tasks")
-              and _fexists("docs", "prd-archive"),
-              "docs/tasks + docs/prd-archive present")),
+              and _fexists("docs", "prd"),
+              "docs/tasks + docs/prd present")),
     # code-review / review-sim / mock-gh
     ("01-review-driver-gh-call-and-test-seam",
      "review driver gh call + test seam present",

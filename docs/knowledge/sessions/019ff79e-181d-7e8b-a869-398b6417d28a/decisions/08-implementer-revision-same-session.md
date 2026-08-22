@@ -2,9 +2,10 @@
 
 **Status**: accepted
 **Date**: 2026-08-14 22:13
-**Task**: implementer-revision-mode
+**Task**: [implementer-revision-mode](../../../../tasks/implementer-revision-mode.md)
 **Project**: software-factory
-**Session**: sessions/019ff79e-181d-7e8b-a869-398b6417d28a/session.jsonl
+**Session**: [session.jsonl](../session.jsonl)
+**Summary**: Review findings are fixed by the implementer, resumed in the same implementation session (same --session-id, --continue, same branch), with the reviewer's report.md + rev
 
 ### Context
 
@@ -47,6 +48,7 @@ Review findings are fixed by the **implementer**, resumed in the **same
 implementation session** (same `--session-id`, `--continue`, same branch), with
 the reviewer's `report.md` + review-emerged decision injected as a
 **higher-priority authority** than the session's own prior reasoning. New
+**Summary**: ## Decision: Review-feedback fixes are made by the implementer, resuming its original session Status: accepted Date: 2026-08-14 22:13 Task: implementer-revision-mode Proj
 `implementer-run.sh --revise <pr>` mode reconstructs the run dir + session-dir,
 remounts the original worktree, injects the review report, and amends the same
 branch. Merge remains operator-gated (decision 07) and the reviewer remains

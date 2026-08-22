@@ -4,7 +4,8 @@
 **Date**: 2026-07-31 01:21
 **Task**: _(none — part of the ongoing context infrastructure initiative)_
 **Project**: software-factory
-**Session**: sessions/019fb45b-9f0f-79e2-ac55-a0a084ac3156/session.jsonl
+**Session**: [session.jsonl](../session.jsonl)
+**Summary**: Adopt the docs/vision/ convention as defined in docs/vision-convention.md
 
 ### Context
 

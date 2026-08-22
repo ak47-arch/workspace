@@ -2,9 +2,10 @@
 
 **Status**: accepted
 **Date**: 2026-08-17 02:56
-**Task**: headless-agent-containerisation
+**Task**: [headless-agent-containerisation](../../../../tasks/headless-agent-containerisation.md)
 **Project**: software-factory
-**Session**: sessions/01a00c50-b714-7811-8086-3bc6e0a8ea64/session.jsonl
+**Session**: [session.jsonl](../session.jsonl)
+**Summary**: The backend loop stops at review success (APPROVE).
 
 ### Context
 
@@ -32,6 +33,7 @@ sign-off contradicts the lifecycle gate and the authority-split decisions.
 
 The backend loop stops at review success (`APPROVE`). The deliverable is a
 **merge-ready PR**: implemented, reviewed, approved, and labelled so the user
+**Summary**: ## Decision: Backend delivers a merge-ready PR; merge stays human Status: accepted Date: 2026-08-17 02:56 Task: headless-agent-containerisation Project: software-factory
 can merge it directly. The task transitions to `in-review`. The user performs
 UAT on the PR and runs `bin/merge-pr.sh` (decision 07) to merge and complete
 the task.

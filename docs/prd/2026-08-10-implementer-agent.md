@@ -1,17 +1,16 @@
 # PRD: Implementer Agent — sandboxed autonomous implementation (harness + cattle container, workspace-portability integration)
 
 **Date**: 2026-08-10 20:59
-**Status**: Final
+**Status**: [Final](./manifest.json)
 **Owner**: software-factory
-**Task**: implementer-agent
-**Session**: `docs/knowledge/sessions/019fe7d2-aa31-77e6-8ea0-9df3d6b3c6ed/session.jsonl`
+**Task**: [implementer-agent](../tasks/implementer-agent.md)
+**Session**: [session.jsonl](../knowledge/sessions/019fe7d2-aa31-77e6-8ea0-9df3d6b3c6ed/session.jsonl)
 **Decisions**:
-  - `docs/knowledge/sessions/019fe7d2-aa31-77e6-8ea0-9df3d6b3c6ed/decisions/01-implementer-harness-host-cattle-container.md`
-  - `docs/knowledge/sessions/019fe7d2-aa31-77e6-8ea0-9df3d6b3c6ed/decisions/02-durable-state-host-session-outside-container.md`
-  - `docs/knowledge/sessions/019fe7d2-aa31-77e6-8ea0-9df3d6b3c6ed/decisions/03-sandbox-on-workspace-portability.md`
-  - `docs/knowledge/sessions/019fe7d2-aa31-77e6-8ea0-9df3d6b3c6ed/decisions/04-implementer-runtime-config-model-skills-extensions.md`
-  - `docs/knowledge/sessions/019fe7d2-aa31-77e6-8ea0-9df3d6b3c6ed/decisions/05-implementer-lifecycle-traceability.md`
-
+  - [01-implementer-harness-host-cattle-container](../knowledge/sessions/019fe7d2-aa31-77e6-8ea0-9df3d6b3c6ed/decisions/01-implementer-harness-host-cattle-container.md)
+  - [02-durable-state-host-session-outside-container](../knowledge/sessions/019fe7d2-aa31-77e6-8ea0-9df3d6b3c6ed/decisions/02-durable-state-host-session-outside-container.md)
+  - [03-sandbox-on-workspace-portability](../knowledge/sessions/019fe7d2-aa31-77e6-8ea0-9df3d6b3c6ed/decisions/03-sandbox-on-workspace-portability.md)
+  - [04-implementer-runtime-config-model-skills-extensions](../knowledge/sessions/019fe7d2-aa31-77e6-8ea0-9df3d6b3c6ed/decisions/04-implementer-runtime-config-model-skills-extensions.md)
+  - [05-implementer-lifecycle-traceability](../knowledge/sessions/019fe7d2-aa31-77e6-8ea0-9df3d6b3c6ed/decisions/05-implementer-lifecycle-traceability.md)
 ## Problem statement
 
 PRDs in `docs/prd-queue/` reach **Final** after the review gate, but nothing picks them up: the assembly line stops at the PRD. The user must manually implement every plan — the factory loop ("user interacts only with the product layer, everything else is automation") is broken at the implementation stage. The `extend-pm-assembly-line` task explicitly deferred this: "the autonomous implementation agent is Part 2, the assembly line's first real component" (decision `03-scope-boundary-ci-and-implementer-deferred-to-part2`).

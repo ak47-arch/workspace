@@ -2,9 +2,10 @@
 
 **Status**: accepted
 **Date**: 2026-08-08 21:43
-**Task**: extension-inline-agent
+**Task**: [extension-inline-agent](../../../../tasks/extension-inline-agent.md)
 **Project**: feed_analyser
-**Session**: sessions/019fd8a4-73ca-7c92-bbcc-b5d74e7d0817/session.jsonl
+**Session**: [session.jsonl](../session.jsonl)
+**Summary**: Defer browser control to a follow-on phase on the same architecture.
 
 ### Context
 

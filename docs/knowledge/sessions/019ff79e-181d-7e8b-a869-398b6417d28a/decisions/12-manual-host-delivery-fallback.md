@@ -4,7 +4,8 @@
 **Date**: 2026-08-15 01:14
 **Task**: software-factory
 **Project**: software-factory
-**Session**: sessions/019ff79e-181d-7e8b-a869-398b6417d28a/session.jsonl
+**Session**: [session.jsonl](../session.jsonl)
+**Summary**: When the driver dies after the container succeeded (outbox report present) but before delivery, the operator may complete host delivery manually, following the driver's e
 
 ### Context
 

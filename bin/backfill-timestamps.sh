@@ -109,7 +109,7 @@ echo "  Updated: $UPDATED fields"
 echo ""
 echo "--- PRD files ---"
 UPDATED=0
-for f in docs/prd-queue/*.md docs/prd-archive/*.md; do
+for f in docs/prd/*.md; do
   [ -f "$f" ] || continue
 
   CURRENT_DATE=$(grep -m1 '^\*\*Date\*\*: [0-9]\{4\}-[0-9]\{2\}-[0-9]\{2\}$' "$f" | sed 's/^\*\*Date\*\*: //' || true)

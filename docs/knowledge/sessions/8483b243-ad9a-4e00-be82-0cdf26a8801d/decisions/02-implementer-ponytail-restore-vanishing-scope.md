@@ -2,9 +2,10 @@
 
 **Status**: accepted
 **Date**: 2026-08-14
-**Task**: implementer-ponytail
+**Task**: [implementer-ponytail](../../../../tasks/implementer-ponytail.md)
 **Project**: software-factory
-**Session**: sessions/8483b243-ad9a-4e00-be82-0cdf26a8801d/session.jsonl
+**Session**: [session.jsonl](../session.jsonl)
+**Summary**: Chosen alternative 2.
 
 ### Context
 

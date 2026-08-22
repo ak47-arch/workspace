@@ -1,16 +1,15 @@
 # PRD: Code Review Agent — autonomously review factory-raised PRs against their PRD
 
 **Date**: 2026-08-13
-**Status**: Final
+**Status**: [Final](./manifest.json)
 **Owner**: software-factory
-**Task**: code-review-agent
-**Session**: `docs/knowledge/sessions/019ff79e-181d-7e8b-a869-398b6417d28a/session.jsonl`
+**Task**: [code-review-agent](../tasks/code-review-agent.md)
+**Session**: [session.jsonl](../knowledge/sessions/019ff79e-181d-7e8b-a869-398b6417d28a/session.jsonl)
 **Decisions**:
-  - `docs/knowledge/sessions/019ff79e-181d-7e8b-a869-398b6417d28a/decisions/01-code-review-manual-trigger.md`
-  - `docs/knowledge/sessions/019ff79e-181d-7e8b-a869-398b6417d28a/decisions/02-code-review-archive-location.md`
-  - `docs/knowledge/sessions/019ff79e-181d-7e8b-a869-398b6417d28a/decisions/03-review-worker-read-only-git.md`
-  - `docs/knowledge/sessions/019ff79e-181d-7e8b-a869-398b6417d28a/decisions/04-ponytail-review-worker-skills.md`
-
+  - [01-code-review-manual-trigger](../knowledge/sessions/019ff79e-181d-7e8b-a869-398b6417d28a/decisions/01-code-review-manual-trigger.md)
+  - [02-code-review-archive-location](../knowledge/sessions/019ff79e-181d-7e8b-a869-398b6417d28a/decisions/02-code-review-archive-location.md)
+  - [03-review-worker-read-only-git](../knowledge/sessions/019ff79e-181d-7e8b-a869-398b6417d28a/decisions/03-review-worker-read-only-git.md)
+  - [04-ponytail-review-worker-skills](../knowledge/sessions/019ff79e-181d-7e8b-a869-398b6417d28a/decisions/04-ponytail-review-worker-skills.md)
 ## Problem statement
 
 The assembly line has a **readiness gate before implementation** (the `prd-reviewer`
@@ -80,7 +79,7 @@ The worker is read-only: it never commits, and the container holds no GitHub tok
    blocking vs advisory findings, verdict) and is both posted to the PR as a comment
    and archived to `docs/code-reviews/<date>-<slug>/`.
 6. A `REQUEST_CHANGES` (blocking) verdict does **not** merge and does **not**
-   complete the task; the PRD stays in `docs/prd-queue/` until user UAT + go-ahead.
+   complete the task; the PRD stays in `docs/prd/` until user UAT + go-ahead.
 7. On a successful review the driver transitions the task `in-progress → in-review`
    and links the review session on the task file (PRD still stays in the queue).
 8. The reviewer reuses the existing `sandbox:latest` image and mirrors the
@@ -281,7 +280,7 @@ bin/implementer-run.sh                (EDIT) `gh pr create` gains
                                        `--label factory:needs-review` (after
                                        `gh label create --force` once)
 docs/tasks/code-review-agent.md       (NEW) task file
-docs/prd-queue/2026-08-13-code-review-agent.md   (NEW) this PRD
+docs/prd/2026-08-13-code-review-agent.md   (NEW) this PRD
 docs/reviews/                         (UNCHANGED — holds PRD-gate reports)
 ```
 

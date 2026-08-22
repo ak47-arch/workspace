@@ -35,7 +35,7 @@ anything, never runs builds, and never transitions tasks. It returns a structure
 
 | Artefact | Location | Direction |
 |---|---|---|
-| PRD under review (read-only) | `docs/prd-queue/<date>-<slug>.md` | consumed |
+| PRD under review (read-only) | `docs/prd/<date>-<slug>.md` | consumed |
 | Task file (read-only, consistency vs PRD) | `docs/tasks/<slug>.md` | consumed |
 | Task index line (slug uniqueness) | `docs/tasks.txt` | consumed |
 | Context engine chain (factory-context, openwiki, decisions, session) | `docs/factory-context.md` · `openwiki/` · `docs/knowledge/` | consumed |

@@ -1,13 +1,12 @@
 # PRD: Implementer revision mode — `--revise <pr>` resumes the original session to address review findings
 
 **Date**: 2026-08-14
-**Status**: Final
+**Status**: [Final](./manifest.json)
 **Owner**: software-factory
-**Task**: implementer-revision-mode
-**Session**: `docs/knowledge/sessions/019ff79e-181d-7e8b-a869-398b6417d28a/session.jsonl`
+**Task**: [implementer-revision-mode](../tasks/implementer-revision-mode.md)
+**Session**: [session.jsonl](../knowledge/sessions/019ff79e-181d-7e8b-a869-398b6417d28a/session.jsonl)
 **Decisions**:
-  - `docs/knowledge/sessions/019ff79e-181d-7e8b-a869-398b6417d28a/decisions/08-implementer-revision-same-session.md`
-
+  - [08-implementer-revision-same-session](../knowledge/sessions/019ff79e-181d-7e8b-a869-398b6417d28a/decisions/08-implementer-revision-same-session.md)
 ## Problem statement
 
 When a review returns REQUEST_CHANGES (e.g. PR #2 `implementer-ponytail`, report
@@ -207,8 +206,8 @@ bin/implementer-run.sh --revise <pr>
 
 ## Context pointers
 
-- Decision 08 (identity + binding authority): `docs/knowledge/sessions/019ff79e-181d-7e8b-a869-398b6417d28a/decisions/08-implementer-revision-same-session.md`
-- Decision 06 (PR tracking schema): `docs/knowledge/sessions/019ff79e-181d-7e8b-a869-398b6417d28a/decisions/06-task-pr-tracking.md`
+- Decision 08 (identity + binding authority): [08-implementer-revision-same-session](../knowledge/sessions/019ff79e-181d-7e8b-a869-398b6417d28a/decisions/08-implementer-revision-same-session.md)
+- Decision 06 (PR tracking schema): [06-task-pr-tracking](../knowledge/sessions/019ff79e-181d-7e8b-a869-398b6417d28a/decisions/06-task-pr-tracking.md)
 - Working reference: `bin/implementer-run.sh` (`--resume` line 115, `prepare_run_dir`
   205-310, `run_container` 337-460, `push_and_pr` 514-592, `cleanup_run_dir`
   603-640, main 668-740); `bin/review-run.sh` `--continue` precedent (~506-510);

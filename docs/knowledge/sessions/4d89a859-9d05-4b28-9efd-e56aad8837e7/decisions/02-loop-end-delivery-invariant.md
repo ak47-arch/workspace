@@ -2,9 +2,10 @@
 
 **Status**: accepted
 **Date**: 2026-08-18
-**Task**: multi-repo-delivery-bookkeeping-prs
+**Task**: [multi-repo-delivery-bookkeeping-prs](../../../../tasks/multi-repo-delivery-bookkeeping-prs.md)
 **Project**: software-factory
-**Session**: sessions/4d89a859-9d05-4b28-9efd-e56aad8837e7/session.jsonl
+**Session**: [session.jsonl](../session.jsonl)
+**Summary**: Accepted: two-stage assertion with the run manifest as the single source of truth.
 
 ### Context
 The delivery invariant (review decision 01 + blocking finding B-1) is the A/B XOR: a touched root gets a root code PR and NO separate bookkeeping PR; an untouched root gets NO root code PR and exactly one bookkeeping PR. `assert_delivery_invariant` was asserted inside `deliver_repo_set` immediately after the implementer raised the N code PRs — at which point the Shape A bookkeeping PR (raised later by factory-run at loop end) does not exist, so `BOOKKEEPING_PR` is always empty and every legitimate Shape A multi-app delivery invoked the "neither → violation" branch and `fail_run`.
@@ -19,6 +20,7 @@ A single assertion point cannot see both sides of the XOR: the implementer sees 
 
 ### Decision
 **Accepted: two-stage assertion with the run manifest as the single source of truth.**
+**Summary**: ## Decision: Split the A/B delivery invariant into a delivery-time assert and a loop-end assert Status: accepted Date: 2026-08-18 Task: multi-repo-delivery-bookkeeping-pr
 - `insert in implementer-run.sh` `assert_delivery_invariant` (delivery-time): Shape B (root in set) → require a root code PR and no bookkeeping PR; **Shape A (root not in set) → hold unconditionally** (bookkeeping PR is pending at loop end). Removes the false-fail.
 - `writer in factory-run.sh` `assert_loop_end_invariant <manifest>`: full A/B XOR on `root_code_pr` vs `bookkeeping_pr` from the run manifest. Run after `finish_bookkeeping` in both headless and non-headless chain end. Fail-loud (non-zero) on "both" or "neither" — so a Shape A task whose bookkeeping PR silently failed is caught.
 - `finish_bookkeeping` skips raising a separate bookkeeping PR when `root_code_pr` is set (Shape B): the root PR already carries the bookkeeping commits, so raising one would violate the XOR.

@@ -2,10 +2,10 @@
 
 **Status**: accepted
 **Date**: 2026-08-19 05:20
-**Task**: multi-repo-delivery-bookkeeping-prs
+**Task**: [multi-repo-delivery-bookkeeping-prs](../../../../tasks/multi-repo-delivery-bookkeeping-prs.md)
 **Project**: software-factory
-**Session**: sessions/01a01515-8457-7260-a4d6-45731d61d571/session.jsonl
-**Summary**: A PR may carry another open PR's unmerged commits only with a declared `**Depends on:** #N`; undeclared ride-alongs fail loudly at merge-time and declared deps merge first.
+**Session**: [session.jsonl](../session.jsonl)
+**Summary**: bin/merge-pr.sh enforces the invariant for every PR set it merges: 1.
 
 ### Context
 

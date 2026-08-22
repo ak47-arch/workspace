@@ -2,9 +2,10 @@
 
 **Status**: accepted
 **Date**: 2026-07-31 23:57
-**Task**: extend-software-factory-wsff
+**Task**: [extend-software-factory-wsff](../../../../tasks/extend-software-factory-wsff.md)
 **Project**: software-factory
-**Session**: sessions/019fb4f8-7a69-7968-b884-f4902565e512/session.jsonl
+**Session**: [session.jsonl](../session.jsonl)
+**Summary**: The product/architecture layer adopts a three-phase analysis model with one guiding principle
 
 ### Context
 
@@ -35,6 +36,7 @@ The product/architecture layer adopts a **three-phase analysis model** with **on
 - **Vertical Slicing** — the principle that end-to-end slices are preferred over horizontal stack-order plans. The implementation agent receives this as an open-ended requirement in the PRD and determines how to apply it per-task.
 
 **Task categorisation** gates which phases run:
+**Summary**: ## Decision: Three-Phase Product Layer with Vertical Slicing as Guiding Principle Status: accepted Date: 2026-07-31 23:57 Task: extend-software-factory-wsff Project: soft
 | Category | Criteria | Phases |
 |----------|----------|--------|
 | Trivial | Single file, no new logic | None — implement directly |

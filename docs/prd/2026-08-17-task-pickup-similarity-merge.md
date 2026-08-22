@@ -1,15 +1,14 @@
 # PRD: Task-pickup similarity check and merge flow
 
 **Date**: 2026-08-17 01:29
-**Status**: Final
+**Status**: [Final](./manifest.json)
 **Owner**: software-factory workspace
-**Task**: task-pickup-similarity-merge
-**Session**: `docs/knowledge/sessions/357a4c1d-cfd2-47d4-b3a8-a831dd310daf/session.jsonl`
+**Task**: [task-pickup-similarity-merge](../tasks/task-pickup-similarity-merge.md)
+**Session**: [session.jsonl](../knowledge/sessions/357a4c1d-cfd2-47d4-b3a8-a831dd310daf/session.jsonl)
 **Decisions**:
-  - `docs/knowledge/sessions/357a4c1d-cfd2-47d4-b3a8-a831dd310daf/decisions/01-task-similarity-check-scope.md`
-  - `docs/knowledge/sessions/357a4c1d-cfd2-47d4-b3a8-a831dd310daf/decisions/02-semantic-similarity-assessment.md`
-  - `docs/knowledge/sessions/357a4c1d-cfd2-47d4-b3a8-a831dd310daf/decisions/03-partial-split-remainder-registration.md`
-
+  - [01-task-similarity-check-scope](../knowledge/sessions/357a4c1d-cfd2-47d4-b3a8-a831dd310daf/decisions/01-task-similarity-check-scope.md)
+  - [02-semantic-similarity-assessment](../knowledge/sessions/357a4c1d-cfd2-47d4-b3a8-a831dd310daf/decisions/02-semantic-similarity-assessment.md)
+  - [03-partial-split-remainder-registration](../knowledge/sessions/357a4c1d-cfd2-47d4-b3a8-a831dd310daf/decisions/03-partial-split-remainder-registration.md)
 ## Problem statement
 
 When a user picks a task from `docs/tasks.txt`, that task frequently already exists in another form — reworded in the same project, or as the same capability across projects. The canonical example is the langfuse trio: `integrate langfuse with all applications` (all), `integrate official langfuse skill` (langfuse), and `set up langfuse use and operation agentically` (langfuse) all converge on one goal and were merged into the single `langfuse-agentic-operations` task by hand.

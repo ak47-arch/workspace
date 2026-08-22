@@ -2,9 +2,10 @@
 
 **Status**: accepted
 **Date**: 2026-08-18
-**Task**: multi-repo-delivery-bookkeeping-prs
+**Task**: [multi-repo-delivery-bookkeeping-prs](../../../../tasks/multi-repo-delivery-bookkeeping-prs.md)
 **Project**: software-factory
-**Session**: sessions/4d89a859-9d05-4b28-9efd-e56aad8837e7/session.jsonl
+**Session**: [session.jsonl](../session.jsonl)
+**Summary**: Accepted: dual-key lookup with workspace = root.
 
 ### Context
 The multi-repo delivery PRD lets a PRD declare `**Repos:** workspace, feed_analyser`. The driver must resolve each declared name to a checkout/branch to deliver code and bookkeeping PRs, and it must enforce the delivery invariant (root-code PR vs bookkeeping PR are exclusive).
@@ -19,6 +20,7 @@ There is no canonical repo namespace in `config/implementer.json`: the `repo_map
 
 ### Decision
 **Accepted: dual-key lookup with `workspace` = root.** For each token in `**Repos:**`, resolve it to a canonical repo key:
+**Summary**: ## Decision: Repo-key resolution semantics for the PRD Repos: header Status: accepted Date: 2026-08-18 Task: multi-repo-delivery-bookkeeping-prs Project: software-factory
 - `workspace` (or a token matching the root) → repo key `workspace`, marking `ROOT_IN_SET=true`, with the root checkout at `$WORKSPACE`.
 - otherwise, match the token against each `repo_map` entry's `repo:` value **OR** its short name suffix; the canonical key is the repo's directory name merged into `REPO_KEYS` (de-duplicated).
 - record per-repo `REPO_MANIFEST_BRANCH[key]` from the entry's `manifest_branch` / `branch` (for `feed_analyser` → `public-release`).

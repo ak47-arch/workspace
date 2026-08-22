@@ -50,12 +50,41 @@ flip that task's verdict. With a stable path, a stale reference is impossible by
 so the check is trivially true; the real test is "queue/archive views still produce the correct
 actionable/shipped lists via status filter."
 
-**Open questions before PRD**:
-1. Canonical path: does a PRD live at `docs/prd-queue/` even when shipped (so the dir becomes
-   "artifact home", not "not-yet-shipped"), or at a neutral `docs/prd/`?
-2. Migration of the already-archived PRDs and their 8 stale task references — do we `git mv`
-   them once to the canonical path and fix the links, or leave legacy and only change going
-   forward?
+**Evolution (2026-08-21)**: dispatch mechanism confirmed by reading `bin/implementer-run.sh`
+(`resolve_prd()`). The live pickup is already a **hybrid**: it globs `docs/prd-queue/*.md` for
+the candidate set (directory-driven) AND greps each candidate's own bytes for
+`**Status**: *Final*` + the task file's `prd-ready` (content-parsed). No code path treats
+`docs/prd-archive/` as actionable; archive is terminal from the dispatch view. The engine is
+willingly content-driven today — it does not rely on directory presence to learn actionability.
+
+**Decision: Direction C (stable home + routing manifest) is the chosen design.**
+
+Verdict on the three positions:
+- A (never move, parse Status only): premise already false — the engine pays the content-grep
+  price on every pick already; A adds a per-file parse tax to every pickup for no protection.
+- B (move + atomic inbound rewrite) — rejected. Fixes only the task's artifact link at
+  move-time; every other document that cites the moved PRD (decision files, knowledge sessions,
+  reference prose) stays stale by construction. Never converges at corpus scale; compounds with
+  Signal 05.
+- C (stable home, routing manifest) — chosen. The only design that keeps the engine's real
+  contract (content-driven Status/slug/grep) true without emitting stale references. Costs less
+  than feared precisely because the engine already reads content rather than glueing to
+  directory identity.
+
+**Load-bearing invariant C must preserve**: `resolve_prd()` orders candidates by their
+**filename date-prefix** (`yyyy-mm-dd-<slug>.md`, oldest-first) to implement "pick the oldest
+Final PRD." C's stable-home + manifest must retain a sortable ordering key or --pick regresses.
+Whatever canonical path or schema is chosen must keep this ordering semantic.
+
+**Corollary (signal 05 link):** C makes the artifact home both stable and discoverable, so the
+factory-wide typed-link convention (signal 05) can then point at it permanently. C is the
+precondition that makes signal 05's fix non-mutating.
+
+**Open questions to resolve before PRD**:
+1. Canonical path: stable home at neutral `docs/prd/` or keep `docs/prd-queue/` as "artifact
+   home" (dir name no longer means not-yet-shipped)?
+2. Migration of already-archived PRDs + their 8 stale task references — one-time git mv to the
+   canonical path with link fixes, or legacy retained and change applied forward-only?
 3. Does the semantic probe keep its two-directory resolver as a *compat* path for historical
    tasks, or drop it once migration lands?
 
@@ -196,11 +225,11 @@ the decision, or generated at eval time from Context/Rationale (deterministic).
 
 | Signal | Status | Ready for PRD? |
 |---|---|---|
-| 01 PRD-lifecycle-status | collected | needs the 3 open questions answered |
-| 02 COST-historical | collected | needs decision on steps vs tokens + budget |
-| 03 probe-contract-name | collected | absorbed by PRD phase-1 (artifact rename sync) |
-| 04 decision-summary-gap | collected | ready for PRD: mechanical backfill, falsifiable |
-| 05 string-paths-not-links | collected | needs decision on link style + front-matter refs |
+| 01 PRD-lifecycle-status | **promoted** 2026-08-22 | folded as `docs/prd-queue/2026-08-22-typed-trail-integrity.md`; Q1 (path=docs/prd) + Q2 (one-time migration) + Q3 (link style) all resolved in PRD |
+| 02 COST-historical | collected | kept separate; needs steps-vs-tokens + budget decision |
+| 03 probe-contract-name | collected | absorbed by semantic-probe PRD phase-1 (not here) |
+| 04 decision-summary-gap | **promoted** 2026-08-22 | folded as `docs/prd-queue/2026-08-22-typed-trail-integrity.md` |
+| 05 string-paths-not-links | **promoted** 2026-08-22 | folded + link-style/front-matter resolved (Q3): typed relative links, Task/Session/Decisions become links, Date stays atom |
 | (supp 1) dual-dir cost | folded into 01 | — |
 | (supp 2) reviewer-vs-impl depth | note | needs design input to become signal |
 

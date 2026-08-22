@@ -2,10 +2,10 @@
 
 **Status**: accepted
 **Date**: 2026-08-19 04:55
-**Task**: multi-repo-delivery-bookkeeping-prs
+**Task**: [multi-repo-delivery-bookkeeping-prs](../../../../tasks/multi-repo-delivery-bookkeeping-prs.md)
 **Project**: software-factory
-**Session**: sessions/01a01515-8457-7260-a4d6-45731d61d571/session.jsonl
-**Summary**: Retain complete message-level sessions (minus inert delta-replay) — compressed, versioned, self-describing — for retrospective Langfuse evals; ingestion bridge + retention tiers follow.
+**Session**: [session.jsonl](../session.jsonl)
+**Summary**: Retain the complete message-level session per run — everything Langfuse consumes (message_start/end with final content + usage, tool_execution_start/end with args + resul
 
 ### Context
 

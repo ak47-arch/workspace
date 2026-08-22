@@ -1,16 +1,15 @@
 # GDrive Instruction Source Ingest
 
 **Date**: 2026-07-25 23:34
-**Status**: Draft
+**Status**: [Draft](./manifest.json)
 **Project**: survival-infrastructure
 **Vision**: survival-infrastructure/docs/technical/VISION.md | survival-infrastructure/docs/technical/TECHNICAL_VISION.md
 **Owner**: survival-infrastructure
-**Session**: `docs/knowledge/sessions/019f9a16-9363-7e5a-a9a7-f696fc32e4c6/session.jsonl`
+**Session**: [session.jsonl](../knowledge/sessions/019f9a16-9363-7e5a-a9a7-f696fc32e4c6/session.jsonl)
 **Decisions**:
-  - `docs/knowledge/sessions/019f9a16-9363-7e5a-a9a7-f696fc32e4c6/decisions/01-gdrive-integration-model.md`
-  - `docs/knowledge/sessions/019f9a16-9363-7e5a-a9a7-f696fc32e4c6/decisions/02-gdrive-auth-and-configuration.md`
-  - `docs/knowledge/sessions/019f9a16-9363-7e5a-a9a7-f696fc32e4c6/decisions/03-gdrive-file-export-and-storage.md`
-
+  - [01-gdrive-integration-model](../knowledge/sessions/019f9a16-9363-7e5a-a9a7-f696fc32e4c6/decisions/01-gdrive-integration-model.md)
+  - [02-gdrive-auth-and-configuration](../knowledge/sessions/019f9a16-9363-7e5a-a9a7-f696fc32e4c6/decisions/02-gdrive-auth-and-configuration.md)
+  - [03-gdrive-file-export-and-storage](../knowledge/sessions/019f9a16-9363-7e5a-a9a7-f696fc32e4c6/decisions/03-gdrive-file-export-and-storage.md)
 ---
 
 ## Problem Statement

@@ -9,7 +9,7 @@
 
 ## Artifacts
 
-- Plan: [2026-08-08-extension-inline-agent.md](../prd-queue/2026-08-08-extension-inline-agent.md)
+- Plan: [2026-08-08-extension-inline-agent.md](../prd/2026-08-08-extension-inline-agent.md)
 
 ## Sessions
 

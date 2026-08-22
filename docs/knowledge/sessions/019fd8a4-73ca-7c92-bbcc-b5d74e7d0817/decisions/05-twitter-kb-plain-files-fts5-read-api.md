@@ -2,9 +2,10 @@
 
 **Status**: accepted
 **Date**: 2026-08-08 21:43
-**Task**: extension-inline-agent
+**Task**: [extension-inline-agent](../../../../tasks/extension-inline-agent.md)
 **Project**: feed_analyser
-**Session**: sessions/019fd8a4-73ca-7c92-bbcc-b5d74e7d0817/session.jsonl
+**Session**: [session.jsonl](../session.jsonl)
+**Summary**: Plain files as the canonical source of truth (artefacts.jsonl + Summary: ## Decision: Twitter knowledge base — plain files as truth, SQLite FTS5 derived index, thin read
 
 ### Context
 
@@ -33,6 +34,7 @@ a search store?
 ### Decision
 
 **Plain files as the canonical source of truth** (artefacts.jsonl +
+**Summary**: ## Decision: Twitter knowledge base — plain files as truth, SQLite FTS5 derived index, thin read API Status: accepted Date: 2026-08-08 21:43 Task: extension-inline-agent
 sessions/) **plus a derived, rebuildable SQLite FTS5 index plus a thin read
 API**:
 

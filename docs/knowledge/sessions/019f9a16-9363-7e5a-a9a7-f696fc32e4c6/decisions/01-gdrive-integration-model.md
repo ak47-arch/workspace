@@ -3,7 +3,8 @@
 **Status**: accepted
 **Date**: 2026-07-25 23:34
 **Project**: survival-infrastructure
-**Session**: sessions/019f9a16-9363-7e5a-a9a7-f696fc32e4c6/session.jsonl
+**Session**: [session.jsonl](../session.jsonl)
+**Summary**: Integration model: Google Picker API for browser-driven, manual file selection.
 
 ### Context
 

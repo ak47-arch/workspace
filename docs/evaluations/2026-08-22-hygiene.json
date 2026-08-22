@@ -1,0 +1,140 @@
+{
+  "generated": "2026-08-22",
+  "advisories": [
+    "langfuse keys in tracked history \u2014 local-only, accepted risk (2026-08-20); rotate only if the instance is ever network-exposed: docs/knowledge/sessions/019fc40a-5458-7310-89c4-53e098060973; docs/knowledge/sessions/019fc40a-5458-7310-89c4-53e098060973; docs/knowledge/sessions/019fc40a-5458-7310-89c4-53e098060973; docs/knowledge/sessions/019fc40a-5458-7310-89c4-53e098060973"
+  ],
+  "surfaces": {
+    "S8-roster-completeness": {
+      "rows": [
+        {
+          "agent": "prd-reviewer",
+          "checks": [
+            {
+              "check": "persona (.pi/agents/prd-reviewer.md)",
+              "pass": true
+            },
+            {
+              "check": "run-contract (.agents/skills/prd-reviewer-ops/SKILL.md)",
+              "pass": true
+            },
+            {
+              "check": "artifact map (docs/reference/prd-reviewer-agent.md)",
+              "pass": true
+            }
+          ],
+          "pass": true
+        },
+        {
+          "agent": "implementer",
+          "checks": [
+            {
+              "check": "persona (.pi/agents/implementer.md)",
+              "pass": true
+            },
+            {
+              "check": "run-contract (.agents/skills/implementer-ops/SKILL.md)",
+              "pass": true
+            },
+            {
+              "check": "artifact map (docs/reference/implementer-agent.md)",
+              "pass": true
+            }
+          ],
+          "pass": true
+        },
+        {
+          "agent": "code-reviewer",
+          "checks": [
+            {
+              "check": "persona (.pi/agents/code-reviewer.md)",
+              "pass": true
+            },
+            {
+              "check": "run-contract (.agents/skills/review-ops/SKILL.md)",
+              "pass": true
+            },
+            {
+              "check": "artifact map (docs/reference/reviewer-agent.md)",
+              "pass": true
+            }
+          ],
+          "pass": true
+        },
+        {
+          "agent": "evaluator",
+          "checks": [
+            {
+              "check": "persona (.pi/agents/evaluator.md)",
+              "pass": true
+            },
+            {
+              "check": "run-contract (.agents/skills/eval-ops/SKILL.md)",
+              "pass": true
+            },
+            {
+              "check": "artifact map (docs/reference/evaluator-agent.md)",
+              "pass": true
+            }
+          ],
+          "pass": true
+        }
+      ],
+      "failures": [],
+      "verdict": "PASS"
+    },
+    "S9-repo-hygiene": {
+      "rows": [
+        {
+          "check": "master merge-only (recent history \u2248 PR merges)",
+          "pass": true,
+          "evidence": "20 of last 20 commits are merges"
+        },
+        {
+          "check": "branch protection on master (gh api)",
+          "pass": false,
+          "evidence": "gh api returned no protection"
+        },
+        {
+          "check": "opensource/ gitignored",
+          "pass": true,
+          "evidence": "git check-ignore opensource/langfuse"
+        },
+        {
+          "check": ".env.* secrets ignored",
+          "pass": true,
+          "evidence": ".gitignore has .env.*; check-ignore ok"
+        },
+        {
+          "check": "no secret values in tracked files",
+          "pass": true,
+          "evidence": "4 hit(s) \u2014 langfuse keys only, LOCAL instance, accepted risk"
+        }
+      ],
+      "failures": [
+        "no branch protection on master"
+      ],
+      "verdict": "FAIL"
+    },
+    "S10-typed-trail-integrity": {
+      "rows": [
+        {
+          "check": "string-path refs",
+          "pass": true,
+          "evidence": "0 \u2014 0 string-path refs on the typed-trail surface"
+        },
+        {
+          "check": "decision **Summary**: present",
+          "pass": true,
+          "evidence": "0 \u2014 122/122 decision files carry **Summary**:"
+        },
+        {
+          "check": "no stale/mismatched citations + manifest coherence",
+          "pass": true,
+          "evidence": "0 \u2014 0 stale prd-queue/archive citations; manifest\u2194docs/prd coherent"
+        }
+      ],
+      "failures": [],
+      "verdict": "PASS"
+    }
+  }
+}

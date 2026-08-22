@@ -1,13 +1,12 @@
 # PRD: Ponytail skills via fixed `/skills` mount — D2 delivery-path repair
 
 **Date**: 2026-08-16 21:28
-**Status**: Final
+**Status**: [Final](./manifest.json)
 **Owner**: software-factory
-**Task**: ponytail-skills-fixed-mount
-**Session**: `docs/knowledge/sessions/01a005a8-7302-74e2-8c1a-c6e8e74358c7/session.jsonl`
+**Task**: [ponytail-skills-fixed-mount](../tasks/ponytail-skills-fixed-mount.md)
+**Session**: [session.jsonl](../knowledge/sessions/01a005a8-7302-74e2-8c1a-c6e8e74358c7/session.jsonl)
 **Decisions**:
-  - `docs/knowledge/sessions/01a005a8-7302-74e2-8c1a-c6e8e74358c7/decisions/01-ponytail-skills-fixed-mount.md`
-
+  - [01-ponytail-skills-fixed-mount](../knowledge/sessions/01a005a8-7302-74e2-8c1a-c6e8e74358c7/decisions/01-ponytail-skills-fixed-mount.md)
 ## Problem statement
 
 On **2026-08-15 00:35–00:36 IST**, the physical `opensource/` directory in the workspace root was silently deleted by git during a host-side `_rebase-ponytail` rebase of PR #2 (implementer-ponytail). The chain that led there:

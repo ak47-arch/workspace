@@ -1,5 +1,7 @@
 # Software Factory — Architecture Decisions
 
+**Summary**: The knowledge base is the infrastructure layer of the factory.
+
 Date: 2026-07-24 01:10
 Session: sessions/019f8faf-c8f2-7612-a79d-10e18e6f78cf/session.jsonl
 Project: software-factory
@@ -43,6 +45,7 @@ Treating knowledge base as infrastructure rather than a peer component reflects 
 ## 2. Product/architecture as UX layer — two artifact outputs
 
 **Status**: accepted
+**Summary**: # Software Factory — Architecture Decisions Date: 2026-07-24 01:10 Session: sessions/019f8faf-c8f2-7612-a79d-10e18e6f78cf/session.jsonl Project: software-factory --- ## 1
 
 ### Context
 

@@ -3,7 +3,8 @@
 **Status**: accepted
 **Date**: 2026-07-30 21:31
 **Project**: software-factory
-**Session**: sessions/019fb3b8-27d7-7b8e-b8a4-3a0274646646/session.jsonl
+**Session**: [session.jsonl](../session.jsonl)
+**Summary**: Remove mission-control from the workspace entirely: - Delete the mission-control/ directory - Archive the remote GitHub repo (ak47-arch/mission-control) - Remove all refe
 
 ### Context
 

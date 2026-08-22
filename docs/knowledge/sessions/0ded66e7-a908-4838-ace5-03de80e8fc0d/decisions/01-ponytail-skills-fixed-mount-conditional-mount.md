@@ -2,9 +2,10 @@
 
 **Status**: accepted
 **Date**: 2026-08-16
-**Task**: ponytail-skills-fixed-mount
+**Task**: [ponytail-skills-fixed-mount](../../../../tasks/ponytail-skills-fixed-mount.md)
 **Project**: software-factory
 **Session**: 0ded66e7-a908-4838-ace5-03de80e8fc0d
+**Summary**: The /skills bind mount is added only when $HOST_SKILLS is a directory that exists at run time.
 
 ### Context
 

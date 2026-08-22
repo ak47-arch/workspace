@@ -2,9 +2,10 @@
 
 **Status**: accepted
 **Date**: 2026-08-05 09:22
-**Task**: extend-pm-assembly-line
+**Task**: [extend-pm-assembly-line](../../../../tasks/extend-pm-assembly-line.md)
 **Project**: software-factory
-**Session**: sessions/019fd00b-4e86-76ed-966b-186ea09c775c/session.jsonl
+**Session**: [session.jsonl](../session.jsonl)
+**Summary**: Adopt the subagent extension pi ships in its own repository (packages/coding-agent/examples/extensions/subagent/) as the industry-standard reference.
 
 ### Context
 

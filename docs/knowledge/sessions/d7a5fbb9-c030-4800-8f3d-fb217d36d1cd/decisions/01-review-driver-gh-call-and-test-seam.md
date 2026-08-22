@@ -2,9 +2,10 @@
 
 **Status**: accepted
 **Date**: 2026-08-13 21:11
-**Task**: code-review-agent
+**Task**: [code-review-agent](../../../../tasks/code-review-agent.md)
 **Project**: software-factory
-**Session**: sessions/d7a5fbb9-c030-4800-8f3d-fb217d36d1cd/session.jsonl
+**Session**: [session.jsonl](../session.jsonl)
+**Summary**: bin/review-run.sh resolves the active gh at call time through a one-line function gh_call() { "${REVIEWER_GH_BIN:-gh}" "$@"; }, and every gh invocation goes through it (p
 
 ### Context
 

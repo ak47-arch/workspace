@@ -62,7 +62,7 @@ archived report+decision, and the compact session evidence are **durable**.
 
 | Artefact | Location |
 |---|---|
-| PRD that drives a run | `docs/prd-queue/<date>-<slug>.md` |
+| PRD that drives a run | `docs/prd/<date>-<slug>.md` |
 | Task file | `docs/tasks/<slug>.md` |
 | Task list | `docs/tasks.txt` |
 
@@ -85,7 +85,7 @@ bin/implementer-run.sh <prd> <task> [--dry-run]
 - The **implementer never runs git** (no init/add/commit/push). The host driver
   is the sole git author. This is a compliance guarantee, not just guidance.
 - **No secrets** (GitHub tokens) ever enter the container env.
-- Do not modify `docs/tasks*`, `docs/prd-queue/`, or the knowledge index.
+- Do not modify `docs/tasks*`, `docs/prd/`, or the knowledge index.
 - Continuation across a container respawn uses pi's **native session
   continuation** (`--session-dir /sandbox/sessions` + `--continue`), so the
   session id survives a kill; there is no PROGRESS.md.

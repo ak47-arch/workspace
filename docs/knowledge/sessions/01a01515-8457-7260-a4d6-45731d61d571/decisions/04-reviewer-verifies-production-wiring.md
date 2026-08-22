@@ -2,10 +2,10 @@
 
 **Status**: accepted
 **Date**: 2026-08-19 04:20
-**Task**: multi-repo-delivery-bookkeeping-prs
+**Task**: [multi-repo-delivery-bookkeeping-prs](../../../../tasks/multi-repo-delivery-bookkeeping-prs.md)
 **Project**: software-factory
-**Session**: sessions/01a01515-8457-7260-a4d6-45731d61d571/session.jsonl
-**Summary**: Reviewer must verify production wiring (driver seams), not just a green test suite — tests that set seams themselves can mask real integration blockers (B-1..B-5 in PR #12).
+**Session**: [session.jsonl](../session.jsonl)
+**Summary**: Keep the adversarial review gate as the binding correctness authority, and require the reviewer to trace env seams to a live caller (grep for who sets a seam outside the
 
 ### Context
 

@@ -356,7 +356,7 @@ print(len(json.loads(sys.stdin.read() or "[]")))' 2>/dev/null || echo 0)"
 # (default: the root repo). Mirrors implementer's repo-key→gh-slug derivation.
 gate_repos_for() {
   local slug="$1" prd dir id repos="" url
-  prd="$(ls "$WORKSPACE"/docs/prd-queue/*"-$slug.md" 2>/dev/null | head -1 || true)"
+  prd="$(ls "$WORKSPACE"/docs/prd/*"-$slug.md" 2>/dev/null | head -1 || true)"
   local ids=()
   if [ -n "$prd" ] && [ -f "$prd" ]; then
     local line

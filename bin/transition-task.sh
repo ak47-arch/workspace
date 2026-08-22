@@ -3,16 +3,22 @@
 # transition-task.sh — Bookkeeping for task lifecycle transitions
 #
 # Usage:
-#   bin/transition-task.sh <slug> --to <state> [--session <uuid:label>] [--decisions <files>] [--dry-run]
+#   bin/transition-task.sh <slug> --to <state> [--session <uuid:label>] [--decisions <files>] [--branch <name>] [--dry-run]
 #
 # Arguments:
 #   <slug>                Task slug (e.g. "task-file-dashboard")
-#   --to <state>          Target state: in-prd, prd-ready, in-progress, in-review, complete
+#   --to <state>          Target state: todo, in-prd, prd-ready, in-progress, in-review, complete
 #   --session <uuid:label> Session UUID with optional label (e.g. "abc123:planning").
 #                          Label is for auditability (planning, implementation, verification).
 #                          Default label: "session"
 #   --decisions <files>   Comma-separated decision file paths relative to docs/knowledge/
 #                          (e.g. "sessions/<uuid>/decisions/01-foo.md")
+#   --branch <name>       Commit the transition onto this task branch (created if missing)
+#                          instead of the current branch. Keeps lifecycle bookkeeping in the
+#                          same PR stream as the implementation (one PR per task).
+#   --workspace <root>    Operate on a different repo root than the script's own (the task
+#                          worktree clone) so transitions commit under the same branch as the
+#                          implementation. Default: this script's parent repo.
 #   --dry-run             Print what would be done without making changes
 #
 # States:
@@ -26,7 +32,8 @@
 #   1. Updates docs/tasks/<slug>.md (status, sessions, decisions, completion date)
 #      - All links are clickable markdown links with proper relative paths
 #   2. Moves the task line in docs/tasks.txt to the correct status section
-#   3. Archives the PRD from docs/prd-queue/ to docs/prd-archive/ (if complete)
+#   3. Flips the PRD's routing-manifest status to closed in the stable docs/prd/
+#      home (if complete) — no physical move (Direction C)
 #   4. Commits everything
 # ============================================================================
 set -euo pipefail
@@ -64,6 +71,8 @@ fi
 SLUG="$1"
 shift
 TARGET_STATE=""
+TASK_BRANCH=""
+WORKSPACE_OVERRIDE=""
 SESSION_UUID=""
 DECISIONS=""
 DRY_RUN=false
@@ -73,6 +82,8 @@ while [ $# -gt 0 ]; do
     --to) TARGET_STATE="$2"; shift 2 ;;
     --session) SESSION_UUID="$2"; shift 2 ;;
     --decisions) DECISIONS="$2"; shift 2 ;;
+    --branch) TASK_BRANCH="$2"; shift 2 ;;
+    --workspace) WORKSPACE_OVERRIDE="$2"; shift 2 ;;
     --dry-run) DRY_RUN=true; shift ;;
     *) echo "Unknown option: $1"; exit 1 ;;
   esac
@@ -106,11 +117,12 @@ done <<< "$STATE_TO_SECTION"
 
 # ─── Resolve paths ─────────────────────────────────────────────────────────
 SCRIPT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
-WORKSPACE="$SCRIPT_DIR"
+WORKSPACE="${WORKSPACE_OVERRIDE:-$SCRIPT_DIR}"
 TASK_MD="$WORKSPACE/docs/tasks/$SLUG.md"
 TASKS_TXT="$WORKSPACE/docs/tasks.txt"
-PRD_QUEUE="$WORKSPACE/docs/prd-queue"
-PRD_ARCHIVE="$WORKSPACE/docs/prd-archive"
+# Routing manifest (Direction C): lifecycle is expressed as a status field on
+# the PRD's manifest row; the PRD file itself never moves out of docs/prd/.
+PRD_MANIFEST="$WORKSPACE/docs/prd/manifest.json"
 
 # ─── Validate slug / task file ─────────────────────────────────────────────
 if [ ! -f "$TASK_MD" ]; then
@@ -360,16 +372,36 @@ with open(tasks_txt, 'w') as f:
 print("  tasks.txt updated")
 PYEOF
 
-# ─── Archive PRD (if complete) ─────────────────────────────────────────────
-if [ "$TARGET_STATE" = "complete" ]; then
-  PRD_FILE=$(ls "$PRD_QUEUE/"*-"$SLUG.md" 2>/dev/null | head -1 || true)
-  if [ -n "$PRD_FILE" ] && [ -f "$PRD_FILE" ]; then
-    if [ "$DRY_RUN" = true ]; then
-      echo "  [dry-run] Would archive PRD: $(basename "$PRD_FILE")"
-    else
-      mv "$PRD_FILE" "$PRD_ARCHIVE/"
-      echo "  Archived PRD: $(basename "$PRD_FILE")"
-    fi
+# ─── Close PRD in routing manifest (Direction C) ───────────────────────────
+# A complete task's PRD stays in the stable docs/prd/ home; lifecycle closure is
+# expressed as a status flip on its routing-manifest row (no physical mv).
+if [ "$TARGET_STATE" = "complete" ] && [ -f "$PRD_MANIFEST" ]; then
+  if [ "$DRY_RUN" = true ]; then
+    echo "  [dry-run] Would close PRD in routing manifest: $SLUG"
+  else
+    python3 - "$PRD_MANIFEST" "$SLUG" <<'PYEOF'
+import json, os, sys
+mf, slug = sys.argv[1], sys.argv[2]
+try:
+    with open(mf) as f:
+        data = json.load(f)
+except Exception:
+    data = {"version": 1, "prds": []}
+rows = data.setdefault("prds", [])
+changed = False
+for row in rows:
+    if row.get("slug") == slug:
+        row["status"] = "closed"
+        changed = True
+if not changed:
+    rows.append({"slug": slug, "file": "", "status": "closed",
+                 "ordering_key": slug})
+    changed = True
+if changed:
+    with open(mf, "w") as f:
+        json.dump(data, f, indent=2)
+    print(f"  Closed PRD in routing manifest: {slug}")
+PYEOF
   fi
 fi
 
@@ -389,7 +421,22 @@ if ! git rev-parse --git-dir > /dev/null 2>&1; then
   exit 0
 fi
 
-git add docs/tasks/"$SLUG.md" docs/tasks.txt docs/prd-queue/ docs/prd-archive/ 2>/dev/null || true
+# One-PR-per-task invariant: when a task branch is supplied, commit the
+# transition onto that branch (created if missing) so lifecycle bookkeeping and
+# the implementation land in the same PR stream — never on a protected default
+# branch where they'd be stranded from the PR diff.
+current_branch="$(git branch --show-current 2>/dev/null || echo 'branch-unavailable')"
+if [ -n "$TASK_BRANCH" ] && [ "$current_branch" != "$TASK_BRANCH" ]; then
+  if ! git rev-parse --verify "refs/heads/$TASK_BRANCH" >/dev/null 2>&1; then
+    echo "  [transition] creating task branch '$TASK_BRANCH' from current HEAD" >&2
+    git branch "$TASK_BRANCH";
+  fi
+  echo "  [transition] checking out task branch '$TASK_BRANCH'" >&2
+  git checkout "$TASK_BRANCH"
+fi
+
+git add docs/tasks/"$SLUG.md" docs/tasks.txt 2>/dev/null || true
+[ -f "$PRD_MANIFEST" ] && git add "$PRD_MANIFEST" 2>/dev/null || true
 
 if git diff --cached --quiet; then
   echo "  No changes to commit."
@@ -398,7 +445,7 @@ else
 
 - Update task file status, sessions, decisions
 - Move task in tasks.txt to $STATUS_SECTION
-- Archive PRD (if applicable)"
+- Close PRD status in the routing manifest (docs/prd; Direction C)"
   echo "  Committed."
 fi
 

@@ -2,9 +2,10 @@
 
 **Status**: accepted
 **Date**: 2026-08-17 02:12
-**Task**: sandbox-credential-mounting
+**Task**: [sandbox-credential-mounting](../../../../tasks/sandbox-credential-mounting.md)
 **Project**: software-factory
-**Session**: sessions/357a4c1d-cfd2-47d4-b3a8-a831dd310daf/session.jsonl
+**Session**: [session.jsonl](../session.jsonl)
+**Summary**: When a task's deliverable is required for the implementer itself to run (credential mounting, driver bugs, sandbox plumbing), the product-layer session implements it dire
 
 ### Context
 

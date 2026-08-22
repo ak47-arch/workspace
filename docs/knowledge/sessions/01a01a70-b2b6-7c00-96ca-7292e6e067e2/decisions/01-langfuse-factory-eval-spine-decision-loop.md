@@ -2,14 +2,15 @@
 
 **Status**: accepted
 **Date**: 2026-08-19 21:42
-**Task**: langfuse-agentic-operations
+**Task**: [langfuse-agentic-operations](../../../../tasks/langfuse-agentic-operations.md)
 **Project**: langfuse-agentic-operations
-**Session**: sessions/01a01a70-b2b6-7c00-96ca-7292e6e067e2/session.jsonl
+**Session**: [session.jsonl](../session.jsonl)
+**Summary**: Build one shared eval spine (session/trace → artifact/label → gold check → Langfuse dataset/score), written for a single surface first.
 
 ### Context
 
 Requirement change 2026-08-19 (recorded in `docs/tasks/langfuse-agentic-operations.md` §Requirement change
-and `docs/prd-queue/2026-08-09-langfuse-agentic-operations.md` §Requirement change): deliverable C is
+and [langfuse-agentic-operations](../../../../prd/2026-08-09-langfuse-agentic-operations.md) §Requirement change): deliverable C is
 re-scoped so the **software factory's own agentic SDLC** is the first-class Langfuse eval target;
 first-party app integration is deferred follow-on.
 

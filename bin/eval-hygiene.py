@@ -177,12 +177,189 @@ def hygiene_checks():
 
 
 def _gh_protection():
-    r = subprocess.run(["gh", "api", "repos/ak47-arch/workspace/branches/master/protection"],
-                       capture_output=True, text=True)
-    return r.returncode == 0 and "required_pull_request_reviews" in (r.stdout or "")
+    try:
+        r = subprocess.run(["gh", "api", "repos/ak47-arch/workspace/branches/master/protection"],
+                           capture_output=True, text=True)
+        return r.returncode == 0 and "required_pull_request_reviews" in (r.stdout or "")
+    except FileNotFoundError:
+        return False  # gh not installed in this env → report as absent (honest)
 
 
-# ── Langfuse (fleet-level scores on the latest trace) ───────────────────────
+# ── S10 typed-trail integrity ───────────────────────────────────────────────
+# The disclosure trail is machine-followable by construction: references are
+# typed links (resolved from the artifact's own location), targets are stable
+# (docs/prd/ home + manifest), and every decision leaf carries a `**Summary**:`
+# read-skip. Each check is falsifiable — a mis-disclosure trips it.
+#
+# Convention: a "string path" is a backticked or bare concrete path to a
+# `.md`/`.jsonl` doc that appears where the factory norm demands a typed link
+# (structured reference lines — PRD/decision front-matter, reference artifact
+# tables, knowledge index rows). Prose-body filename mentions are the body the
+# read-skip summary lets an agent avoid, not a reason-hop.
+
+def strip_fences(txt):
+    txt = re.sub(r'\[\[^\]]*\]\([^)]*\)', '', txt)   # drop typed-link targets
+    txt = re.sub(r'`', '', txt)                            # drop backticks (so backticked strings detect)
+    txt = re.sub(r'^```.*?^```', '', txt, flags=re.S | re.M)
+    return txt
+
+
+def _metadata_block(txt):
+    """Return the front matter: leading title + `**Field**:` lines before the first
+    H2/H3 heading or prose paragraph."""
+    out = []
+    for l in txt.split('\n'):
+        s = l.strip()
+        if not s:
+            if out and not any(o.startswith('**') for o in out):
+                out.append('')
+            continue
+        if l.startswith('##') or l.startswith('###'):
+            break
+        if not s.startswith('**') and not s.startswith('#'):
+            break  # prose body begins
+        out.append(l)
+    return '\n'.join(out)
+
+
+def _string_paths(surface_text):
+    """Concrete .md/.jsonl path tokens (path-qualified) in a text block, excluding
+    typed-link targets and schema/<placeholder> illustrations."""
+    s = strip_fences(surface_text)
+    hits = []
+    for m in re.finditer(r'(?:^|[>`*_~ ])((?:docs|bin|sessions?|config|\.pi|\.agents|\.github|openwiki|projects|feed_analyser|survival-infrastructure)\.?/?[\.\w/\-]*\.(?:md|jsonl?))\b', s):
+        tok = m.group(1).strip('`')
+        if '..' in tok or any(c in tok for c in '<>') or not tok.endswith(('.md', '.json', '.jsonl')):
+            continue
+        if tok.count('.') == 0:
+            continue
+        if not any(tok.startswith(p) for p in ('docs/', 'bin/', 'sessions', 'config/')):
+            # relative links are stripped above; only root-qualified survive
+            continue
+        hits.append(tok)
+    return hits
+
+
+def head_meta(path):
+    try:
+        with open(path, encoding='utf-8') as f:
+            return f.read()
+    except Exception:
+        return ''
+
+
+# document glob targets per layer
+def _prd_files(ws):
+    d = os.path.join(ws, 'docs', 'prd')
+    if not os.path.isdir(d):
+        return []
+    return [os.path.join(d, x) for x in sorted(os.listdir(d)) if x.endswith('.md')]
+
+
+def _decision_files(ws):
+    out = []
+    base = os.path.join(ws, 'docs', 'knowledge')
+    for dirpath, _, fn in os.walk(base):
+        if '/decisions' not in dirpath:
+            continue
+        for x in fn:
+            if x.endswith('.md'):
+                out.append(os.path.join(dirpath, x))
+    return sorted(out)
+
+
+def _reference_files(ws):
+    d = os.path.join(ws, 'docs', 'reference')
+    if not os.path.isdir(d):
+        return []
+    return sorted(os.path.join(d, x) for x in os.listdir(d) if x.endswith('.md'))
+
+
+def s10_string_paths(ws=WS):
+    """Check (a): zero string-path references in the structured reference lines
+    of the PRD, decision, reference and eval layers."""
+    layers = [('prd', _prd_files(ws)), ('decision', _decision_files(ws)),
+              ('reference', _reference_files(ws))]
+    bad = []
+    for label, files in layers:
+        for f in files:
+            if label in ('prd', 'decision', 'reference'):
+                surface = _metadata_block(head_meta(f))
+            else:
+                surface = head_meta(f)
+            for tok in _string_paths(surface):
+                bad.append("{}: {}".format(os.path.relpath(f, ws), tok))
+    ok = not bad
+    why = "0 string-path refs on the typed-trail surface" if ok else "; ".join(bad[:8])
+    return ok, why, len(bad)
+
+
+def s10_summaries(ws=WS):
+    """Check (b): every decision file carries a `**Summary**:` read-skip line."""
+    dec = _decision_files(ws)
+    missing = []
+    for f in dec:
+        t = head_meta(f)
+        if '**Summary**:' not in t.split('### Context')[0]:
+            missing.append(os.path.relpath(f, ws))
+    ok = not missing
+    why = "{}/{}".format(len(dec) - len(missing), len(dec)) + " decision files carry **Summary**:" if ok else \
+        "missing: " + "; ".join(missing[:6])
+    return ok, why, len(missing)
+
+
+def s10_stale_citations(ws=WS):
+    """Check (c): no live citation still points at the retired prd-queue/prd-archive
+    homes, and the routing manifest agrees with the stable docs/prd/ home."""
+    live = [('prd', _prd_files(ws)), ('decision', _decision_files(ws)),
+            ('reference', _reference_files(ws)),
+            ('index', [os.path.join(ws, 'docs', 'knowledge', 'index.md')])]
+    stale = []
+    for label, files in live:
+        for f in files:
+            for m in re.finditer(r'prd-(?:queue|archive)/([\w.-]+\.md)', head_meta(f)):
+                stale.append("{} → {}".format(os.path.relpath(f, ws), m.group(0)))
+    # manifest coherence: every manifest row's file exists at docs/prd/ & every PRD has a row
+    mf = os.path.join(ws, 'docs', 'prd', 'manifest.json')
+    manifest_ok = True
+    manifest_why = ""
+    try:
+        manifest = json.loads(head_meta(mf) or 'null')
+        inst = set()
+        if manifest and 'prds' in manifest:
+            for row in manifest['prds']:
+                inst.add(row.get('file'))
+                if not os.path.isfile(os.path.join(ws, 'docs', 'prd', row.get('file', ''))):
+                    stale.append("manifest row '{}' file missing".format(row.get('slug')))
+        for f in _prd_files(ws):
+            fn = os.path.basename(f)
+            if manifest and fn not in inst:
+                stale.append("docs/prd/{} not in manifest".format(fn))
+        if not manifest:
+            manifest_ok = False
+            manifest_why = "docs/prd/manifest.json missing/invalid"
+    except Exception as e:
+        manifest_ok = False
+        manifest_why = "manifest parse error: " + str(e)
+    ok = not stale and manifest_ok
+    why = ("0 stale prd-queue/archive citations; manifest↔docs/prd coherent" if ok else
+           "stale: " + "; ".join(stale[:6]) + (manifest_why or ""))
+    return ok, why, len(stale) + (0 if manifest_ok else 1)
+
+
+def typed_trail_checks(ws=WS):
+    rows, fails = [], []
+    for name, fn in [('string-path refs', s10_string_paths),
+                     ('decision **Summary**: present', s10_summaries),
+                     ('no stale/mismatched citations + manifest coherence', s10_stale_citations)]:
+        ok, why, n = fn(ws)
+        rows.append({'check': name, 'pass': ok, 'evidence': "{} — {}".format(n, why)})
+        if not ok:
+            fails.append(name + ": " + why)
+    return rows, fails
+
+
+# ── Langfuse ───────────────────────────────────────────────────────────────
 def langfuse_creds():
     try:
         env = read(os.path.join(WS, ".env.langfuse"))
@@ -239,7 +416,9 @@ class LF:
 def main():
     roster, roster_fails = roster_checks()
     hygiene, hygiene_fails, advisories = hygiene_checks()
+    typedtrail, typedtrail_fails = typed_trail_checks()
 
+    all_fails = roster_fails + hygiene_fails + typedtrail_fails
     out = {
         "generated": DATE,
         "advisories": advisories,
@@ -253,6 +432,11 @@ def main():
                 "rows": hygiene,
                 "failures": hygiene_fails,
                 "verdict": "FAIL" if hygiene_fails else "PASS",
+            },
+            "S10-typed-trail-integrity": {
+                "rows": typedtrail,
+                "failures": typedtrail_fails,
+                "verdict": "FAIL" if typedtrail_fails else "PASS",
             },
         },
     }
@@ -274,8 +458,15 @@ def main():
     for h in hygiene:
         md.append("| {} | {} | {} |".format(
             h["check"], "PASS" if h["pass"] else "FAIL", h["evidence"]))
+    md += ["", "## S10 — Typed-trail integrity (machine-followable trail)", "",
+           "| check | verdict | evidence |", "|---|---|---|"]
+    for t in typedtrail:
+        md.append("| {} | {} | {} |".format(
+            t["check"], "PASS" if t["pass"] else "FAIL", t["evidence"]))
+    md += ["", "## Surfaces", ""]
+    md += ["- **{}**: {}".format(n, s["verdict"]) for n, s in out["surfaces"].items()]
     md += ["", "## Failures", ""]
-    md += [f"- {f}" for f in (roster_fails + hygiene_fails) or ["(none)"]]
+    md += [f"- {f}" for f in all_fails or ["(none)"]]
     md += ["", "## Advisories (accepted risk / notes)", ""]
     md += [f"- {a}" for a in (advisories or ["(none)"])]
     md += ["", f"_JSON: docs/evaluations/{DATE}-hygiene.json_", ""]
@@ -292,9 +483,10 @@ def main():
             print(f"  SCORE {name}: {tid} value={'1.0' if surf['verdict']=='PASS' else '0.0'} "
                   f"{'posted' if ok else 'FAILED'}")
 
-    print("Evaluated S8+S9 → docs/evaluations/{}-hygiene.{{json,md}}".format(DATE))
+    print("Evaluated S8+S9+S10 → docs/evaluations/{}-hygiene.{{json,md}}".format(DATE))
     print("  S8 roster: PASS" if not roster_fails else "  S8 roster: FAIL → " + "; ".join(roster_fails))
     print("  S9 hygiene: PASS" if not hygiene_fails else "  S9 hygiene: FAIL → " + "; ".join(hygiene_fails))
+    print("  S10 typed-trail: PASS" if not typedtrail_fails else "  S10 typed-trail: FAIL → " + "; ".join(typedtrail_fails))
 
 
 if __name__ == "__main__":

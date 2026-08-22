@@ -3,7 +3,8 @@
 **Status**: accepted
 **Date**: 2026-07-29 02:07
 **Project**: software-factory
-**Session**: sessions/019fa825-a262-7020-afec-0c733d21536d/session.jsonl
+**Session**: [session.jsonl](../session.jsonl)
+**Summary**: Use whisper.cpp as the speech-to-text engine, with a custom pi skill (transcribe) that wraps it.
 
 ### Context
 

@@ -2,10 +2,10 @@
 
 **Status**: accepted
 **Date**: 2026-08-19 04:20
-**Task**: multi-repo-delivery-bookkeeping-prs
+**Task**: [multi-repo-delivery-bookkeeping-prs](../../../../tasks/multi-repo-delivery-bookkeeping-prs.md)
 **Project**: software-factory
-**Session**: sessions/01a01515-8457-7260-a4d6-45731d61d571/session.jsonl
-**Summary**: Local-first execution substrate via herdr: dedicated worktree branch + pane, host owns git, sandbox container is containment, GitHub is repo/PR/evidence layer; --continue respawn continuity works; timeout cap 7200s.
+**Session**: [session.jsonl](../session.jsonl)
+**Summary**: Execute the factory run locally: herdr worktree create a dedicated branch/pane, run bin/factory-run.sh --headless through the driver on the host with the agent in the san
 
 ### Context
 

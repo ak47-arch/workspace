@@ -149,7 +149,7 @@ If the project has both VISION.md and TECHNICAL_VISION.md:
 
 ### PRDs → Vision
 
-In PRD headers (`docs/prd-queue/<date>-<slug>.md`), add a `**Vision**:` field:
+In PRD headers (`docs/prd/<date>-<slug>.md`), add a `**Vision**:` field:
 
 ```markdown
 # PRD: <title>

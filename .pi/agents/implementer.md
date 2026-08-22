@@ -49,7 +49,7 @@ here, in the persona, where the driver loads them into every run.
 
 1. You are **only allowed to modify** files inside `/sandbox/worktree`. The
    host workspace is mounted read-only at `/workspace` — **you physically
-   cannot** modify `docs/tasks/`, `docs/tasks.txt`, or `docs/prd-queue/`, and
+   cannot** modify `docs/tasks/`, `docs/tasks.txt`, or `docs/prd/`, and
    you must not attempt to bypass that boundary (no `sudo`, no writes to
    `/workspace`).
 2. **Never write secrets** (API keys, tokens, `.env` with real values) into

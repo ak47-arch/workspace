@@ -2,9 +2,10 @@
 
 **Status**: accepted
 **Date**: 2026-08-17 17:27
-**Task**: headless-agent-containerisation
+**Task**: [headless-agent-containerisation](../../../../tasks/headless-agent-containerisation.md)
 **Project**: software-factory
-**Session**: sessions/01a00c50-b714-7811-8086-3bc6e0a8ea64/session.jsonl
+**Session**: [session.jsonl](../session.jsonl)
+**Summary**: factory.yml gains a final "Sync tracking commits to master" step (if: always()): git add -A, commit if dirty, git pull --rebase origin master (tolerating a concurrent mer
 
 ### Context
 

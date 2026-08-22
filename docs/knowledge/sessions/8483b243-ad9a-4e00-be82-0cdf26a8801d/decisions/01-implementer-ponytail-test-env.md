@@ -2,10 +2,11 @@
 
 **Status**: accepted
 **Date**: 2026-08-14 18:45 (revised after review)
-**Task**: implementer-ponytail
+**Task**: [implementer-ponytail](../../../../tasks/implementer-ponytail.md)
 **Project**: software-factory
-**Session**: sessions/8483b243-ad9a-4e00-be82-0cdf26a8801d/session.jsonl
+**Session**: [session.jsonl](../session.jsonl)
 **Related review**: review/decisions/01-implementer-ponytail.md (5b63c492)
+**Summary**: Delete the opensource symlink from the worktree (done).
 
 ### Context
 

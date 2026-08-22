@@ -2,9 +2,10 @@
 
 **Status**: accepted
 **Date**: 2026-08-19 23:20
-**Task**: cognee-integration-evaluation
+**Task**: [cognee-integration-evaluation](../../../../tasks/cognee-integration-evaluation.md)
 **Project**: software-factory
-**Session**: sessions/019f9a5c-c31c-7bb6-a440-9b6e88c059b3/session.jsonl
+**Session**: [session.jsonl](../session.jsonl)
+**Summary**: Graphify does not fit the progressive disclosure architecture.
 
 ### Context
 

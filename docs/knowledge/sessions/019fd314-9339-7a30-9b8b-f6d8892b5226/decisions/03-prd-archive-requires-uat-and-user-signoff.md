@@ -2,9 +2,10 @@
 
 **Status**: accepted
 **Date**: 2026-08-06
-**Task**: x-capture-instrument
+**Task**: [x-capture-instrument](../../../../tasks/x-capture-instrument.md)
 **Project**: feed-analyser
-**Session**: sessions/019fd314-9339-7a30-9b8b-f6d8892b5226/session.jsonl
+**Session**: [session.jsonl](../session.jsonl)
+**Summary**: A PRD moves from docs/prd-queue/ to docs/prd-archive/ only when: 1. the implementation is delivered, and 2. all UAT testing is complete and the user confirms it works as
 
 ### Context
 

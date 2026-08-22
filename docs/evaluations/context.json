@@ -2,20 +2,20 @@
   "footprint": {
     "AGENTS.md": {
       "tokens": 579,
-      "date": "2026-08-21"
+      "date": "2026-08-22"
     },
     "docs/factory-context.md": {
-      "tokens": 3133,
-      "date": "2026-08-21"
+      "tokens": 3136,
+      "date": "2026-08-22"
     },
     "docs/knowledge/index.md": {
       "tokens": 5377,
-      "date": "2026-08-21"
+      "date": "2026-08-22"
     },
     "AGENTS.md vs initial-footprint claim": {
       "tokens": 579,
-      "date": "2026-08-21"
+      "date": "2026-08-22"
     }
   },
-  "last_run": "2026-08-21"
+  "last_run": "2026-08-22"
 }

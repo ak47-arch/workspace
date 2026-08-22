@@ -9,7 +9,7 @@
 
 ## Artifacts
 
-- Plan: [2026-08-13-code-review-agent.md](../prd-queue/2026-08-13-code-review-agent.md)
+- Plan: [2026-08-13-code-review-agent.md](../prd/2026-08-13-code-review-agent.md)
 
 ## Sessions
 

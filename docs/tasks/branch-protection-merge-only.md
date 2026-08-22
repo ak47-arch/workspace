@@ -10,7 +10,7 @@
 
 ## Artifacts
 
-- Plan: `docs/prd-queue/2026-08-18-branch-protection-merge-only.md`
+- Plan: [2026-08-18-branch-protection-merge-only](../prd/2026-08-18-branch-protection-merge-only.md)
 
 ## Sessions
 

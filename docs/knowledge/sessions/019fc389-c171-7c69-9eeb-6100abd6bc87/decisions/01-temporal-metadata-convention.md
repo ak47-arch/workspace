@@ -2,9 +2,10 @@
 
 **Status**: accepted
 **Date**: 2026-08-02 18:00
-**Task**: chronological-tracking
+**Task**: [chronological-tracking](../../../../tasks/chronological-tracking.md)
 **Project**: software-factory
-**Session**: sessions/019fc389-c171-7c69-9eeb-6100abd6bc87/session.jsonl
+**Session**: [session.jsonl](../session.jsonl)
+**Summary**: Every artifact carries a timestamp with minute precision (yyyy-mm-dd HH:MM).
 
 ### Context
 

@@ -35,24 +35,24 @@ fail() { FAIL=$((FAIL + 1)); FAILED_TESTS+=("$1"); echo "  ✗ $1"; }
 
 # ─── Fixture builder ───────────────────────────────────────────────────────
 # Build a disposable workspace in a temp dir:
-#   docs/prd-queue/*.md      (Final, older, in-progress, non-Final)
+#   docs/prd/*.md      (Final, older, in-progress, non-Final)
 #   docs/tasks/<slug>.md      (Project + Status for resolution/skip)
 #   config/implementer.json   (driver config)
 #   workspace-portability/workspace_restore_manifest.json (repo/branch map)
 setup_fixture() {
   local dir
   dir="$(mktemp -d)"
-  mkdir -p "$dir/docs/prd-queue" "$dir/docs/tasks" "$dir/config" \
+  mkdir -p "$dir/docs/prd" "$dir/docs/tasks" "$dir/config" \
            "$dir/workspace-portability" "$dir/bin"
 
   # Two pickable Final PRDs (oldest first) + one Final-but-in-progress + one non-Final.
-  printf '**Date**: 2026-08-01 10:00\n**Status**: Final\n' > "$dir/docs/prd-queue/2026-08-01-aaa.md"
-  printf '**Date**: 2026-08-02 10:00\n**Status**: Final\n' > "$dir/docs/prd-queue/2026-08-02-bbb.md"
-  printf '**Date**: 2026-08-03 10:00\n**Status**: Final\n' > "$dir/docs/prd-queue/2026-08-03-ccc.md"
-  printf '**Date**: 2026-08-03 11:00\n**Status**: Draft\n' > "$dir/docs/prd-queue/2026-08-03-nope.md"
+  printf '**Date**: 2026-08-01 10:00\n**Status**: Final\n' > "$dir/docs/prd/2026-08-01-aaa.md"
+  printf '**Date**: 2026-08-02 10:00\n**Status**: Final\n' > "$dir/docs/prd/2026-08-02-bbb.md"
+  printf '**Date**: 2026-08-03 10:00\n**Status**: Final\n' > "$dir/docs/prd/2026-08-03-ccc.md"
+  printf '**Date**: 2026-08-03 11:00\n**Status**: Draft\n' > "$dir/docs/prd/2026-08-03-nope.md"
   # STALE case (decision 09): a Final PRD whose task is in-review (merged/blocked
   # lineage) — must NOT be picked even though it is the OLDEST Final.
-  printf '**Date**: 2026-07-31 10:00\n**Status**: Final\n' > "$dir/docs/prd-queue/2026-07-31-ddd.md"
+  printf '**Date**: 2026-07-31 10:00\n**Status**: Final\n' > "$dir/docs/prd/2026-07-31-ddd.md"
 
   # Task files (resolve_repo reads **Project**; resolve_prd reads **Status**).
   printf '**Status**: prd-ready\n**Project**: software-factory\n' > "$dir/docs/tasks/aaa.md"
@@ -147,10 +147,13 @@ fi
 
 # ─── Test 1: resolve_prd with --pick ───────────────────────────────────────
 echo "── resolve_prd (--pick) ──"
-source_driver
+# WORKSPACE is captured at source time from IMPLEMENTER_WORKSPACE, so the fixture
+# must be pinned BEFORE sourcing the driver (else resolve_prd looks in the real
+# repo and exits 2 when no Final+prd-ready PRD lives there).
 FIX="$(setup_fixture)"
 export IMPLEMENTER_WORKSPACE="$FIX"
 WORKSPACE="$FIX"
+source_driver
 MODE_FLAG="--pick"
 TASK=""
 # resolve_prd sets globals in the MAIN shell (not a subshell) so they persist.
@@ -158,7 +161,7 @@ TASK=""
 # subshell and lose the globals.
 resolve_prd 2> "$FIX/pick-notes.txt"
 NOTES="$(cat "$FIX/pick-notes.txt")"
-if [ "${PRD:-}" = "$FIX/docs/prd-queue/2026-08-01-aaa.md" ]; then
+if [ "${PRD:-}" = "$FIX/docs/prd/2026-08-01-aaa.md" ]; then
   pass "resolve_prd picks oldest Final prd-ready (aaa)"
 else
   fail "resolve_prd picked '$PRD' — expected aaa (oldest Final prd-ready)"
@@ -206,7 +209,7 @@ fi
 echo "── brief writer ──"
 RUN_DIR="$FIX/run-test"
 PRD_SLUG="bbb"
-PRD="$FIX/docs/prd-queue/2026-08-02-bbb.md"
+PRD="$FIX/docs/prd/2026-08-02-bbb.md"
 IMPL_UUID="00000000-0000-0000-0000-000000000001"
 mkdir -p "$RUN_DIR"
 write_brief "run the demo verification"
@@ -250,9 +253,9 @@ if command -v podman >/dev/null 2>&1 || command -v docker >/dev/null 2>&1; then
   ( cd "$IFIX" && git init -q -b master && git config user.email test@example.com \
       && git config user.name Test && echo hello > README.md \
       && git add -A && git commit -qm init )
-  mkdir -p "$IFIX/docs/prd-queue" "$IFIX/docs/tasks" "$IFIX/config" \
+  mkdir -p "$IFIX/docs/prd" "$IFIX/docs/tasks" "$IFIX/config" \
            "$IFIX/docs/implementations" "$IFIX/bin" "$IFIX/workspace-portability"
-  printf '**Date**: 2026-08-01 10:00\n**Status**: Final\n' > "$IFIX/docs/prd-queue/2026-08-05-sample.md"
+  printf '**Date**: 2026-08-01 10:00\n**Status**: Final\n' > "$IFIX/docs/prd/2026-08-05-sample.md"
   printf '**Status**: prd-ready\n**Project**: software-factory\n' > "$IFIX/docs/tasks/sample.md"
   # Config with a deliberately nonexistent image so the container step fails fast.
   # runs_root points INSIDE the fixture so the driver doesn't touch the real home.
@@ -318,7 +321,7 @@ fi
 # ───────────────────────────────────────────────────────────────────────────
 echo "── end-to-end smoke: driver main executed (mock podman, --dry-run) ──"
 SMOKE="$(mktemp -d)"
-mkdir -p "$SMOKE/config" "$SMOKE/docs/tasks" "$SMOKE/docs/prd-queue" \
+mkdir -p "$SMOKE/config" "$SMOKE/docs/tasks" "$SMOKE/docs/prd" \
          "$SMOKE/docs/implementations" "$SMOKE/docs/knowledge/sessions" "$SMOKE/bin"
 # Stub the host skills checkout the driver binds into the container at /skills.
 # US2/US3: the mount source must exist so the /skills mount + `--skill /skills/*`
@@ -330,7 +333,7 @@ mkdir -p "$SMOKE/opensource/ponytail/skills/ponytail-review"/
     && echo base > base.txt && git add -A && git commit -qm base >/dev/null 2>&1 )
 printf '**Status**: prd-ready\n**Project**: software-factory\n' > "$SMOKE/docs/tasks/pony.md"
 printf '**Date**: 2026-08-14 12:00\n**Status**: Final\n## Testing decisions\nrun the demo verification\n' \
-  > "$SMOKE/docs/prd-queue/2026-08-14-pony.md"
+  > "$SMOKE/docs/prd/2026-08-14-pony.md"
 cat > "$SMOKE/config/implementer.json" <<'CFG'
 {
   "repo_map": { "software-factory": ".", "feed_analyser": "feed_analyser" },
@@ -606,7 +609,7 @@ setup_revise_fixture() {
   local dir
   dir="$(mktemp -d)"
   local remote="$dir-remote"
-  mkdir -p "$dir/config" "$dir/docs/tasks" "$dir/docs/prd-queue" \
+  mkdir -p "$dir/config" "$dir/docs/tasks" "$dir/docs/prd" \
            "$dir/docs/code-reviews/$date-$slug/decisions" \
            "$dir/docs/implementations" "$dir/docs/knowledge/sessions/$orig" \
            "$dir/bin" "$dir/.factory/runs"
@@ -663,7 +666,7 @@ EOF
 
   # PRD for the slug (resolve_revision locates it).
   printf '**Date**: %s 10:00\n**Status**: Final\n## Testing decisions\nrun the demo verification\n' "$date" \
-    > "$dir/docs/prd-queue/$date-demo.md"
+    > "$dir/docs/prd/$date-demo.md"
 
   # Driver config (used only when jq is present; harmless otherwise).
   cat > "$dir/config/implementer.json" <<'CFG'
@@ -912,7 +915,7 @@ setup_delivery_fixture() {
   dir="$(mktemp -d)"
   local remote="$dir-remote"
 
-  mkdir -p "$dir/config" "$dir/docs/tasks" "$dir/docs/prd-queue" \
+  mkdir -p "$dir/config" "$dir/docs/tasks" "$dir/docs/prd" \
            "$dir/docs/implementations" "$dir/docs/knowledge/sessions" \
            "$dir/bin" "$dir/workspace-portability" "$dir/.factory/runs"
 
@@ -930,7 +933,7 @@ setup_delivery_fixture() {
   fi
 
   printf '**Date**: 2026-08-17 10:00\n**Status**: Final\n## Testing decisions\nrun the demo verification\n' \
-    > "$dir/docs/prd-queue/2026-08-17-deliv.md"
+    > "$dir/docs/prd/2026-08-17-deliv.md"
   printf '**Status**: prd-ready\n**Project**: software-factory\n' > "$dir/docs/tasks/deliv.md"
 
   cat > "$dir/config/implementer.json" <<'CFG'
@@ -1055,14 +1058,14 @@ echo "── multi-repo: resolve_repo_set + invariant + Shape B collapse ──"
 # is sourced. Sourcing with a stale IMPLEMENTER_WORKSPACE (left exported by a
 # previous section) makes source-time jq abort the whole script.
 MR="$(mktemp -d)"
-mkdir -p "$MR/config" "$MR/docs/tasks" "$MR/docs/prd-queue" "$MR/docs/implementations" \
+mkdir -p "$MR/config" "$MR/docs/tasks" "$MR/docs/prd" "$MR/docs/implementations" \
          "$MR/workspace-portability"
 ( cd "$MR" && git init -q -b master && git config user.email mr@e.c && git config user.name MR \
   && echo base > base.txt && git add -A && git commit -qm base )
 # Task + PRD declaring TWO repos (workspace + feed_analyser).
 printf '**Status**: prd-ready\n**Project**: software-factory\n' > "$MR/docs/tasks/multi.md"
 printf '**Date**: 2026-08-18 10:00\n**Status**: Final\n**Repos**: workspace, feed_analyser\n' \
-  > "$MR/docs/prd-queue/2026-08-18-multi.md"
+  > "$MR/docs/prd/2026-08-18-multi.md"
 SRC_CONFIG="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../config/implementer.json"
 cp "$SRC_CONFIG" "$MR/config/implementer.json"
 cat > "$MR/workspace-portability/workspace_restore_manifest.json" <<'MF'
@@ -1070,7 +1073,7 @@ cat > "$MR/workspace-portability/workspace_restore_manifest.json" <<'MF'
 MF
 export IMPLEMENTER_WORKSPACE="$MR"
 WORKSPACE="$MR"
-PRD_SLUG="multi"; PRD="$MR/docs/prd-queue/2026-08-18-multi.md"
+PRD_SLUG="multi"; PRD="$MR/docs/prd/2026-08-18-multi.md"
 source_driver
 resolve_repo_set 2>/dev/null
 if printf '%s\n' "${REPO_KEYS[@]:-}" | grep -qx workspace \
@@ -1087,8 +1090,8 @@ fi
 
 # Unknown repo declared → die (exit 2) naming it.
 printf '**Date**: 2026-08-18 10:00\n**Status**: Final\n**Repos**: workspace, not-a-real-repo\n' \
-  > "$MR/docs/prd-queue/2026-08-18-unk.md"
-PRD="$MR/docs/prd-queue/2026-08-18-unk.md"
+  > "$MR/docs/prd/2026-08-18-unk.md"
+PRD="$MR/docs/prd/2026-08-18-unk.md"
 # die() exits the script — run in a subshell to capture its exit code.
 ( resolve_repo_set 2> "$MR/unk.err" )
 rc=$?
@@ -1097,7 +1100,7 @@ if [ "$rc" -eq 2 ] && grep -q 'not-a-real-repo' "$MR/unk.err"; then
 else
   fail "resolve_repo_set unknown repo rc=$rc: $(cat "$MR/unk.err" | tr '\n' ' ')"
 fi
-PRD="$MR/docs/prd-queue/2026-08-18-multi.md"
+PRD="$MR/docs/prd/2026-08-18-multi.md"
 
 # A/B invariant (DELIVERY-TIME semantics, decision: Shape A assert point moves
 # post-bookkeeping): at delivery time BOOKKEEPING_PR is always empty (the Shape A

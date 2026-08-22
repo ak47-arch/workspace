@@ -2,9 +2,10 @@
 
 **Status**: accepted
 **Date**: 2026-08-19 22:46
-**Task**: cognee-integration-evaluation
+**Task**: [cognee-integration-evaluation](../../../../tasks/cognee-integration-evaluation.md)
 **Project**: software-factory
-**Session**: sessions/019f9a5c-c31c-7bb6-a440-9b6e88c059b3/session.jsonl
+**Session**: [session.jsonl](../session.jsonl)
+**Summary**: The test results show that cognee's current extraction + recall pipeline with deepseek/deepseek-v4-flash is not faithful enough to replace the file-based context engine.
 
 ### Context
 

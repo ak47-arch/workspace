@@ -9,7 +9,7 @@
 
 ## Artifacts
 
-- Plan: `docs/prd-queue/2026-08-09-langfuse-agentic-operations.md`
+- Plan: [2026-08-09-langfuse-agentic-operations](../prd/2026-08-09-langfuse-agentic-operations.md)
 - Teaching workspace: `docs/teach/langfuse/`
 
 ## Progress
@@ -19,7 +19,7 @@
 - [x] Self-hosted Langfuse upgraded v3 → v4.6.0 — migrations 0001–0046 applied, data restored (4,293 observations, 339 traces), pi tracing verified live in dual write mode (decision record: `docs/knowledge/sessions/019fc40a-…/decisions/01-langfuse-v3-to-v4-upgrade.md`)
 - [x] Agentic operations (Level B: start/stop/restart/health/logs) — Operations section in wrapper SKILL.md (verified against live stack)
 - [x] Integrate Langfuse into all first-party applications (survey + phased plan in task file: `llm/` first, then `survival-infrastructure/`, phase 2 apps; execution gated on project preflights)
-- [x] PRD → `docs/prd-queue/2026-08-09-langfuse-agentic-operations.md`
+- [x] PRD → [2026-08-09-langfuse-agentic-operations](../prd/2026-08-09-langfuse-agentic-operations.md)
 - [x] **Evals breadth-first: surface register + evolution log (2026-08-20)** — `docs/evaluations/surfaces.md` declares the full surface set (S1–S10: decision/task/knowledge/PRD-review/drift + stack-liveness + context-engine + roster-completeness + repo-hygiene + deferred app family) and documents the evolution log; authoritative register linked from README. **Depth-first per-surface passes come later**; stack-liveness (S6) is the next cheap live panel candidate.
 
 ## Requirement change (2026-08-19)

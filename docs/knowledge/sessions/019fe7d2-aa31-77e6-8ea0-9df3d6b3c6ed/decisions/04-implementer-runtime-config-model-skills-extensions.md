@@ -2,9 +2,10 @@
 
 **Status**: accepted
 **Date**: 2026-08-10 20:59
-**Task**: implementer-agent
+**Task**: [implementer-agent](../../../../tasks/implementer-agent.md)
 **Project**: software-factory
-**Session**: sessions/019fe7d2-aa31-77e6-8ea0-9df3d6b3c6ed/session.jsonl
+**Session**: [session.jsonl](../session.jsonl)
+**Summary**: Model: openrouter/deepseek/deepseek-v4-flash-0731 — the factory's current session model, per the user's instruction ("the current model will also be the implementer model
 
 ### Context
 

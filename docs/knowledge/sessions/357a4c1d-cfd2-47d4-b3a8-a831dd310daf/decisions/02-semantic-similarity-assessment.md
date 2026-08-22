@@ -2,9 +2,10 @@
 
 **Status**: accepted
 **Date**: 2026-08-16 23:49
-**Task**: task-pickup-similarity-merge
+**Task**: [task-pickup-similarity-merge](../../../../tasks/task-pickup-similarity-merge.md)
 **Project**: software-factory
-**Session**: sessions/357a4c1d-cfd2-47d4-b3a8-a831dd310daf/session.jsonl
+**Session**: [session.jsonl](../session.jsonl)
+**Summary**: The agent proposes candidate similar tasks with a one-line "why" for each (semantic judgment over subject + action + project context; three match classes: near-duplicate,
 
 ### Context
 

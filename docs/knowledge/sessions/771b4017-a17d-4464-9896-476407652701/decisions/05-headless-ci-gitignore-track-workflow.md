@@ -1,3 +1,7 @@
+**Summary**: # Decision 05 — headless CI must track the root .github/ workflow - Date: 2026-08-17 - Session: 771b4017-a17d-4464-9896-476407652701 (implementer, headless-agent-containe
+
+**Summary**: Summary: # Decision 05 — headless CI must track the root .github/ workflow - Date: 2026-08-17 - Session: 771b4017-a17d-4464-9896-476407652701 (implementer, headless-agent
+
 # Decision 05 — headless CI must track the root `.github/` workflow
 
 - **Date**: 2026-08-17

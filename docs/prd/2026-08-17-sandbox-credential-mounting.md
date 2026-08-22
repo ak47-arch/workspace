@@ -1,13 +1,12 @@
 # PRD: Sandboxed agents resolve LLM credentials from pi's auth.json
 
 **Date**: 2026-08-17 01:55
-**Status**: Final
+**Status**: [Final](./manifest.json)
 **Owner**: software-factory workspace
-**Task**: sandbox-credential-mounting
-**Session**: `docs/knowledge/sessions/357a4c1d-cfd2-47d4-b3a8-a831dd310daf/session.jsonl`
+**Task**: [sandbox-credential-mounting](../tasks/sandbox-credential-mounting.md)
+**Session**: [session.jsonl](../knowledge/sessions/357a4c1d-cfd2-47d4-b3a8-a831dd310daf/session.jsonl)
 **Decisions**:
-  - `docs/knowledge/sessions/357a4c1d-cfd2-47d4-b3a8-a831dd310daf/decisions/04-llm-credential-resolution-from-auth-json.md`
-
+  - [04-llm-credential-resolution-from-auth-json](../knowledge/sessions/357a4c1d-cfd2-47d4-b3a8-a831dd310daf/decisions/04-llm-credential-resolution-from-auth-json.md)
 ## Problem statement
 
 The factory's sandboxed agents (implementer, reviewer) run inside a container that requires `OPENROUTER_API_KEY` or `ANTHROPIC_API_KEY` in the environment. The host drivers (`bin/implementer-run.sh`, `bin/review-run.sh`) forward only allowlisted host env vars to the container's `secrets.env`. But pi on the host stores its OpenRouter key in `~/.pi/agent/auth.json`, **not** in the host environment — so every container boot failed with `[entrypoint] ERROR: no LLM credential` and the drivers gave up after 3 respawns. The assembly line could not run a single task.

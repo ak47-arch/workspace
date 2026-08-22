@@ -1,14 +1,13 @@
 # PRD: Context-Disclosure Semantic Probe Contract
 
 **Date**: 2026-08-21
-**Status**: Draft
+**Status**: [Draft](./manifest.json)
 **Owner**: software-factory workspace
 **Task**: context-disclosure-semantic-probe
-**Session**: `docs/knowledge/sessions/01a01a70-b2b6-7c00-96ca-7292e6e067e2/session.jsonl`
+**Session**: [session.jsonl](../knowledge/sessions/01a01a70-b2b6-7c00-96ca-7292e6e067e2/session.jsonl)
 **Decisions**:
-  - `docs/knowledge/sessions/01a01a70-b2b6-7c00-96ca-7292e6e067e2/decisions/02-eval-factory-department.md`
-  - `docs/knowledge/sessions/01a01a70-b2b6-7c00-96ca-7292e6e067e2/decisions/03-eval-feedback-target-context-engine.md`
-
+  - [02-eval-factory-department](../knowledge/sessions/01a01a70-b2b6-7c00-96ca-7292e6e067e2/decisions/02-eval-factory-department.md)
+  - [03-eval-feedback-target-context-engine](../knowledge/sessions/01a01a70-b2b6-7c00-96ca-7292e6e067e2/decisions/03-eval-feedback-target-context-engine.md)
 ## Problem statement
 
 Decision 03 (`03-eval-feedback-target-context-engine.md`) sets the evaluation department's

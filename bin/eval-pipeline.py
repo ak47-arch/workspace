@@ -9,10 +9,11 @@ the task lifecycle state machine per factory-context:
 Deterministic per-task checks:
 
   T1 state-legal       — task status is a valid lifecycle state
-  T2 complete-archived — a complete task's PRD must be in the archive (UAT +
-                         user go-ahead gate: code+tests ≠ complete).  If the
-                         PRD is still in the queue → FAIL.  If no PRD exists
-                         anywhere → pre-PRD-era completion (advisory, SKIP).
+  T2 complete-closed   — a complete task's PRD is closed in the
+                         routing manifest (UAT + user go-ahead gate: code+tests
+                         ≠ complete). If the PRD is still open in the manifest →
+                         FAIL. If no PRD exists anywhere → pre-PRD-era completion
+                         (advisory, SKIP).
   T3 complete-evidence  — a complete task with PR tracking (post-dec-06) must
                          have an implementation report AND a code-review
                          report archived.  Pre-PR-era tasks are exempt.
@@ -20,8 +21,9 @@ Deterministic per-task checks:
                          record (last review).  n/a or missing APPROVE → FAIL.
   T5 merged-complete    — a merged task must be complete (no merged-but-still-
                          in-flight states).
-  T6 queue-gate         — a task whose PRD is still in docs/prd-queue/ must
-                         NOT be complete (the gate stays closed until archive).
+  T6 gate-closed        — a task whose PRD is still open in the routing manifest
+                         must NOT be complete (the gate STAYS closed until
+                         settlement).
 
 Verdict semantics (honesty rule): a row is PASS only when every checkable
 claim holds; FAIL when a claim is violated; SKIP when nothing is checkable
@@ -86,9 +88,23 @@ def section(text, header, level=2):
     return m.group(1) if m else ""
 
 
-# ── evidence inventory (dirs + archives, computed once) ─────────────────────
-ARCHIVED = {slugify(p) for p in glob.glob(os.path.join(WS, "docs/prd-archive", "*.md"))}
-QUEUED = {slugify(p) for p in glob.glob(os.path.join(WS, "docs/prd-queue", "*.md"))}
+# ── evidence inventory (routing manifest is the lifecycle source; no archive dir) ──
+def _prd_status_rows():
+    """slug → routing-manifest status for every PRD in the stable docs/prd/ home."""
+    mf = os.path.join(WS, "docs", "prd", "manifest.json")
+    try:
+        with open(mf) as f:
+            data = json.load(f)
+    except Exception:
+        return {}
+    return {row.get("slug"): row.get("status") for row in data.get("prds", [])}
+
+PRD_STATUS = _prd_status_rows()
+# A PRD is open/queued while its routing-manif row is not yet settled; it is
+# settled (archived-equivalent) once the row carries a terminal status
+# ("final" = approved PRD, "closed" = task closed).
+QUEUED = {slug for slug, st in PRD_STATUS.items() if st in ("draft", "open")}
+ARCHIVED = {slug for slug, st in PRD_STATUS.items() if st in ("final", "closed")}
 IMPL_DIRS = {slugify(p) for p in glob.glob(os.path.join(WS, "docs/implementations", "*"))
              if os.path.isdir(p)}
 REV_DIRS = {slugify(p) for p in glob.glob(os.path.join(WS, "docs/code-reviews", "*"))
@@ -148,17 +164,17 @@ def task_checks(slug, status, txt, tracking):
                        "evidence": "complete but no PRD/impl/rev anywhere (unverifiable)"})
         return checks, "SKIP", []
 
-    # T2 complete-archived (UAT gate)
+    # T2 complete-closed (UAT gate)
     if complete:
         if slug in QUEUED:
-            checks.append({"check": "T2 complete-archived", "pass": False,
-                           "evidence": "PRD still in docs/prd-queue/ (gate open)"})
-            fails.append("T2: complete but PRD still queued (UAT gate violated)")
+            checks.append({"check": "T2 complete-closed", "pass": False,
+                           "evidence": "PRD still open in routing manifest (gate open)"})
+            fails.append("T2: complete but PRD still open in routing manifest (UAT gate violated)")
         elif slug in ARCHIVED:
-            checks.append({"check": "T2 complete-archived", "pass": True,
-                           "evidence": "PRD archived"})
+            checks.append({"check": "T2 complete-closed", "pass": True,
+                           "evidence": "PRD closed in routing manifest"})
         else:
-            checks.append({"check": "T2 complete-archived", "pass": None,
+            checks.append({"check": "T2 complete-closed", "pass": None,
                            "evidence": "no PRD anywhere (pre-PRD-era)"})
 
     # T3 complete-evidence (post-PR-era only)
@@ -191,13 +207,13 @@ def task_checks(slug, status, txt, tracking):
         if not ok5:
             fails.append("T5: merged but task not complete ('{}')".format(status))
 
-    # T6 queue-gate
+    # T6 gate-closed
     if slug in QUEUED:
         ok6 = not complete
-        checks.append({"check": "T6 queue-gate", "pass": ok6,
-                       "evidence": "queued + status '{}'".format(status)})
+        checks.append({"check": "T6 gate-closed", "pass": ok6,
+                       "evidence": "open-in-manifest + status '{}'".format(status)})
         if not ok6:
-            fails.append("T6: queued PRD but task complete")
+            fails.append("T6: PRD open in routing manifest but task complete")
 
     checkable = [c for c in checks if c["pass"] is not None]
     if fails:
@@ -290,9 +306,9 @@ def main():
         cm = {c["check"]: ("✓" if c["pass"] is True else "✗" if c["pass"] is False else "·")
               for c in r["checks"]}
         md.append("| {} | {} | {} | {} | {} | {} | {} |".format(
-            r["task"], cm.get("T1 state-legal", "·"), cm.get("T2 complete-archived", "·"),
+            r["task"], cm.get("T1 state-legal", "·"), cm.get("T2 complete-closed", "·"),
             cm.get("T3 complete-evidence", "·"), cm.get("T4 merged-approved", "·"),
-            cm.get("T5 merged-complete", "·"), cm.get("T6 queue-gate", "·")))
+            cm.get("T5 merged-complete", "·"), cm.get("T6 gate-closed", "·")))
     md += ["", "## Verdict distribution", ""]
     for k, v in sorted(out["verdicts"].items()):
         md.append(f"- {k}: {v}")
