@@ -54,6 +54,8 @@ Entries are grouped by project for progressive discovery. When the agent needs t
 - [Task Identification](sessions/019fb3ee-9573-78d2-9d4b-a4bf49a742a7/decisions/01-task-identification.md)
 - [Task-Centric Reference Hub](sessions/019fb3ee-9573-78d2-9d4b-a4bf49a742a7/decisions/02-task-centric-storage.md)
 - [PRD Queue Lifecycle](sessions/019fb3ee-9573-78d2-9d4b-a4bf49a742a7/decisions/03-prd-queue-lifecycle.md)
+- [Typed-trail check scope and Status-link / pick-contract reconciliation](sessions/05f805ea-0bae-44f3-9791-93fc9cb43639/decisions/01-typed-trail-check-scope-and-pick-contract.md)
+- [One PR per task — lifecycle bookkeeping commits onto the task's own branch](sessions/05f805ea-0bae-44f3-9791-93fc9cb43639/decisions/02-one-pr-per-task-branch-granularity.md)
 - [Traceability Links via Task Field](sessions/019fb3ee-9573-78d2-9d4b-a4bf49a742a7/decisions/04-traceability-links.md)
 - [Vision Document Convention for Upstream Traceability](sessions/019fb45b-9f0f-79e2-ac55-a0a084ac3156/decisions/01-vision-document-convention.md)
 - [Three-Phase Product Layer with Vertical Slicing as Guiding Principle](sessions/019fb4f8-7a69-7968-b884-f4902565e512/decisions/01-three-phase-product-layer.md)

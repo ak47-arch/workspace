@@ -41,4 +41,7 @@ against.
 
 ## PR tracking
 
-- PR: #46 (ak47-arch/workspace) — OPEN · only review, never merges
+- PR: #46 (ak47-arch/workspace) — MERGED (`50dc536`)
+- Merge: `50dc536` (2026-08-22, ak47-arch — user go-ahead, decision 05) [ak47-arch/workspace#46]
+- Bookkeeping PR: #47 → Merge `fbfd32e` (2026-08-22, ak47-arch — user go-ahead, decision 05) [ak47-arch/workspace#47]
+- Complete — both PRs merged (code #46 = `50dc536`, bookkeeping #47 = `fbfd32e`). Reviewed to APPROVE after three REQUEST_CHANGES rounds; UAT-merged.
