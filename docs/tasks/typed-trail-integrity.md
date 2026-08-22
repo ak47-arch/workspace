@@ -1,6 +1,6 @@
 # Task: typed-trail-integrity
 
-**Status**: prd-ready
+**Status**: in-progress
 **Category**: Medium
 **Project**: software-factory
 **Created**: 2026-08-22
@@ -34,3 +34,6 @@ against.
 4. **Read-skip summary backfill**: add `**Summary**:` to 113 decision files (7→120)
 5. **Hygiene extension**: add the three typed-trail checks to `bin/eval-hygiene.py` (string-path, summary-presence, stale/mismatch) with demonstrated injection flips
 6. **Ordering regression**: confirm `resolve_prd() --pick` still returns oldest `Final`+`prd-ready`
+## Sessions
+
+- [implementation](../knowledge/sessions/05f805ea-0bae-44f3-9791-93fc9cb43639/session.jsonl)
