@@ -37,3 +37,7 @@ against.
 ## Sessions
 
 - [implementation](../knowledge/sessions/05f805ea-0bae-44f3-9791-93fc9cb43639/session.jsonl)
+
+## PR tracking
+
+- PR: #46 (ak47-arch/workspace) — OPEN · only review, never merges
