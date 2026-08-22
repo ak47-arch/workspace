@@ -225,11 +225,11 @@ the decision, or generated at eval time from Context/Rationale (deterministic).
 
 | Signal | Status | Ready for PRD? |
 |---|---|---|
-| 01 PRD-lifecycle-status | **promoted** 2026-08-22 | folded as `docs/prd-queue/2026-08-22-typed-trail-integrity.md`; Q1 (path=docs/prd) + Q2 (one-time migration) + Q3 (link style) all resolved in PRD |
+| 01 PRD-lifecycle-status | **promoted/merged** 2026-08-22 | folded as `docs/prd/2026-08-22-typed-trail-integrity.md` (PR #46, merged `50dc536`); Q1 (path=docs/prd) + Q2 (one-time migration) + Q3 (link style) all resolved; manifest `status` field live |
 | 02 COST-historical | collected | kept separate; needs steps-vs-tokens + budget decision |
 | 03 probe-contract-name | collected | absorbed by semantic-probe PRD phase-1 (not here) |
-| 04 decision-summary-gap | **promoted** 2026-08-22 | folded as `docs/prd-queue/2026-08-22-typed-trail-integrity.md` |
-| 05 string-paths-not-links | **promoted** 2026-08-22 | folded + link-style/front-matter resolved (Q3): typed relative links, Task/Session/Decisions become links, Date stays atom |
+| 04 decision-summary-gap | **promoted/merged 2026-08-22** | folded as `docs/prd/2026-08-22-typed-trail-integrity.md` (PR #46 merged); `**Summary**:` backfilled 122/122 |
+| 05 string-paths-not-links | **promoted/merged 2026-08-22** | folded + link-style/front-matter resolved (Q3): typed relative links, Task/Session/Decisions become links, Date stays atom |
 | (supp 1) dual-dir cost | folded into 01 | — |
 | (supp 2) reviewer-vs-impl depth | note | needs design input to become signal |
 

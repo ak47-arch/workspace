@@ -118,7 +118,7 @@ Discovery layer
   openwiki/           Per-project code docs (what/how)
   docs/vision/        Stakeholder vision, end goals (why a project exists)
   docs/prd/              Stable PRD home (lifecycle = manifest.status)
-  docs/research/      In-session research signals (candidate PRD backlog)
+  docs/research/      In-session research signals (candidate PRD backlog) — status ledger in [`signals.md`](research/signals.md) tracks which signals are promoted/collected/closed; fold when promoted
   docs/evaluations/   Eval reports + index (what the factory verified and how)
   .agents/skills/     Operational playbooks
     │
