@@ -1,40 +1,42 @@
 ---
 type: Domain
 title: Software Factory
-description: The software factory paradigm governing the workspace — four components (context engine, product/architecture, project management, assembly line), the task lifecycle state machine with merge bundles, the PRD queue/archive gate, temporal metadata, the automated transition tooling, and the headless GitHub Actions loop (implement → review → revise → sync).
-tags: [software-factory, lifecycle, prd, tasks, context-engine, assembly-line, headless-ci]
+description: The software factory paradigm governing the workspace — five components (context engine, product/architecture, project management, assembly line, evaluation), the task lifecycle state machine with merge bundles, the PRD stable-home manifest lifecycle, typed-link disclosure trail with decision summaries, temporal metadata, the automated transition tooling with task-branch commits, and the headless GitHub Actions loop (implement → review → revise → sync).
+tags: [software-factory, lifecycle, prd, tasks, context-engine, assembly-line, headless-ci, evaluation, typed-trail]
 resource: /docs/factory-context.md
 openwiki:
   roles: [architecture, domain, workflow, operations]
   change_kinds: [lifecycle, public-api, integration]
-  source_paths: [bin/implementer-run.sh, bin/review-run.sh, bin/factory-run.sh, bin/transition-task.sh, bin/sanitize-session.sh, .github/workflows/factory.yml, config/implementer.json, config/reviewer.json]
-  symbols: [push_and_pr, fail_run, write_env_file, finalize_session_copy, read_verdict, headless_loop, project_of, sanitize-session.sh]
+  source_paths: [bin/implementer-run.sh, bin/review-run.sh, bin/factory-run.sh, bin/transition-task.sh, bin/sanitize-session.sh, .github/workflows/factory.yml, config/implementer.json, config/reviewer.json, docs/prd/manifest.json, bin/eval-*.py]
+  symbols: [push_and_pr, fail_run, write_env_file, finalize_session_copy, read_verdict, headless_loop, project_of, sanitize-session.sh, resolve_prd]
   test_paths: [bin/test-implementer-driver.sh, bin/test-review-driver.sh, bin/test-factory-run.sh, bin/test-transition-task.sh, bin/test-merge-pr.sh]
-  invariants: [Code only reaches master via a human-merged PR; tracking/evidence syncs direct from CI. Implementer/reviewer workers never run gh or mutating git. Delivery failures exit non-zero and revert the task. Session copies committed to the repo are sanitized. Verdict tokens parse identically in review-run.sh and factory-run.sh.]
-  validation_commands: [bin/test-factory-run.sh, bin/test-transition-task.sh]
+  invariants: [Code only reaches master via a human-merged PR; tracking/evidence syncs direct from CI. Implementer/reviewer workers never run gh or mutating git. Delivery failures exit non-zero and revert the task. Session copies committed to the repo are sanitized. Verdict tokens parse identically in review-run.sh and factory-run.sh. PRDs live at stable docs/prd/ paths; lifecycle is manifest.status. Cross-references are typed relative links. Decision files carry **Summary**: read-skip lines.]
+  validation_commands: [bin/test-factory-run.sh, bin/test-transition-task.sh, bin/eval-hygiene.py]
 ---
 
 # Software Factory
 
 The workspace is developed and maintained under a **software factory** paradigm
 (`docs/factory-context.md` is the canonical source of truth, referenced from
-[`AGENTS.md`](/AGENTS.md)). Four components share one rule: **the user only
+[`AGENTS.md`](/AGENTS.md)). Five components share one rule: **the user only
 interacts with the product/architecture layer — everything else is automation.**
 
-## The Four Components
+## The Five Components
 
 | Component | Role | Canonical location |
 |-----------|------|--------------------|
 | **context_engine** | Infrastructure spine; every other component reads/writes it. Progressive disclosure keeps agents lean — context loads on demand, never pre-loaded. The knowledge base (`docs/knowledge/`) is the last stop. | `docs/factory-context.md`, `docs/knowledge/` |
 | **product/architecture** | The UX layer; the only surface the user interacts with. Produces one artifact per task: a plan document that accumulates Product Design / System Architecture / Program Design sections based on task size. Invoked via the `product-layer` skill. | [`/.agents/skills/product-layer/SKILL.md`](/openwiki/reference/agent-config.md) |
 | **project_management** | Prioritisation + lifecycle tracking: task dashboard, task files (`docs/tasks/<slug>.md`), lifecycle state machine, and automated bookkeeping. | `docs/tasks.txt`, `docs/tasks/`, `bin/transition-task.sh` |
-| **assembly_line** | CI/CD, agents, sandboxes, testing. Built YAGNI — the least-developed component until the agent pipeline. Now staffed by three sub-agents: **prd-reviewer** (PRD gating), **implementer** (build → PR), and **code-reviewer** (post-implementation review), orchestrated headless by the GitHub Actions workflow **`factory.yml`** (decision 03/04: a Final PRD in `docs/prd-queue/` runs the full loop on a GitHub-hosted runner). | `bin/implementer-run.sh`, `bin/review-run.sh`, `bin/factory-run.sh`, `bin/sanitize-session.sh`, `.github/workflows/factory.yml`, `.pi/agents/`, `config/implementer.json`, `config/reviewer.json` |
+| **assembly_line** | CI/CD, agents, sandboxes, testing. Built YAGNI — the least-developed component until the agent pipeline. Now staffed by three sub-agents: **prd-reviewer** (PRD gating), **implementer** (build → PR), and **code-reviewer** (post-implementation review), orchestrated headless by the GitHub Actions workflow **`factory.yml`** (decision 03/04: a Final PRD in `docs/prd/` with `prd-ready` task runs the full loop on a GitHub-hosted runner). | `bin/implementer-run.sh`, `bin/review-run.sh`, `bin/factory-run.sh`, `bin/sanitize-session.sh`, `.github/workflows/factory.yml`, `.pi/agents/`, `config/implementer.json`, `config/reviewer.json` |
+| **evaluation** | Continuous quality verification. Cross-cutting, read-only: runs eval panels over the factory's own loops using the eval spine (session/trace → artifact → gold check → Langfuse panel). Emits `docs/evaluations/<date>-*.{json,md}` reports + Langfuse scores, never mutates a target repo. Staffed by the **evaluator agent** (`.pi/agents/evaluator.md` persona, run contract `.agents/skills/eval-ops/SKILL.md`). Artifact map: `docs/reference/evaluator-agent.md`. Report home + index: `docs/evaluations/`. | `bin/eval-*.py`, `docs/evaluations/`, `.pi/agents/evaluator.md`, `.agents/skills/eval-ops/SKILL.md` |
 
 These components connect: the **product/architecture** layer is invoked through
 the `product-layer` skill, which drives the **project_management** lifecycle
 through the transition tooling (see [Agent Configuration](/openwiki/reference/agent-config.md)),
 and captures design decisions into the **context_engine** knowledge base as a
-byproduct.
+byproduct. The **evaluation** component cross-cuts all loops, running read-only
+panels that feed back into the context engine as decision evidence.
 
 ## Task Lifecycle State Machine
 
@@ -105,31 +107,69 @@ invalid state, dry-run, special characters), idempotency, and the
 **multi-line bundle** case (each line lands under its own project's Complete,
 none stranded in Pending). Run it any time you change the script.
 
-## PRD Queue / Archive Gate
+### Task Branch Commits (One-PR-Per-Task)
 
-A PRD enters `docs/prd-queue/` when its task reaches `prd-ready`. It leaves the
-queue (moves to `docs/prd-archive/`) **only when its task is genuinely done** —
-meaning the feature passed **user acceptance testing AND the user explicitly
-gave the go-ahead**. Code written + unit tests passing is NOT "complete." Until
-UAT passes and the user signs off, keep the task at `prd-ready` and the PRD in
-the queue. To reopen an archived PRD: move it back to `docs/prd-queue/`, set the
-task to `prd-ready`, and re-point the Plan artifact path. (Decision
-`PRD moves to archive only after UAT + user go-ahead`.)
+Since decision `One PR per task — transitions commit onto the task branch`
+(impl 05f805ea), `bin/transition-task.sh` supports `--branch <name>` and
+`--workspace <root>` so lifecycle bookkeeping commits land on the same task
+branch as the implementation. This keeps the full task stream (implementation +
+bookkeeping) in one PR. The script creates the branch if missing and checks it
+out before committing.
+
+## PRD Stable Home + Manifest Lifecycle (Direction C)
+
+**PRDs no longer move between directories.** They live at a stable canonical
+path `docs/prd/<yyyy-mm-dd>-<slug>.md` — the file never moves. Lifecycle state
+is expressed as a **status field** in the routing manifest
+`docs/prd/manifest.json` (`prds[].status`), updated by `bin/transition-task.sh`
+when a task reaches `complete`. The manifest also carries an `ordering_key`
+(filename date-prefix) preserving `resolve_prd() --pick`'s "oldest Final first"
+ordering.
+
+| Manifest status | Meaning |
+|-----------------|---------|
+| `open` | PRD drafted, task in `in-prd` |
+| `draft` | PRD in progress, task in `in-prd` |
+| `final` | PRD passed review gate, task `prd-ready` → triggers headless loop |
+| `closed` | Task complete, UAT passed + user sign-off |
+
+To reopen a closed PRD: set the task back to `prd-ready` and the manifest
+`status` back to `final` (or `open`). No file moves.
 
 The **PRD review sub-agent** (see [Agent Configuration](/openwiki/reference/agent-config.md))
 acts as an in-session gate: before a plan is considered implementation-ready, it
 runs deterministic (mechanical) and non-deterministic (judgment) checks and
 returns a blocking/advisory report. PRDs that pass the gate move to **Final**
-status. (Decisions `Review Sub-Agent as In-Session PRD Verification Gate`,
+status in the manifest. (Decisions `Review Sub-Agent as In-Session PRD Verification Gate`,
 `PRD status lifecycle — Final when the review gate passes`.)
 
-> **Final + `prd-ready` is the headless trigger.** Pushing a PRD to
-> `docs/prd-queue/` with `**Status**: Final` while its task file says
-<!-- openwiki: broken internal link [#headless-ci-github-actions] heading anchor "headless-ci-github-actions" does not exist in /openwiki/projects/software-factory.md. Fix the href or restore the target, then delete this comment. -->
-> `**Status**: prd-ready` now fires the [headless CI loop](#headless-ci-github-actions)
-> on GitHub. The status gate in `factory.yml` resolves the changed slug and
-> silently exits when nothing is ready, so an early push to the queue does not
-> half-run.
+> **Final + `prd-ready` is the headless trigger.** A PRD at `docs/prd/` with
+> manifest `status: final` while its task file says `**Status**: prd-ready` now
+<!-- openwiki: broken internal link [#headless-ci---github-actions-factoryyml] heading anchor "headless-ci---github-actions-factoryyml" does not exist in /openwiki/projects/software-factory.md. Fix the href or restore the target, then delete this comment. -->
+> fires the [headless CI loop](#headless-ci---github-actions-factoryyml) on GitHub. The
+> status gate in `factory.yml` resolves the changed slug and silently exits
+> when nothing is ready, so an early push to the queue does not half-run.
+
+## Typed-Trail Integrity (Machine-Followable Disclosure Trail)
+
+Completed via task `typed-trail-integrity` (PR #46, merged `50dc536`). Three
+linked changes make the context engine's disclosure trail machine-followable
+by construction:
+
+1. **Stable PRD home (Direction C)** — PRDs never move; lifecycle is
+   `manifest.status` (see above).
+<!-- openwiki: broken internal link [../relative/path.md] file "../relative/path.md" does not exist. Fix the href or restore the target, then delete this comment. -->
+2. **Typed relative links** — Cross-references are `[text](../relative/path.md)`
+   resolved from the artifact's own location (task-file convention), not
+   bare/backticked string paths. Front-matter fields `Task`, `Session`,
+   `Decisions` become links; `Status` links to the manifest row for the slug.
+3. **Decision read-skip summaries** — All 120 decision files now carry a
+   `**Summary**:` line (backfilled from Context/Rationale) so an agent can
+   stop at the title.
+
+Hygiene enforcement: `bin/eval-hygiene.py` extended with three typed-trail
+checks (string-path presence, summary presence, stale/mismatch citation) —
+each falsifiable via demonstrated mutation injection.
 
 ## Temporal Metadata Convention
 
@@ -218,10 +258,9 @@ Key features:
 
 **Artefact map (full):** [`docs/reference/implementer-agent.md`](/docs/reference/implementer-agent.md)
 
-<!-- openwiki: mermaid parse failed and this diagram was converted to a text fence so it does not break rendering. Fix the diagram source and restore the mermaid fence. Parser error: Heuristic: an unescaped angle bracket inside a label breaks rendering; rephrase the label. -->
-```text
+```mermaid
 flowchart LR
-    A["bin/implementer-run.sh<br/>(host driver)"] -->|spawns| B["pi worker<br/>(sandbox container)"]
+    A["bin/implementer-run.sh (host driver)"] -->|spawns| B["pi worker (sandbox container)"]
     B -->|writes to| C["worktree + outbox/"]
     A -->|commits and pushes| D["GitHub PR"]
     A -->|archives| E["docs/implementations/date-slug/"]
@@ -261,10 +300,9 @@ bin/review-run.sh [<pr>|--pick] [--dry-run]
 
 **Artefact map (full):** [`docs/reference/reviewer-agent.md`](/docs/reference/reviewer-agent.md)
 
-<!-- openwiki: mermaid parse failed and this diagram was converted to a text fence so it does not break rendering. Fix the diagram source and restore the mermaid fence. Parser error: Heuristic: an unescaped angle bracket inside a label breaks rendering; rephrase the label. -->
-```text
+```mermaid
 flowchart LR
-    A["bin/review-run.sh<br/>(host driver)"] -->|spawns| B["pi worker<br/>(sandbox, read-only)"]
+    A["bin/review-run.sh (host driver)"] -->|spawns| B["pi worker (sandbox, read-only)"]
     B -->|reviews| C["PR head worktree"]
     B -->|writes| D["outbox/ (report + decisions)"]
     A -->|posts to PR| E["GitHub PR comment"]
@@ -320,28 +358,27 @@ operator step:
 
 **Validation:** `bin/test-merge-pr.sh` (8 tests, fixture-based).
 
-### Headless CI — GitHub Actions (`factory.yml`)
+### Headless CI — GitHub Actions (`factory.yml`) {#headless-ci---github-actions-factoryyml}
 
 The root-level workflow [`.github/workflows/factory.yml`](/openwiki/operations/infrastructure.md)
-turns a **Final + `prd-ready`** PRD push into a fully autonomous implement →
+turns a **manifest `status: final` + `prd-ready`** PRD push into a fully autonomous implement →
 review → revise loop on a GitHub-hosted runner (decisions 03/04/05). Key
 behavior:
 
-<!-- openwiki: mermaid parse failed and this diagram was converted to a text fence so it does not break rendering. Fix the diagram source and restore the mermaid fence. Parser error: Heuristic: an unescaped angle bracket inside a label breaks rendering; rephrase the label. -->
-```text
+```mermaid
 flowchart LR
-    A["PRD push to docs/prd-queue/"] --> B["factory.yml status gate<br/>(Final + prd-ready)"]
+    A["PRD push to docs/prd/ (manifest status=final)"] --> B["factory.yml status gate (manifest final + prd-ready)"]
     B -->|not ready| Z["silent exit 0"]
     B -->|ready| C["build sandbox:latest + clone repo_map targets"]
-    C --> D["bin/factory-run.sh --headless<br/>(implementer → review → revise ≤3)"]
-    D --> E["push trace bundle to ak47-arch/factory-traces<br/>(private eval retention)"]
-    D --> F["sync tracking commits to master<br/>(docs only, conflict-tolerant)"]
+    C --> D["bin/factory-run.sh --headless (implementer to review to revise up to 3)"]
+    D --> E["push trace bundle to ak47-arch/factory-traces (private eval retention)"]
+    D --> F["sync tracking commits to master (docs only, conflict-tolerant)"]
     E --> F
 ```
 Headless factory loop: PRD push → status gate → autonomous loop → trace retention + tracking sync.
 
 - **Status gate + task resolution**: resolves the changed PRD's slug for
-  `--task` (or `--pick` on ambiguity), verifies `Final` + `prd-ready`; exits
+  `--task` (or `--pick` on ambiguity), verifies manifest `status: final` + task `prd-ready`; exits
   silently when nothing is ready so an archive push re-firing the trigger is a
   **ghost run** no-op (the trace-bundle step also no-ops when neither run dir
   nor driver log exists).
@@ -381,9 +418,10 @@ full workforce is discoverable in one hop:
 
 | Agent | SDLC stage | Role | Definition |
 |---|---|---|---|
-| **prd-reviewer** | PRD gating (before implementation) | Read-only readiness verifier — gates a plan doc with deterministic + judgment checks, returns blocking/advisory report | `.pi/agents/prd-reviewer.md` |
+| **prd-reviewer** | PRD gating (before implementation) | Read-only readiness verifier — gates a plan doc with deterministic + judgment checks, returns blocking/advisory report | `.pi/agents/prd-reviewer.md` · `.agents/skills/prd-reviewer-ops/SKILL.md` |
 | **implementer** | Implementation (build → PR) | Headless worker — implements a Final PRD in sandbox worktree, writes report + decisions; host raises the PR | `.pi/agents/implementer.md` · `bin/implementer-run.sh` |
 | **code-reviewer** | Post-implementation review (PR → report) | Read-only worker — checks a raised PR against its PRD, posts APPROVE/REQUEST_CHANGES report to the PR | `.pi/agents/code-reviewer.md` · `bin/review-run.sh` |
+| **evaluator** | Continuous eval (production quality) | Read-only worker — runs eval panels over the factory's own loops (decision/task/knowledge/PRD-review/drift/context/hygiene) via the eval spine, writes PASS/SKIP/FAIL + evidence to fixed-schema eval report (`docs/evaluations/<date>-*.{json,md}`), writes Langfuse scores; never mutates a target repo | `.pi/agents/evaluator.md` · `.agents/skills/eval-ops/SKILL.md` · `bin/eval-*.py` |
 
 ## Source Files
 
@@ -393,7 +431,7 @@ full workforce is discoverable in one hop:
 | `/docs/tasks.txt` | Flat task list (per-project, status-grouped, `[slug]` tags) |
 | `/docs/tasks/` | One reference-hub file per task |
 | `/docs/tasks/README.md` | Task traceability + lifecycle doc |
-| `/bin/transition-task.sh` | Lifecycle bookkeeping script |
+| `/bin/transition-task.sh` | Lifecycle bookkeeping script (supports `--branch`, `--workspace`, manifest updates) |
 | `/bin/test-transition-task.sh` | Test suite for the transition script |
 | `/bin/implementer-run.sh` | Host driver for the sandboxed implementer agent (pick → worktree → container → report → PR) |
 | `/bin/sandbox-build.sh` | Builds the implementer sandbox container image |
@@ -410,6 +448,23 @@ full workforce is discoverable in one hop:
 | `/bin/factory-run.sh` | Thin implement → review orchestrator (UAT gate; `--headless` loop to APPROVE; never merges) |
 | `/bin/test-factory-run.sh` | Test suite for the factory-run orchestrator (incl. headless loop: APPROVE / revise / cap / empty-verdict) |
 | `/bin/merge-pr.sh` | Operator-only merge tool (sole master-pusher) |
+| `/bin/test-merge-pr.sh` | Test suite for the merge tool |
+| `/bin/sanitize-session.sh` | Redacts live credentials from session copies before commit (GH013 guard) |
+| `/bin/lib-pr-tracking.sh` | Shared PR-tracking functions (raise/review/merge rows) |
+| `/bin/backfill-pr-tracking.sh` | Backfills PR-tracking rows for earlier tasks |
+| `/bin/eval-*.py` | Evaluation panels: decisions, pipeline, knowledge, PRD, drift, context, hygiene |
+| `/docs/prd/` | Stable PRD home (canonical, never-moving path) |
+| `/docs/prd/manifest.json` | Routing manifest: slug → lifecycle status + ordering_key |
+| `/docs/evaluations/` | Eval reports + index (what the factory verified and how) |
+| `/docs/evaluations/surfaces.md` | Live surface register (S1–S9) + evolution log |
+| `/docs/reference/evaluator-agent.md` | Evaluator artefact map (one-hop resolution) |
+| `/docs/knowledge/` | Curated design decisions + session traces (sanitized copies) |
+| `/.agents/skills/product-layer/SKILL.md` | The UX-layer skill that drives the workflow (task similarity check + merge bundles) |
+| `/.pi/extensions/subagent/` | Pi subagent extension (assembly-line infra) |
+| `/.pi/agents/prd-reviewer.md` | PRD review sub-agent definition |
+| `/.agents/skills/prd-reviewer-ops/SKILL.md` | PRD reviewer run-contract skill |
+| `/.github/workflows/factory.yml` | Headless factory loop on GitHub Actions (status gate, container seams, trace bundle, tracking sync) |
+| `/workspace-portability/container/` | Sandbox image build (`Dockerfile`, `run-sandbox.sh`, `sandbox-entrypoint.sh`) — `run-sandbox.sh` shares the auth.json credential fallback |
 | `/bin/test-merge-pr.sh` | Test suite for the merge tool |
 | `/bin/sanitize-session.sh` | Redacts live credentials (`sk-or-v1-*`, `sk-lf-*`, `gho_*`, `ghp_*`, `github_pat_*`, `xox*-*`, `AKIA*`) from session copies before they are committed (GH013 guard); run via `--dry-run` to preview |
 | `/bin/lib-pr-tracking.sh` | Shared PR-tracking functions (raise/review/merge rows) |
@@ -447,10 +502,10 @@ full workforce is discoverable in one hop:
   bundle, partial → split with remainder registered as a new Pending line, none →
   single), derive a slug, categorise Small/Medium/Large (bundle = max of
   constituents), create `docs/tasks/<slug>.md` at `in-prd`, grill, capture
-  decisions via `save-knowledge`, then transition to `prd-ready` (PRD enters
-  `docs/prd-queue/`). A PRD is only "Final" after the review gate passes — and
-  **Final + `prd-ready` fires the headless CI loop**, so only push that
-  combination when you want a run.
+  decisions via `save-knowledge`, then transition to `prd-ready` (PRD created at
+  `docs/prd/<date>-<slug>.md` with manifest `status: final`). A PRD is only
+  "Final" after the review gate passes — and **Final manifest status + `prd-ready`
+  fires the headless CI loop**, so only push that combination when you want a run.
 - **Extending the review gate or adding a sub-agent** → the pi subagent extension
   is symlinked at `/.pi/extensions/subagent/` (from `opensource/pi-mono/...`)
   and agent definitions live at `/.pi/agents/<name>.md` with `model`, `tools`,

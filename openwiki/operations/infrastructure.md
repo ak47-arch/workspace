@@ -154,7 +154,7 @@ All projects in the workspace use a consistent container strategy:
 
 | Workflow | Trigger | Purpose |
 |----------|---------|---------|
-| `factory.yml` | push to `docs/prd-queue/**.md`; `workflow_dispatch` with optional `task` slug | **Headless factory loop** — status gate (Final + `prd-ready`) → `bin/factory-run.sh --headless` → implementer → review → revise (cap 3, `REVISION_CAP`) → trace bundle to private `ak47-arch/factory-traces` → tracking sync to master. Single-run concurrency (`factory-headless`, `cancel-in-progress: false`). See [Software Factory](/openwiki/projects/software-factory.md). |
+| `factory.yml` | push to `docs/prd/**.md` (manifest status `final`); `workflow_dispatch` with optional `task` slug | **Headless factory loop** — status gate (manifest `status: final` + task `prd-ready`) → `bin/factory-run.sh --headless` → implementer → review → revise (cap 3, `REVISION_CAP`) → trace bundle to private `ak47-arch/factory-traces` → tracking sync to master. Single-run concurrency (`factory-headless`, `cancel-in-progress: false`). See [Software Factory](/openwiki/projects/software-factory.md). |
 | `openwiki-update.yml` | scheduled | Regenerates this wiki (all pages under `openwiki/`) |
 
 The factory workflow's runner seams are the load-bearing part: the classic PAT
@@ -184,6 +184,33 @@ before it lands in `docs/knowledge/sessions/`:
   unredacted secrets remain
 - Raw, unredacted sessions are retained only in the private factory-traces
   bundle; never commit raw traces to the public repo
+
+## Evaluation Infrastructure
+
+The factory now includes a dedicated **evaluation department** (decision 02/03) that runs continuous quality verification over the factory's own loops. The evaluator agent (`.pi/agents/evaluator.md`, `.agents/skills/eval-ops/SKILL.md`) is a read-only worker that runs eval panels via the eval spine (`bin/eval-*.py`), emitting fixed-schema reports to `docs/evaluations/` and Langfuse scores.
+
+**Live surfaces** (register: `docs/evaluations/surfaces.md`):
+- **S1** decision-record loop (depth passes)
+- **S2** task loop (state-machine PASS/FAIL)
+- **S3** knowledge loop (tooling + orphan-decision index)
+- **S4** PRD/review loop (P4–P7 review-loop guards)
+- **S5** drift/L2 (fixes hold, 13 gold rows)
+- **S7** context-engine (footprint + reachability + fidelity)
+- **S8** roster-completeness
+- **S9** repo-hygiene (langfuse keys = accepted-risk advisory)
+
+S10 (app family) deferred until app preflights clear.
+
+## Typed-Trail Integrity
+
+Completed via task `typed-trail-integrity` (PR #46/#47). Three linked changes make the context engine's disclosure trail machine-followable by construction:
+
+1. **Stable PRD home (Direction C)** — PRDs never move; lifecycle is `manifest.status` in `docs/prd/manifest.json`.
+<!-- openwiki: broken internal link [../relative/path.md] file "../relative/path.md" does not exist. Fix the href or restore the target, then delete this comment. -->
+2. **Typed relative links** — Cross-references are `[text](../relative/path.md)` resolved from the artifact's own location. Front-matter fields `Task`, `Session`, `Decisions` become links; `Status` links to the manifest row.
+3. **Decision read-skip summaries** — All 122 decision files now carry a `**Summary**:` line (backfilled from Context/Rationale).
+
+Hygiene enforcement: `bin/eval-hygiene.py` extended with three typed-trail checks (string-path presence, summary presence, stale/mismatch citation) — each falsifiable via demonstrated mutation injection.
 
 ## Known Issues
 
