@@ -92,9 +92,8 @@ manifest row `prds[].status → closed` instead of `mv`-ing the PRD
   `**Status**:` (draft/final); `transition-task.sh --to complete` now flips
   to `closed` going forward. Confirm desired lifecycle values for the
   retired DSL.
-- `bin/eval-context-semantic.py` still references `prd-queue/` in its
-  resolver — that is the context-disclosure semantic-probe PRD's scope
-  (separate task), not this one; left untouched per out-of-scope.
+- `bin/eval-context-semantic.py` was re-homed to `docs/prd/` (Direction C)
+  as part of the typed-trail resolvers update (see the revision diff 5+/10-).
 - The generated `docs/evaluations/2026-08-22-hygiene.{json,md}` and
   `2026-08-22-drift.{json,md}` are committed as fresh panel outputs.
 

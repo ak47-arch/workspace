@@ -4,7 +4,7 @@
 **Date**: 2026-08-22
 **Task**: typed-trail-integrity
 **Project**: software-factory
-**Session**: 05f805ea-0bae-44f3-9791-93fc9cb43639
+**Session**: [session.jsonl](../session.jsonl)
 
 **Summary**: Task transitions (`prd-ready` → `in-progress` → `in-review` →
 `complete`) commit onto the task branch (a `factory/<slug>/<ts>` branch minted

@@ -4,7 +4,7 @@
 **Date**: 2026-08-22
 **Task**: typed-trail-integrity
 **Project**: software-factory
-**Session**: 05f805ea-0bae-44f3-9791-93fc9cb43639
+**Session**: [session.jsonl](../session.jsonl)
 
 **Summary**: The hygiene string-path scan targets the machine-chased reference
 lines (front-matter / structured reference surfaces), and a PRD's `Status:`

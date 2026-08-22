@@ -194,7 +194,7 @@ resolve_prd() {
     local best=""
     for candidate in "$WORKSPACE"/docs/prd/*.md; do
       [ -f "$candidate" ] || continue
-      grep -q '^\*\*Status\*\*: *Final' "$candidate" || continue
+      grep -q '^\*\*Status\*\*: *\[?Final' "$candidate" || continue
       local slug; slug="$(slug_from_prd "$candidate")"
       local task_file="$WORKSPACE/docs/tasks/$slug.md"
       if [ ! -f "$task_file" ] \
@@ -221,7 +221,7 @@ resolve_prd() {
   fi
 
   # Must be Final to be routeable.
-  if ! grep -q '^\*\*Status\*\*: *Final' "$prd"; then
+  if ! grep -q '^\*\*Status\*\*: *\[?Final' "$prd"; then
     die "PRD $prd is not 'Final' (not past the review gate)."
   fi
 
