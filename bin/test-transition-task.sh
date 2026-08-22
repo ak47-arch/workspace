@@ -51,7 +51,16 @@ assert_exit() {
   if [ "$expected" -eq "$actual" ]; then
     pass "$desc"
   else
-    fail "$desc — expected exit $expected, got $actual"
+    fail "$desc M-bM-^@M-^T expected exit $expected, got $actual"
+  fi
+}
+
+assert_eq() {
+  local expected="$1" actual="$2" desc="$3"
+  if [ "$expected" = "$actual" ]; then
+    pass "$desc"
+  else
+    fail "$desc — expected '$expected', got '$actual'"
   fi
 }
 
@@ -59,7 +68,7 @@ assert_exit() {
 # Create an isolated temp workspace with the script copied in
 setup_workspace() {
   TMPROOT=$(mktemp -d)
-  mkdir -p "$TMPROOT/bin" "$TMPROOT/docs/tasks" "$TMPROOT/docs/prd"
+  mkdir -p "$TMPROOT/bin" "$TMPROOT/docs/tasks" "$TMPROOT/docs/prd-queue" "$TMPROOT/docs/prd-archive"
   cp "$SCRIPT_PATH" "$TMPROOT/bin/"
 }
 
@@ -355,37 +364,25 @@ test_dry_run_no_changes() {
   teardown_workspace
 }
 
-test_prd_manifest() {
-  echo "Test: lifecycle close updates manifest; PRD stays at stable docs/prd/ home"
+test_prd_archive() {
+  echo "Test: PRD archived on complete"
   setup_workspace
   write_task_file test-task
   write_tasks_txt
-  touch "$TMPROOT/docs/prd/2026-08-01-test-task.md"
-  cat > "$TMPROOT/docs/prd/manifest.json" <<'EOF'
-{
-  "version": 1,
-  "prds": [
-    {"slug": "test-task", "file": "2026-08-01-test-task.md", "status": "open", "ordering_key": "2026-08-01-test-task"}
-  ]
-}
-EOF
+  touch "$TMPROOT/docs/prd-queue/2026-08-01-test-task.md"
 
   run_script test-task --to complete
   local code=$?
   assert_exit 0 $code "script exits 0"
-  # PRD must NOT move (stable home invariant)
-  if [ -f "$TMPROOT/docs/prd/2026-08-01-test-task.md" ]; then
-    pass "PRD stays at stable docs/prd/ home (no archive move)"
+  if [ -f "$TMPROOT/docs/prd-archive/2026-08-01-test-task.md" ]; then
+    pass "PRD moved to archive"
   else
-    fail "PRD was moved — violates stable-home invariant"
+    fail "PRD not archived"
   fi
-  # manifest status must flip to closed
-  local st
-  st=$(python3 -c "import json;print(json.load(open('$TMPROOT/docs/prd/manifest.json'))['prds'][0]['status'])")
-  if [ "$st" = "closed" ]; then
-    pass "manifest prds[test-task].status → closed"
+  if [ ! -f "$TMPROOT/docs/prd-queue/2026-08-01-test-task.md" ]; then
+    pass "PRD removed from queue"
   else
-    fail "manifest status expected closed, got $st"
+    fail "PRD still in queue"
   fi
   teardown_workspace
 }
@@ -438,6 +435,39 @@ test_multi_line_bundle() {
   teardown_workspace
 }
 
+# ─── Git-backed: one-PR-per-task branch targeting ──────────────────────────
+# Seed a real git repo so the transition commit lands on the supplied task branch
+# instead of the protected default (nilai: one PR carries tracking + implementation).
+setup_git_workspace() {
+  setup_workspace
+  git init "$TMPROOT" >/dev/null 2>&1
+  git -C "$TMPROOT" config user.name "factory"
+  git -C "$TMPROOT" config user.email "factory@test.local"
+  { echo fixture; } > "$TMPROOT/README.md"
+  git -C "$TMPROOT" add README.md
+  git -C "$TMPROOT" commit -q -m "init"
+}
+
+test_transition_onto_task_branch() {
+  echo "Test: REGRESSION — transition commits onto the supplied task branch (one-PR-per-task)"
+  setup_git_workspace
+  write_task_file test-task
+  write_tasks_txt
+
+  git -C "$TMPROOT" add docs/tasks/test-task.md docs/tasks.txt
+  git -C "$TMPROOT" commit -q -m "add fixture"
+
+  run_script test-task --to complete --session "$UUID:planning" --decisions "$DEC1" --branch "factory/test-task/20260822"
+  local code=$?
+  assert_exit 0 $code "script exits 0"
+  local cur="$(git -C "$TMPROOT" branch --show-current)"
+  assert_eq "factory/test-task/20260822" "$cur" "current branch switches to the supplied task branch"
+  local head_topic="$(git -C "$TMPROOT" log -1 --format=%s "$cur" 2>/dev/null)"
+  [ -n "$head_topic" ] && echo "  · task-branch head: $head_topic"
+  assert_eq "task(test-task): transition to complete" "$head_topic" "transition commit is the task-branch head"
+  teardown_workspace
+}
+
 # ─── Runner ────────────────────────────────────────────────────────────────
 echo "=== transition-task.sh test suite ==="
 echo "Script under test: $SCRIPT_PATH"
@@ -454,9 +484,10 @@ test_invalid_state
 test_missing_task_file
 test_idempotent_rerun
 test_dry_run_no_changes
-test_prd_manifest
+test_prd_archive
 test_special_chars_in_decision_path
 test_multi_line_bundle
+test_transition_onto_task_branch
 
 echo ""
 echo "=== Results: $PASS passed, $FAIL failed ==="
